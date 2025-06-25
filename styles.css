@@ -1,0 +1,62 @@
+body {
+  font-family: sans-serif;
+  margin: 20px;
+  background-color: var(--bg);
+  color: var(--text);
+  transition: background 0.3s, color 0.3s;
+}
+:root {
+  --bg: #121212;
+  --text: #f1f1f1;
+  --input-bg: #1e1e1e;
+  --input-text: #f1f1f1;
+  --input-border: #444;
+}
+body.light {
+  --bg: #f1f1f1;
+  --text: #121212;
+  --input-bg: #fff;
+  --input-text: #121212;
+  --input-border: #ccc;
+}
+input[type="number"] {
+  background: var(--input-bg);
+  color: var(--input-text);
+  border: 1px solid var(--input-border);
+  padding: 5px;
+  margin-top: 5px;
+}
+button {
+  cursor: pointer;
+  padding: 0.6em 1.2em;
+  margin: 10px 0;
+  border: none;
+  border-radius: 5px;
+  background: #3578e5;
+  color: #fff;
+  font-size: 1em;
+  transition: background 0.2s;
+}
+button:hover, button:focus {
+  background: #2851a3;
+}
+header, .game-stats {
+  display: flex;
+  gap: 1em;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: space-between;
+}
+#quiz > div {
+  margin-bottom: 16px;
+}
+@media (max-width: 600px) {
+  body {
+    margin: 8px;
+    font-size: 1em;
+  }
+  button {
+    font-size: 1em;
+    padding: 0.5em 1em;
+  }
+}
