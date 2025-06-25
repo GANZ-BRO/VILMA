@@ -1,11 +1,51 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="hu">
 <head>
     <meta charset="UTF-8">
-    <title>Welcome to VILMA</title>
+    <title>Matematika Gyakorlás</title>
 </head>
 <body>
-    <h1>Hello, World!</h1>
-    <p>This is your new index.html file for the VILMA project.</p>
+    <h1>Matematika Gyakorlás</h1>
+    <div id="questions"></div>
+    <script>
+        let questions = [
+            {q: "5 + 3", a: 8},
+            {q: "-2 + 4", a: 2},
+            {q: "7 + (-3)", a: 4},
+            {q: "-5 + (-6)", a: -11},
+            // Add further questions with increasing difficulty
+        ];
+
+        let container = document.getElementById("questions");
+
+        questions.forEach((item, index) => {
+            let questionDiv = document.createElement("div");
+            questionDiv.id = "question" + index;
+            questionDiv.style.display = "none";
+
+            let questionText = document.createElement("p");
+            questionText.innerText = item.q;
+            questionDiv.appendChild(questionText);
+
+            let input = document.createElement("input");
+            input.type = "number";
+            input.onchange = function() {
+                if (parseInt(this.value) === item.a) {
+                    questionDiv.style.display = "none";
+                    if (questions[index + 1]) {
+                        document.getElementById("question" + (index + 1)).style.display = "block";
+                    } else {
+                        alert("Gratulálok, sikeresen megoldottad az összes feladatot!");
+                    }
+                }
+            };
+            questionDiv.appendChild(input);
+
+            container.appendChild(questionDiv);
+        });
+
+        document.getElementById("question0").style.display = "block";
+    </script>
 </body>
 </html>
+
