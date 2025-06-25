@@ -40,7 +40,7 @@ function showQuestion(index) {
   div.innerHTML = `
     <label for="answer${index}">${index + 1}. feladat: ${num1} + ${num2} = </label>
     <input id="answer${index}" type="number" autocomplete="off" aria-label="Válasz a(z) ${num1} + ${num2} = kérdésre">
-    <button type="button" id="submit${index}">Küldés</button>
+    <button type="button" id="submit${index}">Ellenőrzés</button>
   `;
   quizContainer.appendChild(div);
 
