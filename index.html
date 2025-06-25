@@ -145,6 +145,35 @@
       border: 2px solid currentColor;
       margin: 0;
     }
+    .numpad {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5em;
+      margin-top: 0.7em;
+      justify-content: flex-start;
+    }
+    .numpad-btn {
+      width: 2.2em;
+      height: 2.2em;
+      font-size: 1.25em;
+      border-radius: 0.5em;
+      border: none;
+      background: var(--input-bg-dark);
+      color: var(--input-text-dark);
+      border: 1px solid var(--input-border-dark);
+      cursor: pointer;
+      transition: background 0.25s, color 0.25s;
+    }
+    body.light .numpad-btn {
+      background: var(--input-bg-light);
+      color: var(--input-text-light);
+      border: 1px solid var(--input-border-light);
+    }
+    .numpad-btn:active, .numpad-btn:focus {
+      background: var(--primary);
+      color: #fff;
+      outline: none;
+    }
     @media (max-width: 600px) {
       main {
         padding: 0.5em;
@@ -156,6 +185,8 @@
       .game-stats { flex-direction: column; gap: 0.3em;}
       .big-btn, button { width: 100%; font-size: 1.1em; padding: 0.8em 0;}
       input[type="number"] { width: 100%; }
+      .numpad { gap: 0.3em; }
+      .numpad-btn { width: 2.5em; height: 2.5em; font-size: 1.2em;}
     }
   </style>
 </head>
@@ -278,6 +309,47 @@
       }
     }
 
+    // --- NUMPAD ---
+    function renderNumpad(inputId) {
+      // 1 2 3
+      // 4 5 6
+      // 7 8 9
+      // - 0 Del
+      const keys = [
+        '1','2','3',
+        '4','5','6',
+        '7','8','9',
+        '-','0','←'
+      ];
+      const numpadDiv = document.createElement('div');
+      numpadDiv.className = 'numpad';
+      keys.forEach(key => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'numpad-btn';
+        btn.textContent = key;
+        btn.tabIndex = -1;
+        btn.onclick = () => {
+          const input = document.getElementById(inputId);
+          if (!input) return;
+          if (key === '←') {
+            input.value = input.value.slice(0, -1);
+          } else if (key === '-') {
+            if (!input.value.startsWith('-')) {
+              input.value = '-' + input.value;
+            } else {
+              input.value = input.value.substring(1);
+            }
+          } else {
+            input.value += key;
+          }
+          input.focus();
+        };
+        numpadDiv.appendChild(btn);
+      });
+      return numpadDiv;
+    }
+
     // --- GAME LOGIC ---
     function showQuestion(index) {
       quizContainer.innerHTML = "";
@@ -294,10 +366,15 @@
       `;
       quizContainer.appendChild(div);
 
-      document.getElementById(`answer${index}`).focus();
+      // Add numpad below input
+      const input = document.getElementById(`answer${index}`);
+      const numpad = renderNumpad(`answer${index}`);
+      div.appendChild(numpad);
+
+      input.focus();
       document.getElementById(`submit${index}`).onclick = () => {
         if (!gameActive) return;
-        const val = document.getElementById(`answer${index}`).value;
+        const val = input.value;
         if (val === "") {
           alert("Írj be egy választ!");
           return;
@@ -311,7 +388,7 @@
           alert("Nem jó válasz, próbáld újra!");
         }
       };
-      document.getElementById(`answer${index}`).addEventListener('keyup', function(e) {
+      input.addEventListener('keyup', function(e) {
         if (e.key === 'Enter') document.getElementById(`submit${index}`).click();
       });
     }
