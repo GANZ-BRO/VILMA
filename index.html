@@ -1,51 +1,113 @@
 <!DOCTYPE html>
 <html lang="hu">
 <head>
-    <meta charset="UTF-8">
-    <title>Matematika Gyakorlás</title>
+  <meta charset="UTF-8">
+  <title>Összeadás Gyakorlása</title>
+  <style id="theme-style"></style>
 </head>
 <body>
-    <h1>Matematika Gyakorlás</h1>
-    <div id="questions"></div>
-    <script>
-        let questions = [
-            {q: "5 + 3", a: 8},
-            {q: "-2 + 4", a: 2},
-            {q: "7 + (-3)", a: 4},
-            {q: "-5 + (-6)", a: -11},
-            // Add further questions with increasing difficulty
-        ];
+  <h1>Összeadás Gyakorlása</h1>
+  <button onclick="toggleTheme()">🌗 Téma váltása</button>
+  <p id="timer">Eltelt idő: 0 másodperc</p>
+  <p id="score">Pontszám: 0</p>
+  <div id="quiz"></div>
 
-        let container = document.getElementById("questions");
+  <script>
+    const quizContainer = document.getElementById("quiz");
+    const scoreDisplay = document.getElementById("score");
+    const timerDisplay = document.getElementById("timer");
+    const styleTag = document.getElementById("theme-style");
 
-        questions.forEach((item, index) => {
-            let questionDiv = document.createElement("div");
-            questionDiv.id = "question" + index;
-            questionDiv.style.display = "none";
+    const numberOfQuestions = 10;
+    let score = 0;
+    let startTime = Date.now();
+    let darkMode = true;
 
-            let questionText = document.createElement("p");
-            questionText.innerText = item.q;
-            questionDiv.appendChild(questionText);
+    function applyTheme() {
+      if (darkMode) {
+        styleTag.innerHTML = `
+          body { background-color: #121212; color: #f1f1f1; font-family: sans-serif; margin: 20px; }
+          input { background-color: #1e1e1e; color: #f1f1f1; border: 1px solid #444; padding: 5px; margin-top: 5px; }
+          h1, p { color: #ffffff; }
+          div { margin-bottom: 15px; }
+          #score, #timer { font-weight: bold; }
+        `;
+      } else {
+        styleTag.innerHTML = `
+          body { background-color: #f1f1f1; color: #121212; font-family: sans-serif; margin: 20px; }
+          input { background-color: #fff; color: #121212; border: 1px solid #ccc; padding: 5px; margin-top: 5px; }
+          h1, p { color: #121212; }
+          div { margin-bottom: 15px; }
+          #score, #timer { font-weight: bold; }
+        `;
+      }
+    }
 
-            let input = document.createElement("input");
-            input.type = "number";
-            input.onchange = function() {
-                if (parseInt(this.value) === item.a) {
-                    questionDiv.style.display = "none";
-                    if (questions[index + 1]) {
-                        document.getElementById("question" + (index + 1)).style.display = "block";
-                    } else {
-                        alert("Gratulálok, sikeresen megoldottad az összes feladatot!");
-                    }
-                }
-            };
-            questionDiv.appendChild(input);
+    function toggleTheme() {
+      darkMode = !darkMode;
+      localStorage.setItem("darkMode", darkMode);
+      applyTheme();
+    }
 
-            container.appendChild(questionDiv);
-        });
+    function loadTheme() {
+      const saved = localStorage.getItem("darkMode");
+      if (saved !== null) darkMode = saved === "true";
+      applyTheme();
+    }
 
-        document.getElementById("question0").style.display = "block";
-    </script>
+    function updateTimer() {
+      const now = Date.now();
+      const elapsed = Math.floor((now - startTime) / 1000);
+      timerDisplay.textContent = `Eltelt idő: ${elapsed} másodperc`;
+    }
+
+    setInterval(updateTimer, 1000);
+
+    function getRandomInt(min, max) {
+      return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    function createQuestion(index) {
+      const num1 = getRandomInt(-10, 10);
+      const num2 = getRandomInt(-10, 10);
+      const answer = num1 + num2;
+
+      const div = document.createElement("div");
+      div.id = "question" + index;
+      div.style.display = index === 0 ? "block" : "none";
+
+      const questionText = document.createElement("p");
+      questionText.textContent = `${num1} + ${num2} = ?`;
+      div.appendChild(questionText);
+
+      const input = document.createElement("input");
+      input.type = "number";
+
+      input.addEventListener("change", () => {
+        if (parseInt(input.value) === answer) {
+          score++;
+          scoreDisplay.textContent = `Pontszám: ${score}`;
+          div.style.display = "none";
+          if (index + 1 < numberOfQuestions) {
+            document.getElementById("question" + (index + 1)).style.display = "block";
+          } else {
+            updateTimer();
+            alert(`Ügyes vagy! ${score} pontot szereztél ${timerDisplay.textContent.toLowerCase()}.`);
+          }
+        } else {
+          alert("Nem jó válasz, próbáld újra!");
+        }
+      });
+
+      div.appendChild(input);
+      quizContainer.appendChild(div);
+    }
+
+    for (let i = 0; i < numberOfQuestions; i++) {
+      createQuestion(i);
+    }
+
+    loadTheme(); // Téma alkalmazása betöltéskor
+  </script>
 </body>
 </html>
-
