@@ -29,7 +29,7 @@
     body.light .answer-view { background: var(--input-bg-light); color: var(--input-text-light); border: 1px solid var(--input-border-light);}
     .big-btn, button { display: inline-block; font-size: 1.2em; padding: 0.7em 1.3em; border: none; border-radius: 9px; margin: 0.5em 0 0.5em 0; background: var(--primary); color: #fff; font-weight: bold; cursor: pointer; transition: background 0.3s;}
     button:hover, .big-btn:hover, button:focus, .big-btn:focus { background: var(--primary-dark); outline: none;}
-    #theme-toggle { font-size: 1.4em; border-radius: 50%; width: 2.3em; height: 2.3em; padding: 0; background: none; color: inherit; box-shadow: none; border: 2px solid currentColor; margin: 0 auto; display: block; margin-top: 20px;}
+    #theme-toggle { font-size: 1.4em; border-radius: 50%; width: 2.3em; height: 2.3em; padding: 0; background: none; color: inherit; box-shadow: none; border: 2px solid currentColor; margin: 0 auto;}
     .numpad { display: flex; flex-wrap: wrap; gap: 0.5em; margin-top: 0.7em; justify-content: flex-start; max-width: 230px;}
     .numpad-btn { width: 2.2em; height: 2.2em; font-size: 1.25em; border-radius: 0.5em; border: none; background: var(--input-bg-dark); color: var(--input-text-dark); border: 1px solid var(--input-border-dark);}
     body.light .numpad-btn { background: var(--input-bg-light); color: var(--input-text-light); border: 1px solid var(--input-border-light);}
@@ -56,25 +56,4 @@
           <option value="Egyenletek átrendezése">Egyenletek átrendezése</option>
         </select>
       </label>
-      <label for="difficulty">Nehézségi szint:
-        <select id="difficulty">
-          <option value="easy">Könnyű</option>
-          <option value="medium">Közepes</option>
-          <option value="hard">Nehéz</option>
-        </select>
-      </label>
-      <button class="big-btn" id="start-btn">Játék indítása</button>
-    </div>
-    <div class="game-stats">
-      <span class="stat" id="timer">⏱️ Idő: 0 mp</span>
-      <span class="stat" id="score">🏅 Pontszám: 0</span>
-    </div>
-    <section id="quiz" aria-label="Feladatsor"></section>
-    <button class="big-btn" id="restart-btn" style="display:none;">Újrajátszás</button>
-  </main>
-  <button id="theme-toggle" aria-label="Téma váltása">🌗</button>
-  <script>
-    // JavaScript kódok itt maradnak változatlanul
-  </script>
-</body>
-</html>
+     
