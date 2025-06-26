@@ -35,7 +35,18 @@
     body.light .numpad-btn { background: var(--input-bg-light); color: var(--input-text-light); border: 1px solid var(--input-border-light);}
     .numpad-btn:active, .numpad-btn:focus { background: var(--primary); color: #fff; outline: none;}
     @media (max-width: 600px) { main { padding: 0.5em;} h1 { font-size: 1.1em;} .settings { flex-direction: column; gap: 0.3em;} .game-stats { flex-direction: column; gap: 0.3em;} .big-btn, button { width: 100%; font-size: 1.1em; padding: 0.8em 0;} .answer-view { width: 100%; } .numpad { gap: 0.3em; } .numpad-btn { width: 2.5em; height: 2.5em; font-size: 1.2em;}}
-  </style>
+ /* Feladatsor kiemelése nagyobb betűmérettel */
+    #quiz > div > label {
+  font-size: 1.5em; /* Egy nagyobb méret a kiemeléshez */
+  font-weight: bold; /* Kiemeléshez */
+}
+/* Dark & Light mód ikon méretének csökkentése */
+#theme-toggle {
+  font-size: 1em; /* Csökkentett méret */
+  width: 1.8em; /* Kisebb szélesség */
+  height: 1.8em; /* Kisebb magasság */
+}
+   </style>
 </head>
 <body>
   <main>
