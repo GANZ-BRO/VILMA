@@ -6,130 +6,42 @@
   <title>Matematika gyakorlás</title>
   <style>
     :root {
-      --bg-dark: #121212;
-      --text-dark: #f1f1f1;
-      --input-bg-dark: #1e1e1e;
-      --input-text-dark: #f1f1f1;
-      --input-border-dark: #444;
-      --primary: #3578e5;
-      --primary-dark: #2851a3;
-      --success: #4bb543;
+      --bg-dark: #121212; --text-dark: #f1f1f1; --input-bg-dark: #1e1e1e; --input-text-dark: #f1f1f1; --input-border-dark: #444;
+      --bg-light: #f1f1f1; --text-light: #121212; --input-bg-light: #fff; --input-text-light: #121212; --input-border-light: #ccc;
+      --primary: #3578e5; --primary-dark: #2851a3; --success: #4bb543;
     }
-    body {
-      font-family: sans-serif;
-      margin: 0;
-      padding: 0;
-      background: var(--bg-dark);
-      color: var(--text-dark);
-      min-height: 100vh;
-      transition: background 0.3s, color 0.3s;
-    }
-    main {
-      max-width: 440px;
-      margin: auto;
-      padding: 1em;
-    }
-    header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 0.5em;
-      flex-wrap: wrap;
-    }
-    h1 {
-      font-size: 1.4em;
-      margin: 0;
-    }
-    .settings {
-      display: flex;
-      gap: 0.6em;
-      flex-wrap: wrap;
-      margin: 1em 0;
-      align-items: center;
-      justify-content: space-between;
-    }
-    .settings label {
-      font-size: 1em;
-      font-weight: 500;
-    }
-    select {
-      font-size: 1.05em;
-      padding: 0.5em;
-      border-radius: 6px;
-      border: 1px solid var(--input-border-dark);
-      background: var(--input-bg-dark);
-      color: var(--input-text-dark);
-      margin-top: 4px;
-      transition: background 0.3s, color 0.3s, border 0.3s;
-    }
-    .game-stats {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 1em;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 1em;
-    }
-    .stat {
-      font-weight: bold;
-      font-size: 1.05em;
-    }
-    .best {
-      font-size: 0.98em;
-      color: var(--success);
-      margin-top: 0.25em;
-    }
-    #quiz > div {
-      margin-bottom: 18px;
-      border-radius: 8px;
-      padding: 1em;
-      background: rgba(0, 0, 0, 0.05);
-      box-shadow: 0 2px 8px 0 rgba(0, 0, 0, 0.05);
-    }
-    label {
-      font-size: 1.08em;
-      display: block;
-      margin-bottom: 0.4em;
-    }
-    .answer-view {
-      width: 80%;
-      font-size: 1.25em;
-      padding: 0.4em 0.7em;
-      border-radius: 6px;
-      border: 1px solid var(--input-border-dark);
-      background: var(--input-bg-dark);
-      color: var(--text-dark);
-      margin-bottom: 0.3em;
-      letter-spacing: 0.06em;
-      pointer-events: none;
-      user-select: none;
-      text-align: left;
-    }
-    .big-btn, button {
-      display: inline-block;
-      font-size: 1.2em;
-      padding: 0.7em 1.3em;
-      border: none;
-      border-radius: 9px;
-      margin: 0.5em 0;
-      background: var(--primary);
-      color: #fff;
-      font-weight: 600;
-      cursor: pointer;
-      box-shadow: 0 2px 8px 0 rgba(0, 0, 0, 0.08);
-      transition: background 0.22s;
-      touch-action: manipulation;
-    }
-    button:hover, .big-btn:hover, button:focus, .big-btn:focus {
-      background: var(--primary-dark);
-      outline: none;
-    }
+    body { font-family: sans-serif; margin: 0; padding: 0; background: var(--bg-dark); color: var(--text-dark); min-height: 100vh; transition: background 0.3s, color 0.3s;}
+    body.light { background: var(--bg-light); color: var(--text-light);}
+    main { max-width: 440px; margin: auto; padding: 1em;}
+    header { display: flex; align-items: center; justify-content: space-between; gap: 0.5em; flex-wrap: wrap;}
+    h1 { font-size: 1.4em; margin: 0;}
+    .settings { display: flex; gap: 0.6em; flex-wrap: wrap; margin: 1em 0; align-items: center; justify-content: space-between;}
+    .settings label { font-size: 1em; font-weight: 500;}
+    select { font-size: 1.05em; padding: 0.5em; border-radius: 6px; border: 1px solid var(--input-border-dark); background: var(--input-bg-dark); color: var(--input-text-dark); margin-top: 4px; transition: background 0.3s, color 0.3s, border 0.3s;}
+    body.light select { background: var(--input-bg-light); color: var(--input-text-light); border: 1px solid var(--input-border-light);}
+    .game-stats { display: flex; flex-wrap: wrap; gap: 1em; align-items: center; justify-content: space-between; margin-bottom: 1em;}
+    .stat { font-weight: bold; font-size: 1.05em;}
+    .best { font-size: 0.98em; color: var(--success); margin-top: 0.25em;}
+    #quiz > div { margin-bottom: 18px; border-radius: 8px; padding: 1em; background: rgba(0,0,0,0.05); box-shadow: 0 2px 8px 0 rgba(0,0,0,0.05);}
+    body.light #quiz > div { background: rgba(0,0,0,0.01); box-shadow: 0 2px 8px 0 rgba(0,0,0,0.07);}
+    label { font-size: 1.08em; display: block; margin-bottom: 0.4em;}
+    .answer-view { width: 80%; font-size: 1.25em; padding: 0.4em 0.7em; border-radius: 6px; border: 1px solid var(--input-border-dark); background: var(--input-bg-dark); color: var(--input-text-dark); margin-bottom: 0.3em; letter-spacing: 0.06em; pointer-events: none; user-select: none; text-align: left;}
+    body.light .answer-view { background: var(--input-bg-light); color: var(--input-text-light); border: 1px solid var(--input-border-light);}
+    .big-btn, button { display: inline-block; font-size: 1.2em; padding: 0.7em 1.3em; border: none; border-radius: 9px; margin: 0.5em 0 0.5em 0; background: var(--primary); color: #fff; font-weight: 600; cursor: pointer; box-shadow: 0 2px 8px 0 rgba(0,0,0,0.08); transition: background 0.22s; touch-action: manipulation;}
+    button:hover, .big-btn:hover, button:focus, .big-btn:focus { background: var(--primary-dark); outline: none;}
+    #theme-toggle { font-size: 1.4em; border-radius: 50%; width: 2.3em; height: 2.3em; padding: 0; background: none; color: inherit; box-shadow: none; border: 2px solid currentColor; margin: 0;}
+    .numpad { display: flex; flex-wrap: wrap; gap: 0.5em; margin-top: 0.7em; justify-content: flex-start; max-width: 230px;}
+    .numpad-btn { width: 2.2em; height: 2.2em; font-size: 1.25em; border-radius: 0.5em; border: none; background: var(--input-bg-dark); color: var(--input-text-dark); border: 1px solid var(--input-border-dark); cursor: pointer; transition: background 0.25s, color 0.25s;}
+    body.light .numpad-btn { background: var(--input-bg-light); color: var(--input-text-light); border: 1px solid var(--input-border-light);}
+    .numpad-btn:active, .numpad-btn:focus { background: var(--primary); color: #fff; outline: none;}
+    @media (max-width: 600px) { main { padding: 0.5em;} h1 { font-size: 1.1em;} .settings { flex-direction: column; gap: 0.3em;} .game-stats { flex-direction: column; gap: 0.3em;} .big-btn, button { width: 100%; font-size: 1.1em; padding: 0.8em 0;} .answer-view { width: 100%; } .numpad { gap: 0.3em; } .numpad-btn { width: 2.5em; height: 2.5em; font-size: 1.2em;}}
   </style>
 </head>
 <body>
   <main>
     <header>
       <h1>Matematika gyakorlás</h1>
+      <button id="theme-toggle" aria-label="Téma váltása">🌗</button>
     </header>
     <div class="settings">
       <label for="category">Kategória:
@@ -158,11 +70,339 @@
       <span class="stat" id="timer">⏱️ Idő: 0 mp</span>
       <span class="stat" id="score">🏅 Pontszám: 0</span>
     </div>
+    <div class="best" id="best-stats" style="display:none;"></div>
     <section id="quiz" aria-label="Feladatsor"></section>
     <button class="big-btn" id="restart-btn" style="display:none;">Újrajátszás</button>
   </main>
   <script>
-    // Meglévő logika érintetlenül marad
+    // --- ALAPBEÁLLÍTÁSOK ---
+    const QUESTIONS = 10;
+    const DIFFICULTY_SETTINGS = {
+      easy: { min: 0, max: 10 },
+      medium: { min: -10, max: 20 },
+      hard: { min: -50, max: 50 }
+    };
+
+    // --- HTML ELEMEK ---
+    const quizContainer = document.getElementById("quiz");
+    const timerDisplay = document.getElementById("timer");
+    const scoreDisplay = document.getElementById("score");
+    const bestStats = document.getElementById("best-stats");
+    const difficultySelect = document.getElementById("difficulty");
+    const categorySelect = document.getElementById("category");
+    const startBtn = document.getElementById("start-btn");
+    const restartBtn = document.getElementById("restart-btn");
+    const themeToggle = document.getElementById("theme-toggle");
+
+    // --- ÁLLAPOTVÁLTOZÓK ---
+    let score = 0, startTime = 0, timerInterval = null, currentQuestion = 0, questions = [];
+    let best = { score: 0, time: null };
+    let gameActive = false;
+
+    // --- LEGJOBB EREDMÉNY MENTÉSE/BETÖLTÉSE ---
+    function loadBest() {
+      const diff = difficultySelect.value;
+      const cat = categorySelect.value;
+      try {
+        const bestRaw = localStorage.getItem("vilma-best-" + cat + "-" + diff);
+        best = bestRaw ? JSON.parse(bestRaw) : { score: 0, time: null };
+      } catch { best = { score: 0, time: null }; }
+      showBest();
+    }
+    function saveBest(newScore, time) {
+      const diff = difficultySelect.value;
+      const cat = categorySelect.value;
+      if (newScore > best.score || (newScore === best.score && (best.time === null || time < best.time))) {
+        best = { score: newScore, time: time };
+        localStorage.setItem("vilma-best-" + cat + "-" + diff, JSON.stringify(best));
+        showBest();
+      }
+    }
+    function showBest() {
+      if (best.score > 0) {
+        bestStats.innerHTML = `🏆 <b>Legjobb eredmény:</b> ${best.score} pont, ${best.time} mp (${categoryLabel()} / ${difficultyLabel()})`;
+        bestStats.style.display = "";
+      } else {
+        bestStats.style.display = "none";
+      }
+    }
+    function difficultyLabel() {
+      switch(difficultySelect.value) {
+        case "easy": return "Könnyű";
+        case "medium": return "Közepes";
+        case "hard": return "Nehéz";
+        default: return "";
+      }
+    }
+    function categoryLabel() {
+      return categorySelect.options[categorySelect.selectedIndex].textContent;
+    }
+
+    // --- TÉMA VÁLTÁS ---
+    function applyTheme() {
+      const dark = localStorage.getItem("vilma-theme") !== "light";
+      document.body.classList.toggle("light", !dark);
+    }
+    themeToggle.addEventListener("click", function() {
+      const isLight = document.body.classList.contains("light");
+      localStorage.setItem("vilma-theme", isLight ? "dark" : "light");
+      applyTheme();
+    });
+    applyTheme();
+
+    // --- NEHÉZSÉG ÉS KATEGÓRIA KEZELÉSE ---
+    difficultySelect.addEventListener("change", loadBest);
+    categorySelect.addEventListener("change", loadBest);
+
+    // --- IDŐZÍTŐ ---
+    function updateTimer() {
+      const elapsed = Math.floor((Date.now() - startTime) / 1000);
+      timerDisplay.textContent = `⏱️ Idő: ${elapsed} mp`;
+    }
+
+    // --- FELADATSOR GENERÁLÁSA ---
+    function getRandomInt(min, max) {
+      return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+    function gcd(a, b) { return b === 0 ? a : gcd(b, a % b); }
+    function simplifyFraction(num, denom) {
+      let d = gcd(Math.abs(num), Math.abs(denom));
+      return [num/d, denom/d];
+    }
+    function generateQuestions() {
+      const { min, max } = DIFFICULTY_SETTINGS[difficultySelect.value];
+      const category = categorySelect.value;
+      questions = [];
+      for (let i = 0; i < QUESTIONS; i++) {
+        let q = {};
+        switch (category) {
+          case "Összeadás":
+            {
+              let num1 = getRandomInt(min, max), num2 = getRandomInt(min, max);
+              q = { num1, num2, operator: "+", answer: num1 + num2, display: `<b>${num1}</b> + <b>${num2}</b>` };
+            }
+            break;
+          case "Kivonás":
+            {
+              let num1 = getRandomInt(min, max), num2 = getRandomInt(min, max);
+              q = { num1, num2, operator: "-", answer: num1 - num2, display: `<b>${num1}</b> - <b>${num2}</b>` };
+            }
+            break;
+          case "Szorzás":
+            {
+              let num1 = getRandomInt(min, max), num2 = getRandomInt(min, max);
+              q = { num1, num2, operator: "×", answer: num1 * num2, display: `<b>${num1}</b> × <b>${num2}</b>` };
+            }
+            break;
+          case "Osztás":
+            {
+              // egész számú eredmény
+              let num2 = getRandomInt(1, max > 1 ? max : 10);
+              let answer = getRandomInt(min, max);
+              q = { num1: num2 * answer, num2: num2, operator: "÷", answer: answer, display: `<b>${num2*answer}</b> ÷ <b>${num2}</b>` };
+            }
+            break;
+          case "Mind a négy művelet":
+            {
+              const ops = ["+", "-", "×", "÷"];
+              const op = ops[getRandomInt(0, 3)];
+              let num1 = getRandomInt(min, max), num2 = getRandomInt(min, max);
+              if (op === "+") q = { num1, num2, operator: "+", answer: num1 + num2, display: `<b>${num1}</b> + <b>${num2}</b>` };
+              if (op === "-") q = { num1, num2, operator: "-", answer: num1 - num2, display: `<b>${num1}</b> - <b>${num2}</b>` };
+              if (op === "×") q = { num1, num2, operator: "×", answer: num1 * num2, display: `<b>${num1}</b> × <b>${num2}</b>` };
+              if (op === "÷") {
+                let num2 = getRandomInt(1, max > 1 ? max : 10);
+                let answer = getRandomInt(min, max);
+                q = { num1: num2 * answer, num2: num2, operator: "÷", answer: answer, display: `<b>${num2*answer}</b> ÷ <b>${num2}</b>` };
+              }
+            }
+            break;
+          case "Zárójeles kifejezések":
+            {
+              // (a + b) * c vagy (a - b) * c
+              let a = getRandomInt(min, max), b = getRandomInt(min, max), c = getRandomInt(1, 10), op = Math.random() > 0.5 ? "+" : "-";
+              let inner = op === "+" ? a + b : a - b;
+              q = {
+                display: `(${a} ${op} ${b}) × ${c}`,
+                answer: inner * c
+              };
+            }
+            break;
+          case "Törtek":
+            {
+              // egyszerű tört összeadás: a/b + c/d
+              let b = getRandomInt(2, 8), d = getRandomInt(2, 8);
+              let a = getRandomInt(1, b - 1), c = getRandomInt(1, d - 1);
+              let numerator = a * d + c * b;
+              let denominator = b * d;
+              let [num, denom] = simplifyFraction(numerator, denominator);
+              q = {
+                display: `${a}/${b} + ${c}/${d}`,
+                answer: `${num}/${denom}`
+              };
+            }
+            break;
+          case "Százalékszámítás":
+            {
+              // "Mennyi 25%-a 160-nak?"
+              let percent = [10, 20, 25, 50, 75][getRandomInt(0, 4)];
+              let base = getRandomInt(20, 200);
+              let result = Math.round(base * percent / 100);
+              q = {
+                display: `Mennyi ${percent}% <b>${base}</b>-nak/nek?`,
+                answer: result
+              };
+            }
+            break;
+          case "Egyenletek átrendezése":
+            {
+              // Pl. 2x + 3 = 9
+              let x = getRandomInt(-10, 10), a = getRandomInt(1, 5), b = getRandomInt(-10, 10);
+              let result = a * x + b;
+              q = {
+                display: `${a}x ${b >= 0 ? "+" : "-"} ${Math.abs(b)} = ${result}. x = ?`,
+                answer: x
+              };
+            }
+            break;
+          default: q = { display: "Hiba: kategória nincs implementálva", answer: null };
+        }
+        questions.push(q);
+      }
+    }
+
+    // --- SZÁMBILLENTYŰZET ---
+    function renderNumpad(answerState, onChange) {
+      const keys = [
+        '1','2','3','4','5','6','7','8','9','-','0','←','/'
+      ];
+      const numpadDiv = document.createElement('div');
+      numpadDiv.className = 'numpad';
+      keys.forEach(key => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'numpad-btn';
+        btn.textContent = key;
+        btn.tabIndex = 0;
+        btn.onclick = () => {
+          if (key === '←') {
+            answerState.value = answerState.value.slice(0, -1);
+          } else if (key === '-') {
+            if (!answerState.value.startsWith('-')) {
+              answerState.value = '-' + answerState.value;
+            } else {
+              answerState.value = answerState.value.substring(1);
+            }
+          } else if (key === '/') {
+            if (!answerState.value.includes('/')) {
+              answerState.value += '/';
+            }
+          } else {
+            answerState.value += key;
+          }
+          onChange(answerState.value);
+        };
+        numpadDiv.appendChild(btn);
+      });
+      return numpadDiv;
+    }
+
+    // --- JÁTÉK LOGIKA ---
+    function showQuestion(index) {
+      quizContainer.innerHTML = "";
+      if (index >= QUESTIONS) {
+        finishGame();
+        return;
+      }
+      const q = questions[index];
+      const div = document.createElement("div");
+      div.innerHTML = `<label>${index + 1}. feladat: ${q.display} = </label>`;
+      let answerState = { value: "" };
+      const answerView = document.createElement("div");
+      answerView.className = "answer-view";
+      answerView.textContent = "";
+      div.appendChild(answerView);
+
+      // Számbillentyűzet
+      const numpad = renderNumpad(answerState, function(val) {
+        answerView.textContent = val;
+      });
+      div.appendChild(numpad);
+
+      // Küldés gomb
+      const submitBtn = document.createElement("button");
+      submitBtn.type = "button";
+      submitBtn.className = "big-btn";
+      submitBtn.textContent = "Küldés";
+      submitBtn.onclick = () => {
+        if (!gameActive) return;
+        let val = answerState.value.trim();
+        if (val === "" || val === "-") {
+          alert("Írj be egy választ!");
+          return;
+        }
+        let correct = false;
+        // Törtek esetén szöveges összehasonlítás
+        if (categorySelect.value === "Törtek") {
+          let [ansNum, ansDen] = q.answer.split('/').map(Number);
+          let [userNum, userDen] = val.split('/').map(Number);
+          if (userNum && userDen) {
+            // Egyszerűsítünk
+            let [simpUserNum, simpUserDen] = simplifyFraction(userNum, userDen);
+            if (simpUserNum === ansNum && simpUserDen === ansDen) correct = true;
+          }
+        } else if (categorySelect.value === "Zárójeles kifejezések" || categorySelect.value === "Egyenletek átrendezése") {
+          if (parseInt(val, 10) === q.answer) correct = true;
+        } else if (categorySelect.value === "Százalékszámítás") {
+          if (parseInt(val, 10) === q.answer) correct = true;
+        } else {
+          if (parseInt(val, 10) === q.answer) correct = true;
+        }
+        if (correct) {
+          score++;
+          scoreDisplay.textContent = `🏅 Pontszám: ${score}`;
+          currentQuestion++;
+          showQuestion(currentQuestion);
+        } else {
+          alert("Nem jó válasz, próbáld újra!");
+        }
+      };
+      div.appendChild(submitBtn);
+
+      quizContainer.appendChild(div);
+    }
+
+    function startGame() {
+      gameActive = true;
+      score = 0;
+      currentQuestion = 0;
+      scoreDisplay.textContent = `🏅 Pontszám: 0`;
+      generateQuestions();
+      showQuestion(0);
+      startTime = Date.now();
+      updateTimer();
+      clearInterval(timerInterval);
+      timerInterval = setInterval(updateTimer, 1000);
+      restartBtn.style.display = "none";
+      startBtn.style.display = "none";
+      bestStats.style.opacity = "0.55";
+    }
+    function finishGame() {
+      gameActive = false;
+      clearInterval(timerInterval);
+      const elapsed = Math.floor((Date.now() - startTime) / 1000);
+      timerDisplay.textContent = `⏱️ Idő: ${elapsed} mp (Vége)`;
+      quizContainer.innerHTML = `<p style="font-size:1.2em;"><b>Gratulálok!</b> ${score} pontot szereztél ${elapsed} másodperc alatt.</p>`;
+      saveBest(score, elapsed);
+      restartBtn.style.display = "";
+      startBtn.style.display = "";
+      bestStats.style.opacity = "1";
+    }
+    restartBtn.onclick = startGame;
+    startBtn.onclick = startGame;
+
+    // --- INDÍTÁS ---
+    loadBest();
   </script>
 </body>
 </html>
