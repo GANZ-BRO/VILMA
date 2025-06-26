@@ -30,16 +30,28 @@
     #quiz > div { margin-bottom: 18px; border-radius: 8px; padding: 1em; background: rgba(0,0,0,0.05); box-shadow: 0 2px 8px 0 rgba(0,0,0,0.05);}
     body.light #quiz > div { background: rgba(0,0,0,0.01); box-shadow: 0 2px 8px 0 rgba(0,0,0,0.07);}
     label { font-size: 1.08em; display: block; margin-bottom: 0.4em;}
-    .answer-view { width: 80%; font-size: 1.25em; padding: 0.4em 0.7em; border-radius: 6px; border: 1px solid var(--input-border-dark); background: var(--input-bg-dark); color: var(--input-text-dark); margin-bottom: 0.8em;}
+    .answer-view { width: 80%; font-size: 1.25em; padding: 0.4em 0.7em; border-radius: 6px; border: 1px solid var(--input-border-dark); background: var(--input-bg-dark); color: var(--input-text-dark);}
     body.light .answer-view { background: var(--input-bg-light); color: var(--input-text-light); border: 1px solid var(--input-border-light);}
     .big-btn, button { display: inline-block; font-size: 1.2em; padding: 0.7em 1.3em; border: none; border-radius: 9px; margin: 0.5em 0 0.5em 0; background: var(--primary); color: #fff; font-weight: 600; cursor: pointer; transition: background 0.2s;}
     button:hover, .big-btn:hover, button:focus, .big-btn:focus { background: var(--primary-dark); outline: none;}
     #theme-toggle { font-size: 1.4em; border-radius: 50%; width: 2.3em; height: 2.3em; padding: 0; background: none; color: inherit; box-shadow: none; border: 2px solid currentColor; margin: 0;}
-    .numpad-row { display: flex; gap: 0.5em; margin-bottom: 0.5em;}
-    .numpad { display: inline-flex; flex-direction: column; gap: 0.1em; margin-top: 0.7em; justify-content: flex-start; max-width: 270px;}
-    .numpad-btn {
-      width: 2.2em;
-      height: 2.2em;
+    .numpad-row { display: flex; gap: 0.5em; margin-bottom: 0.5em; width: 100%;}
+    .numpad {
+      display: flex;
+      flex-direction: column;
+      gap: 0.1em;
+      margin-top: 0.7em;
+      justify-content: flex-start;
+      width: 100%;
+      max-width: 340px;
+      min-width: 220px;
+    }
+    .numpad-btn,
+    .numpad-submit-btn {
+      flex: 1 1 0;
+      width: 100%;
+      min-width: 0;
+      aspect-ratio: 1/1;
       font-size: 1.25em;
       border-radius: 0.5em;
       border: none;
@@ -53,10 +65,15 @@
       padding: 0;
       box-sizing: border-box;
       transition: background 0.2s, color 0.2s;
+      max-height: 4em;
     }
-    body.light .numpad-btn { background: var(--input-bg-light); color: var(--input-text-light); border: 1px solid var(--input-border-light);}
-    .numpad-btn:active, .numpad-btn:focus { background: var(--primary); color: #fff; outline: none;}
-    .numpad-container { display: flex; flex-direction: column; align-items: flex-start; gap: 1.1em; }
+    body.light .numpad-btn, body.light .numpad-submit-btn {
+      background: var(--input-bg-light); color: var(--input-text-light); border: 1px solid var(--input-border-light);
+    }
+    .numpad-btn:active, .numpad-btn:focus, .numpad-submit-btn:active, .numpad-submit-btn:focus {
+      background: var(--primary); color: #fff; outline: none;
+    }
+    .numpad-container { display: flex; flex-direction: column; align-items: flex-start; gap: 1.1em; width: 100%; }
     .numpad-submit-btn {
       background: var(--submit-btn-bg);
       color: #fff;
@@ -82,9 +99,12 @@
       .settings { flex-direction: column; gap: 0.3em;}
       .game-stats { flex-direction: column; gap: 0.3em;}
       .big-btn, button { width: 100%; }
-      .numpad { max-width: 100%; }
-      .numpad-row { gap: 0.3em; }
-      .numpad-btn, .numpad-submit-btn { width: 2.2em; height: 2.2em; min-width: 2.2em; min-height: 2.2em; font-size: 1.1em;}
+      .numpad { max-width: 100%; min-width: 0; }
+      .numpad-row { gap: 0.2em; }
+      .numpad-btn, .numpad-submit-btn {
+        font-size: 1.05em;
+        max-height: 2.6em;
+      }
     }
     #quiz > div > label { font-size: 1.5em; font-weight: bold; }
     #theme-toggle { font-size: 1em; width: 1.8em; height: 1.8em; }
@@ -343,7 +363,7 @@
         rowDiv.className = 'numpad-row';
         row.forEach((key, colIndex) => {
           if (key === 'submit') {
-            const enterIcon = `<svg viewBox="0 0 48 48" width="1.2em" height="1.2em" style="display:block;margin:auto;" aria-hidden="true" focusable="false"><path d="M40 6v23H14.83l6.58-6.59L19 20l-10 10 10 10 2.41-2.41L14.83 32H44V6z" fill="currentColor"/></svg>`;
+            const enterIcon = `<svg viewBox="0 0 48 48" width="1.2em" height="1.2em" style="display:block;margin:auto;" aria-hidden="true" focusable="false"><path d="M40 6v23H14.83l6.58-6.59L19 20l-10 10 10 10 2.41-2.41L14.83 31H44V6z" fill="currentColor"/></svg>`;
             const submitBtn = document.createElement("button");
             submitBtn.type = "button";
             submitBtn.className = "numpad-btn numpad-submit-btn";
