@@ -34,6 +34,7 @@
     <div class="category-row">
       <label for="category">Kategória:</label>
       <select id="category">
+        <option value="" selected disabled>Válassz kategóriát</option>
         <option value="Összeadás">Összeadás</option>
         <option value="Kivonás">Kivonás</option>
         <option value="Szorzás">Szorzás</option>
@@ -46,13 +47,13 @@
       </select>
       <label for="difficulty">Nehézség:</label>
       <select id="difficulty">
+        <option value="" selected disabled>Válassz nehézséget</option>
         <option value="easy">Könnyű</option>
         <option value="medium">Közepes</option>
         <option value="hard">Nehéz</option>
       </select>
     </div>
     <div class="settings-row">
-      <button id="start-btn">Gyakorlás indítása</button>
       <button id="restart-btn" style="display:none;">Újra</button>
       <span id="timer">⏱️ 0 mp</span>
       <span id="score">🏅 0</span>
@@ -62,7 +63,7 @@
     <div id="summary"></div>
   </main>
   <script>
-    // problems.js tartalma
+    // --- Feladatgeneráló függvények innen (probléma típusok) ---
     function gcd(a, b) { while (b) [a, b] = [b, a % b]; return Math.abs(a); }
     function simplifyFraction(num, den) {
       const sign = (num * den) < 0 ? "-" : "";
@@ -218,5 +219,113 @@
       return arr;
     }
     function getProblemsByTopicAndDifficulty(topic, difficulty) {
-      if (topic
-
+      switch (topic) {
+        case "Összeadás": return generateAddition(difficulty);
+        case "Kivonás": return generateSubtraction(difficulty);
+        case "Szorzás": return generateMultiplication(difficulty);
+        case "Osztás": return generateDivision(difficulty);
+        case "Mind a négy művelet": return generateMixed(difficulty);
+        case "Zárójeles kifejezések": return generateParentheses(difficulty);
+        case "Törtek": return generateFractions(difficulty);
+        case "Százalékszámítás": return generatePercent(difficulty);
+        case "Egyenletek átrendezése": return generateEquations(difficulty);
+        default: return [];
+      }
+    }
+    // --- Feladatgenerálás vége ---
+
+    // --- Automatikus indítás logika ---
+    let problems = [];
+    let current = 0, score = 0, timer = 0, timerInterval;
+
+    function resetUI() {
+      document.getElementById("problems").innerHTML = "";
+      document.getElementById("summary").innerHTML = "";
+      document.getElementById("score").textContent = "🏅 0";
+      document.getElementById("timer").textContent = "⏱️ 0 mp";
+      document.getElementById("restart-btn").style.display = "none";
+      document.getElementById("best-stats").style.display = "none";
+    }
+
+    function startPractice() {
+      resetUI();
+      const category = document.getElementById('category').value;
+      const difficulty = document.getElementById('difficulty').value;
+      if (!category || !difficulty) return; // csak akkor indul, ha mindkettő van
+
+      problems = getProblemsByTopicAndDifficulty(category, difficulty);
+      current = 0;
+      score = 0;
+      timer = 0;
+      document.getElementById("score").textContent = "🏅 0";
+      document.getElementById("timer").textContent = "⏱️ 0 mp";
+      document.getElementById("restart-btn").style.display = "inline";
+      showProblem();
+      startTimer();
+    }
+
+    function showProblem() {
+      if (current >= problems.length) return showSummary();
+      const problem = problems[current];
+      const problemsDiv = document.getElementById("problems");
+      problemsDiv.innerHTML = `
+        <div class="problem-card">
+          <div>${problem.question}</div>
+          <input id="answer-input" type="text" autocomplete="off" style="margin-top:0.8em;">
+          <button id="submit-btn">Küldés</button>
+          <div id="feedback"></div>
+        </div>
+      `;
+      document.getElementById("answer-input").focus();
+      document.getElementById("submit-btn").onclick = checkAnswer;
+      document.getElementById("answer-input").onkeydown = function(e){
+        if (e.key === "Enter") checkAnswer();
+      };
+    }
+
+    function checkAnswer() {
+      const input = document.getElementById("answer-input").value.trim();
+      const problem = problems[current];
+      let correct = input == problem.answer;
+      let feedback = document.getElementById("feedback");
+      if (correct) {
+        score++;
+        feedback.textContent = "Helyes! ✔️";
+        feedback.className = "feedback correct";
+      } else {
+        feedback.textContent = `Helytelen! 😢 Helyes válasz: ${problem.answer}`;
+        feedback.className = "feedback wrong";
+      }
+      document.getElementById("score").textContent = `🏅 ${score}`;
+      setTimeout(() => {
+        current++;
+        showProblem();
+      }, 900);
+    }
+
+    function showSummary() {
+      stopTimer();
+      document.getElementById("problems").innerHTML = "";
+      document.getElementById("summary").innerHTML =
+        `<div class="problem-card"><strong>Vége! Pontszám: ${score} / ${problems.length}</strong></div>`;
+    }
+
+    function startTimer() {
+      stopTimer();
+      timer = 0;
+      timerInterval = setInterval(() => {
+        timer++;
+        document.getElementById("timer").textContent = `⏱️ ${timer} mp`;
+      }, 1000);
+    }
+    function stopTimer() { clearInterval(timerInterval); }
+
+    document.getElementById("category").addEventListener("change", startPractice);
+    document.getElementById("difficulty").addEventListener("change", startPractice);
+    document.getElementById("restart-btn").onclick = startPractice;
+
+    // Alapállapot reset
+    resetUI();
+  </script>
+</body>
+</html>
