@@ -2,136 +2,112 @@
 <html lang="hu">
 <head>
   <meta charset="UTF-8">
-  <title>Matematika gyakorlás</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <style>
-    body { font-family: sans-serif; background: #181c25; color: #f7f7f7; margin: 0; }
-    main { max-width: 480px; margin: auto; padding: 1em; }
-    h1 { font-size: 1.4em; }
-    select, button, input, .numpad-btn {
-      font-size: 1.1em; padding: 0.4em 0.7em; border-radius: 7px;
-      border: 1px solid #444; background: #232737; color: #fff;
-    }
-    .category-row, .settings-row { display: flex; flex-wrap: wrap; gap: 1em; align-items: center; margin-bottom: 1em;}
-    .settings-row label { font-size: 1em; }
-    .problem-card {
-      background: #232737; border-radius: 8px; margin-bottom: 1em; padding: 0.7em;
-      box-shadow: 0 2px 8px 0 rgba(0,0,0,0.09);
-    }
-    .answer-view { min-height: 1.5em; margin-bottom: 0.5em; }
-    .feedback { margin-top: 0.5em; }
-    .feedback.correct { color: #79ec7d; }
-    .feedback.wrong { color: #ff4d4d; }
-    .numpad { display: flex; flex-wrap: wrap; gap: 0.5em; margin: 0.5em 0; }
-    .numpad-btn { min-width: 2.2em; }
-    .summary-list { padding-left: 1.2em; }
-    .best { font-size: 0.95em; margin-bottom: 1em; color: #ffe066; }
-    .error-msg {
-      background: #ff4d4d;
-      color: #fff;
-      padding: 0.7em;
-      border-radius: 8px;
-      margin-bottom: 1em;
-      font-weight: bold;
-    }
-  </style>
+  <title>Összeadás Gyakorlása</title>
+  <style id="theme-style"></style>
 </head>
 <body>
-  <main>
-    <h1>Matematika gyakorlás</h1>
-    <div class="category-row">
-      <label for="category">Kategória:</label>
-      <select id="category">
-        <option value="" selected disabled>Válassz kategóriát</option>
-        <option value="Összeadás">Összeadás</option>
-        <option value="Kivonás">Kivonás</option>
-        <option value="Szorzás">Szorzás</option>
-        <option value="Osztás">Osztás</option>
-        <option value="Mind a négy művelet">Mind a négy művelet</option>
-        <option value="Zárójeles kifejezések">Zárójeles kifejezések</option>
-        <option value="Törtek">Törtek</option>
-        <option value="Százalékszámítás">Százalékszámítás</option>
-        <option value="Egyenletek átrendezése">Egyenletek átrendezése</option>
-      </select>
-      <label for="difficulty">Nehézség:</label>
-      <select id="difficulty">
-        <option value="" selected disabled>Válassz nehézséget</option>
-        <option value="easy">Könnyű</option>
-        <option value="medium">Közepes</option>
-        <option value="hard">Nehéz</option>
-      </select>
-    </div>
-    <div class="settings-row">
-      <button id="restart-btn" style="display:none;">Újra</button>
-      <span id="timer">⏱️ 0 mp</span>
-      <span id="score">🏅 0</span>
-    </div>
-    <div class="best" id="best-stats" style="display:none;"></div>
-    <div id="problems"></div>
-    <div id="summary"></div>
-  </main>
+  <h1>Összeadás Gyakorlása</h1>
+  <button onclick="toggleTheme()">🌗 Téma váltása</button>
+  <p id="timer">Eltelt idő: 0 másodperc</p>
+  <p id="score">Pontszám: 0</p>
+  <div id="quiz"></div>
+
   <script>
-    // --- Feladatgeneráló függvények ---
-    function gcd(a, b) { while (b) [a, b] = [b, a % b]; return Math.abs(a); }
-    function simplifyFraction(num, den) {
-      const sign = (num * den) < 0 ? "-" : "";
-      num = Math.abs(num); den = Math.abs(den);
-      const d = gcd(num, den);
-      return sign + (num/d) + "/" + (den/d);
+    const quizContainer = document.getElementById("quiz");
+    const scoreDisplay = document.getElementById("score");
+    const timerDisplay = document.getElementById("timer");
+    const styleTag = document.getElementById("theme-style");
+
+    const numberOfQuestions = 10;
+    let score = 0;
+    let startTime = Date.now();
+    let darkMode = true;
+
+    function applyTheme() {
+      if (darkMode) {
+        styleTag.innerHTML = `
+          body { background-color: #121212; color: #f1f1f1; font-family: sans-serif; margin: 20px; }
+          input { background-color: #1e1e1e; color: #f1f1f1; border: 1px solid #444; padding: 5px; margin-top: 5px; }
+          h1, p { color: #ffffff; }
+          div { margin-bottom: 15px; }
+          #score, #timer { font-weight: bold; }
+        `;
+      } else {
+        styleTag.innerHTML = `
+          body { background-color: #f1f1f1; color: #121212; font-family: sans-serif; margin: 20px; }
+          input { background-color: #fff; color: #121212; border: 1px solid #ccc; padding: 5px; margin-top: 5px; }
+          h1, p { color: #121212; }
+          div { margin-bottom: 15px; }
+          #score, #timer { font-weight: bold; }
+        `;
+      }
     }
-    function randInt(a, b) { return Math.floor(Math.random() * (b - a + 1)) + a; }
-    function generateAddition(difficulty) {
-      let range = {easy:[1,30], medium:[-20,60], hard:[-100,150]}[difficulty];
-      return Array.from({length:10}, () => {
-        let a = randInt(...range), b = randInt(...range);
-        return { question:`${a} + ${b} = ?`, answer:a+b, explanation:`Az összeadás eredménye: ${a} + ${b} = ${a+b}` };
-      });
+
+    function toggleTheme() {
+      darkMode = !darkMode;
+      localStorage.setItem("darkMode", darkMode);
+      applyTheme();
     }
-    function generateSubtraction(difficulty) {
-      let range = {easy:[5,40], medium:[-30,70], hard:[-120,170]}[difficulty];
-      return Array.from({length:10}, () => {
-        let a = randInt(...range), b = randInt(...range);
-        return { question:`${a} - ${b} = ?`, answer:a-b, explanation:`A kivonás eredménye: ${a} - ${b} = ${a-b}` };
-      });
+
+    function loadTheme() {
+      const saved = localStorage.getItem("darkMode");
+      if (saved !== null) darkMode = saved === "true";
+      applyTheme();
     }
-    function generateMultiplication(difficulty) {
-      let range = {easy:[2,10], medium:[-10,15], hard:[-20,25]}[difficulty];
-      return Array.from({length:10}, () => {
-        let a = randInt(...range), b = randInt(...range);
-        return { question:`${a} × ${b} = ?`, answer:a*b, explanation:`A szorzás eredménye: ${a} × ${b} = ${a*b}` };
-      });
+
+    function updateTimer() {
+      const now = Date.now();
+      const elapsed = Math.floor((now - startTime) / 1000);
+      timerDisplay.textContent = `Eltelt idő: ${elapsed} másodperc`;
     }
-    function generateDivision(difficulty) {
-      let range = {easy:[2,10], medium:[-10,15], hard:[-20,25]}[difficulty];
-      return Array.from({length:10}, () => {
-        let b = 0; while (b === 0) b = randInt(...range);
-        let ans = randInt(-10, 15);
-        let a = b * ans;
-        return { question:`${a} ÷ ${b} = ?`, answer:ans, explanation:`${a} ÷ ${b} = ${ans}` };
-      });
+
+    setInterval(updateTimer, 1000);
+
+    function getRandomInt(min, max) {
+      return Math.floor(Math.random() * (max - min + 1)) + min;
     }
-    function generateMixed(difficulty) {
-      const ops = ["+", "-", "×", "÷"];
-      let arr = [];
-      let ranges = {
-        "+": {easy:[1,30], medium:[-20,60], hard:[-100,150]},
-        "-": {easy:[5,40], medium:[-30,70], hard:[-120,170]},
-        "×": {easy:[2,10], medium:[-10,15], hard:[-20,25]},
-        "÷": {easy:[2,10], medium:[-10,15], hard:[-20,25]}
-      };
-      for (let i = 0; i < 10; i++) {
-        let op = ops[randInt(0,3)];
-        let a, b, ans, q, expl;
-        if (op === "+") {
-          a = randInt(...ranges["+"]. [difficulty]); b = randInt(...ranges["+"]. [difficulty]);
-          ans = a + b; q = `${a} + ${b} = ?`; expl = `Az összeadás eredménye: ${a} + ${b} = ${ans}`;
-        } else if (op === "-") {
-          a = randInt(...ranges["-"]. [difficulty]); b = randInt(...ranges["-"]. [difficulty]);
-          ans = a - b; q = `${a} - ${b} = ?`; expl = `A kivonás eredménye: ${a} - ${b} = ${ans}`;
-        } else if (op === "×") {
-          a = randInt(...ranges["×"]. [difficulty]); b = randInt(...ranges["×"]. [difficulty]);
-          ans = a * b; q = `${a} × ${b} = ?`; expl = `A szorzás eredménye: ${a} × ${b} = ${ans}`;
+
+    function createQuestion(index) {
+      const num1 = getRandomInt(-10, 10);
+      const num2 = getRandomInt(-10, 10);
+      const answer = num1 + num2;
+
+      const div = document.createElement("div");
+      div.id = "question" + index;
+      div.style.display = index === 0 ? "block" : "none";
+
+      const questionText = document.createElement("p");
+      questionText.textContent = `${num1} + ${num2} = ?`;
+      div.appendChild(questionText);
+
+      const input = document.createElement("input");
+      input.type = "number";
+
+      input.addEventListener("change", () => {
+        if (parseInt(input.value) === answer) {
+          score++;
+          scoreDisplay.textContent = `Pontszám: ${score}`;
+          div.style.display = "none";
+          if (index + 1 < numberOfQuestions) {
+            document.getElementById("question" + (index + 1)).style.display = "block";
+          } else {
+            updateTimer();
+            alert(`Ügyes vagy! ${score} pontot szereztél ${timerDisplay.textContent.toLowerCase()}.`);
+          }
         } else {
-          b = 0; while (b === 0) b = randInt(...ranges["÷"]. [difficulty]);
-          ans =*
-
+          alert("Nem jó válasz, próbáld újra!");
+        }
+      });
+
+      div.appendChild(input);
+      quizContainer.appendChild(div);
+    }
+
+    for (let i = 0; i < numberOfQuestions; i++) {
+      createQuestion(i);
+    }
+
+    loadTheme(); // Téma alkalmazása betöltéskor
+  </script>
+</body>
+</html>
