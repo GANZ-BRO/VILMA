@@ -6,7 +6,6 @@ let bestStats={};
 const $problems = document.getElementById("problems");
 const $category = document.getElementById("category");
 const $difficulty = document.getElementById("difficulty");
-const $username = document.getElementById("username");
 const $score = document.getElementById("score");
 const $timer = document.getElementById("timer");
 const $start = document.getElementById("start-btn");
@@ -16,13 +15,14 @@ const $best = document.getElementById("best-stats");
 
 // --- Best results storage and display ---
 function bestKey() {
-  return "math-best-"+$category.value+"-"+$difficulty.value+"-"+($username.value.trim()||"anon");
+  // No username
+  return "math-best-"+$category.value+"-"+$difficulty.value;
 }
 function loadBest() {
   let b = localStorage.getItem(bestKey());
   bestStats = b ? JSON.parse(b) : {score:0,time:null};
   if(bestStats.score>0) {
-    $best.textContent = `🏆 Legjobb: ${bestStats.score}/10 pont, ${bestStats.time} mp (${($username.value||"anon")})`;
+    $best.textContent = `🏆 Legjobb: ${bestStats.score}/10 pont, ${bestStats.time} mp`;
     $best.style.display = "";
   } else {
     $best.style.display = "none";
@@ -179,7 +179,7 @@ $start.onclick = startPractice;
 $restart.onclick = startPractice;
 
 // --- Update best on change ---
-[$category, $difficulty, $username].forEach(el=>{
+[$category, $difficulty].forEach(el=>{
   el.addEventListener("change", loadBest);
   el.addEventListener("input", loadBest);
 });
