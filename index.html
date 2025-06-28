@@ -30,8 +30,23 @@
     #quiz > div { margin-bottom: 18px; border-radius: 8px; padding: 1em; background: rgba(0,0,0,0.05); box-shadow: 0 2px 8px 0 rgba(0,0,0,0.05);}
     body.light #quiz > div { background: rgba(0,0,0,0.01); box-shadow: 0 2px 8px 0 rgba(0,0,0,0.07);}
     label { font-size: 1.08em; display: block; margin-bottom: 0.4em;}
-    .answer-view { width: 80%; font-size: 1.25em; padding: 0.4em 0.7em; border-radius: 6px; border: 1px solid var(--input-border-dark); background: var(--input-bg-dark); color: var(--input-text-dark);}
-    body.light .answer-view { background: var(--input-bg-light); color: var(--input-text-light); border: 1px solid var(--input-border-light);}
+ .answer-view {
+  width: 69%;
+  font-size: 1.8em;    /* Increased font size */
+  height: 0.6em;       /* Increased height */
+  padding: 0.7em 1em;
+  border-radius: 6px;
+  border: 1px solid var(--input-border-dark);
+  background: #333;
+  color: var(--input-text-dark);
+}
+body.light .answer-view {
+  background: #ddd;
+  color: var(--input-text-light);
+  border: 1px solid var(--input-border-light);
+  font-size: 1.8em;   /* Match font size */
+  height: 0.6em;      /* Match height */
+}
     .big-btn, button { display: inline-block; font-size: 1.2em; padding: 0.7em 1.3em; border: none; border-radius: 9px; margin: 0.5em 0 0.5em 0; background: var(--primary); color: #fff; font-weight: 600; cursor: pointer; transition: background 0.2s;}
     button:hover, .big-btn:hover, button:focus, .big-btn:focus { background: var(--primary-dark); outline: none;}
     #theme-toggle { font-size: 1.4em; border-radius: 50%; width: 2.3em; height: 2.3em; padding: 0; background: none; color: inherit; box-shadow: none; border: 2px solid currentColor; margin: 0;}
@@ -141,7 +156,7 @@
     </div>
     <div class="game-stats">
       <span class="stat" id="timer">⏱️ Idő: 0 mp</span>
-      <span class="stat" id="score">🏅 Pontszám: 0</span>
+ <!-- <span class="stat" id="score">🏅 Pontszám: 0</span> -->
     </div>
     <div class="best" id="best-stats" style="display:none;"></div>
     <section id="quiz" aria-label="Feladatsor"></section>
@@ -193,7 +208,7 @@
     }
     function showBest() {
       if (best.score > 0) {
-        bestStats.innerHTML = `🏆 <b>Legjobb eredmény:</b> ${best.score} pont, ${best.time} mp (${categoryLabel()} / ${difficultyLabel()})`;
+        bestStats.innerHTML = `🏆 <b>Legjobb eredmény:</b> ${best.time} mp (${categoryLabel()} / ${difficultyLabel()})`;
         bestStats.style.display = "";
       } else {
         bestStats.style.display = "none";
@@ -395,7 +410,7 @@
               }
               if (correct) {
                 score++;
-                scoreDisplay.textContent = `🏅 Pontszám: ${score}`;
+            // scoreDisplay.textContent = `🏅 Pontszám: ${score}`;
                 currentQuestion++;
                 showQuestion(currentQuestion);
               } else {
@@ -472,7 +487,7 @@
       gameActive = true;
       score = 0;
       currentQuestion = 0;
-      scoreDisplay.textContent = `🏅 Pontszám: 0`;
+ // scoreDisplay.textContent = `🏅 Pontszám: 0`;
       generateQuestions();
       showQuestion(0);
       startTime = Date.now();
@@ -488,7 +503,7 @@
       clearInterval(timerInterval);
       const elapsed = Math.floor((Date.now() - startTime) / 1000);
       timerDisplay.textContent = `⏱️ Idő: ${elapsed} mp (Vége)`;
-      quizContainer.innerHTML = `<p style="font-size:1.2em;"><b>Gratulálok!</b> ${score} pontot szereztél ${elapsed} másodperc alatt.</p>`;
+      quizContainer.innerHTML = `<p style="font-size:1.2em;"><b>Gratulálok!</b> ${elapsed} másodperc alatt végeztél.</p>`;
       saveBest(score, elapsed);
       restartBtn.style.display = "";
       startBtn.style.display = "";
