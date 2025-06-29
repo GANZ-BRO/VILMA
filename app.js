@@ -455,4 +455,5 @@ restartBtn.onclick = startGame;
 startBtn.onclick = startGame;
 
 // --- INDÍTÁS ---
+loadLastSelection(); // Először töltsük vissza az utolsó választást!
 loadBest();
