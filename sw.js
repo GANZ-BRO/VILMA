@@ -1,11 +1,13 @@
-const CACHE_NAME = 'vilma-math-v1';
+const CACHE_NAME = 'vill-math-v1';
 const FILES_TO_CACHE = [
   '/',
   '/index.html',
-  '/sw.js',
-  '/manifest.json',
+  '/style.css',
+  '/app.js',
+  '/sw-reg.js',
   '/icon-192.png',
-  '/icon-512.png'
+  '/icon-512.png',
+  '/manifest.json'
 ];
 
 // Telepítés: cache-eli az alap fájlokat
