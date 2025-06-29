@@ -91,35 +91,30 @@ function simplifyFraction(num, denom) {
   let d = gcd(Math.abs(num), Math.abs(denom));
   return [num/d, denom/d];
 }
+
+
 function generateQuestions() {
   const { min, max } = DIFFICULTY_SETTINGS[difficultySelect.value];
   const category = categorySelect.value;
   questions = [];
 
-  // Segéd: nem átfedő zárójelezett szakaszok generálása
+  // Helper: nem átfedő zárójelezett szakaszok generálása, balról jobbra rendezve
   function generateParenRanges(opCount, minParens, maxParens) {
     let numParens = getRandomInt(minParens, maxParens);
+    let tries = 0;
     let ranges = [];
-    let available = [];
-    for (let i = 0; i < opCount; i++) {
-      for (let j = i + 1; j <= opCount; j++) {
-        available.push([i, j]); // minden legalább két számot zár be
-      }
-    }
-    while (ranges.length < numParens && available.length > 0) {
-      let idx = getRandomInt(0, available.length - 1);
-      let [start, end] = available[idx];
-      // Ellenőrizze, hogy nem fed át mással
+    while (ranges.length < numParens && tries < 100) {
+      let start = getRandomInt(0, opCount - 1);
+      let end = getRandomInt(start + 1, opCount);
+      // Minimum két számot zárjon be
+      // Ellenőrizzük, hogy nem fed át mással
       if (!ranges.some(([s, e]) => !(end <= s || start >= e))) {
-        available.splice(idx, 1); // átfed, kihagyjuk
-        continue;
+        ranges.push([start, end]);
       }
-      ranges.push([start, end]);
-      // Töröljük az átfedőket az available-ből
-      available = available.filter(([s, e]) => end <= s || start >= e);
+      tries++;
     }
-    // Sorrend: kívülről befelé, hogy a beszúrások ne zavarják egymást
-    ranges.sort((a, b) => b[0] - a[0]);
+    // balról jobbra rendezzük, hogy a beszúrások ne tolódjanak el
+    ranges.sort((a, b) => a[0] - b[0]);
     return ranges;
   }
 
@@ -160,14 +155,19 @@ function generateQuestions() {
       }
       exprParts.push(nums[opCount]);
 
-      // Stabil, nem átfedő zárójelek
+      // Zárójelek helyeinek generálása
       let parenRanges = generateParenRanges(opCount, minParens, maxParens);
-      let exprWithParens = [...exprParts];
+
+      // Zárójelek beszúrása balról jobbra, indexeket követve
+      let offset = 0;
       parenRanges.forEach(([s, e]) => {
-        exprWithParens.splice(e * 2 + 1, 0, ")"); // zárójel a végére
-        exprWithParens.splice(s * 2, 0, "(");     // nyitójel az elejére
+        exprParts.splice(s * 2 + offset, 0, "(");
+        offset++;
+        exprParts.splice((e + 1) * 2 + offset - 1, 0, ")");
+        offset++;
       });
-      let displayExpr = exprWithParens.join(" ");
+
+      let displayExpr = exprParts.join(" ");
       let evalExpr = displayExpr.replace(/×/g, '*').replace(/÷/g, '/').replace(/\s/g, '');
 
       let answer;
@@ -284,6 +284,7 @@ function generateQuestions() {
     questions.push(q);
   }
 }
+
 
 // --- SZÁMBILLENTYŰZET ---
 function renderNumpad(answerState, onChange) {
