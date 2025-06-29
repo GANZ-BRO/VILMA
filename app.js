@@ -95,83 +95,192 @@ function generateQuestions() {
   const { min, max } = DIFFICULTY_SETTINGS[difficultySelect.value];
   const category = categorySelect.value;
   questions = [];
+
+  // Segéd: nem átfedő zárójelezett szakaszok generálása
+  function generateParenRanges(opCount, minParens, maxParens) {
+    let numParens = getRandomInt(minParens, maxParens);
+    let ranges = [];
+    let available = [];
+    for (let i = 0; i < opCount; i++) {
+      for (let j = i + 1; j <= opCount; j++) {
+        available.push([i, j]); // minden legalább két számot zár be
+      }
+    }
+    while (ranges.length < numParens && available.length > 0) {
+      let idx = getRandomInt(0, available.length - 1);
+      let [start, end] = available[idx];
+      // Ellenőrizze, hogy nem fed át mással
+      if (!ranges.some(([s, e]) => !(end <= s || start >= e))) {
+        available.splice(idx, 1); // átfed, kihagyjuk
+        continue;
+      }
+      ranges.push([start, end]);
+      // Töröljük az átfedőket az available-ből
+      available = available.filter(([s, e]) => end <= s || start >= e);
+    }
+    // Sorrend: kívülről befelé, hogy a beszúrások ne zavarják egymást
+    ranges.sort((a, b) => b[0] - a[0]);
+    return ranges;
+  }
+
   for (let i = 0; i < QUESTIONS; i++) {
     let q = {};
-    switch (category) {
-      case "Összeadás":
-        {
-          let num1 = getRandomInt(min, max), num2 = getRandomInt(min, max);
-          q = { num1, num2, operator: "+", answer: num1 + num2, display: `<b>${num1}</b> + <b>${num2}</b>` };
+
+    if (category === "Zárójeles kifejezések") {
+      let opCount = 2, minParens = 1, maxParens = 1;
+      if (difficultySelect.value === "medium") {
+        opCount = 4; minParens = 2; maxParens = 2;
+      }
+      if (difficultySelect.value === "hard") {
+        opCount = 6; minParens = 3; maxParens = 5;
+      }
+      const opList = ["+", "-", "×", "÷"];
+      let nums = [];
+      let ops = [];
+      let lastVal = getRandomInt(min, max);
+      nums.push(lastVal);
+      for (let j = 0; j < opCount; j++) {
+        let op = opList[getRandomInt(0, 3)];
+        if (op === "÷") {
+          let divisor = getRandomInt(1, Math.max(2, max));
+          lastVal = lastVal * divisor;
+          nums[j] = lastVal;
+          nums[j + 1] = divisor;
+        } else {
+          nums[j + 1] = getRandomInt(min, max);
         }
-        break;
-      case "Kivonás":
-        {
-          let num1 = getRandomInt(min, max), num2 = getRandomInt(min, max);
-          q = { num1, num2, operator: "-", answer: num1 - num2, display: `<b>${num1}</b> - <b>${num2}</b>` };
-        }
-        break;
-      case "Szorzás":
-        {
-          let num1 = getRandomInt(min, max), num2 = getRandomInt(min, max);
-          q = { num1, num2, operator: "×", answer: num1 * num2, display: `<b>${num1}</b> × <b>${num2}</b>` };
-        }
-        break;
-      case "Osztás":
-        {
-          let num2 = getRandomInt(1, max > 1 ? max : 10);
-          let answer = getRandomInt(min, max);
-          q = { num1: num2 * answer, num2, operator: "÷", answer: answer, display: `<b>${num2*answer}</b> ÷ <b>${num2}</b>` };
-        }
-        break;
-      case "Mind a négy művelet":
-        {
-          const ops = ["+", "-", "×", "÷"];
-          const op = ops[getRandomInt(0, 3)];
-          let num1 = getRandomInt(min, max), num2 = getRandomInt(min, max);
-          if (op === "+") q = { num1, num2, operator: "+", answer: num1 + num2, display: `<b>${num1}</b> + <b>${num2}</b>` };
-          if (op === "-") q = { num1, num2, operator: "-", answer: num1 - num2, display: `<b>${num1}</b> - <b>${num2}</b>` };
-          if (op === "×") q = { num1, num2, operator: "×", answer: num1 * num2, display: `<b>${num1}</b> × <b>${num2}</b>` };
-          if (op === "÷") {
-            let num2 = getRandomInt(1, max > 1 ? max : 10);
-            let answer = getRandomInt(min, max);
-            q = { num1: num2 * answer, num2, operator: "÷", answer: answer, display: `<b>${num2*answer}</b> ÷ <b>${num2}</b>` };
-          }
-        }
-        break;
-      case "Zárójeles kifejezések":
-        {
-          let a = getRandomInt(min, max), b = getRandomInt(min, max), c = getRandomInt(1, 10), op = Math.random() > 0.5 ? "+" : "-";
-          let inner = op === "+" ? a + b : a - b;
-          q = { display: `(${a} ${op} ${b}) × ${c}`, answer: inner * c };
-        }
-        break;
-      case "Törtek":
-        {
-          let b = getRandomInt(2, 8), d = getRandomInt(2, 8);
-          let a = getRandomInt(1, b - 1), c = getRandomInt(1, d - 1);
-          let numerator = a * d + c * b;
-          let denominator = b * d;
-          let [num, denom] = simplifyFraction(numerator, denominator);
-          q = { display: `${a}/${b} + ${c}/${d}`, answer: `${num}/${denom}` };
-        }
-        break;
-      case "Százalékszámítás":
-        {
-          let percent = [10, 20, 25, 50, 75][getRandomInt(0, 4)];
-          let base = getRandomInt(20, 200);
-          let result = Math.round(base * percent / 100);
-          q = { display: `Mennyi ${percent}% <b>${base}</b>-nak/nek?`, answer: result };
-        }
-        break;
-      case "Egyenletek átrendezése":
-        {
-          let x = getRandomInt(-10, 10), a = getRandomInt(1, 5), b = getRandomInt(-10, 10);
-          let result = a * x + b;
-          q = { display: `${a}x ${b >= 0 ? "+" : "-"} ${Math.abs(b)} = ${result}. x = ?`, answer: x };
-        }
-        break;
-      default: q = { display: "Hiba: kategória nincs implementálva", answer: null };
+        ops[j] = op;
+        lastVal = nums[j + 1];
+      }
+      // Kifejezés mint tömb
+      let exprParts = [];
+      for (let j = 0; j < opCount; j++) {
+        exprParts.push(nums[j]);
+        exprParts.push(ops[j]);
+      }
+      exprParts.push(nums[opCount]);
+
+      // Stabil, nem átfedő zárójelek
+      let parenRanges = generateParenRanges(opCount, minParens, maxParens);
+      let exprWithParens = [...exprParts];
+      parenRanges.forEach(([s, e]) => {
+        exprWithParens.splice(e * 2 + 1, 0, ")"); // zárójel a végére
+        exprWithParens.splice(s * 2, 0, "(");     // nyitójel az elejére
+      });
+      let displayExpr = exprWithParens.join(" ");
+      let evalExpr = displayExpr.replace(/×/g, '*').replace(/÷/g, '/').replace(/\s/g, '');
+
+      let answer;
+      try {
+        answer = eval(evalExpr);
+        answer = Math.round(answer);
+      } catch {
+        answer = "?";
+      }
+      q = { display: displayExpr, answer: answer };
     }
+
+    else if (category === "Mind a négy művelet") {
+      let opCount = 2;
+      if (difficultySelect.value === "medium") opCount = 3;
+      if (difficultySelect.value === "hard") opCount = 4;
+      const opList = ["+", "-", "×", "÷"];
+      let nums = [];
+      let ops = [];
+      let lastVal = getRandomInt(min, max);
+      nums.push(lastVal);
+      for (let j = 0; j < opCount; j++) {
+        let op = opList[getRandomInt(0, 3)];
+        if (op === "÷") {
+          let divisor = getRandomInt(1, Math.max(2, max));
+          lastVal = lastVal * divisor;
+          nums[j] = lastVal;
+          nums[j + 1] = divisor;
+        } else {
+          nums[j + 1] = getRandomInt(min, max);
+        }
+        ops[j] = op;
+        lastVal = nums[j + 1];
+      }
+      let displayExpr = "" + nums[0];
+      for (let j = 0; j < opCount; j++) {
+        displayExpr += " " + ops[j] + " " + nums[j + 1];
+      }
+      let evalExpr = displayExpr.replace(/×/g, '*').replace(/÷/g, '/').replace(/\s/g, '');
+      let answer;
+      try {
+        answer = eval(evalExpr);
+        answer = Math.round(answer);
+      } catch {
+        answer = "?";
+      }
+      q = { display: displayExpr, answer: answer };
+    }
+
+    // --- ÖSSZEADÁS ---
+    else if (category === "Összeadás") {
+      let num1 = getRandomInt(min, max), num2 = getRandomInt(min, max);
+      q = { num1, num2, operator: "+", answer: num1 + num2, display: `<b>${num1}</b> + <b>${num2}</b>` };
+    }
+
+    // --- KIVONÁS ---
+    else if (category === "Kivonás") {
+      let num1 = getRandomInt(min, max), num2 = getRandomInt(min, max);
+      q = { num1, num2, operator: "-", answer: num1 - num2, display: `<b>${num1}</b> - <b>${num2}</b>` };
+    }
+
+    // --- SZORZÁS ---
+    else if (category === "Szorzás") {
+      let num1 = getRandomInt(min, max), num2 = getRandomInt(min, max);
+      q = { num1, num2, operator: "×", answer: num1 * num2, display: `<b>${num1}</b> × <b>${num2}</b>` };
+    }
+
+    // --- OSZTÁS ---
+    else if (category === "Osztás") {
+      let num2 = getRandomInt(1, max > 1 ? max : 10);
+      let answer = getRandomInt(min, max);
+      q = { num1: num2 * answer, num2: num2, operator: "÷", answer: answer, display: `<b>${num2 * answer}</b> ÷ <b>${num2}</b>` };
+    }
+
+    // --- TÖRTEK ---
+    else if (category === "Törtek") {
+      let b = getRandomInt(2, 8), d = getRandomInt(2, 8);
+      let a = getRandomInt(1, b - 1), c = getRandomInt(1, d - 1);
+      let numerator = a * d + c * b;
+      let denominator = b * d;
+      let [num, denom] = simplifyFraction(numerator, denominator);
+      q = {
+        display: `${a}/${b} + ${c}/${d}`,
+        answer: `${num}/${denom}`
+      };
+    }
+
+    // --- SZÁZALÉKSZÁMÍTÁS ---
+    else if (category === "Százalékszámítás") {
+      let percent = [10, 20, 25, 50, 75][getRandomInt(0, 4)];
+      let base = getRandomInt(20, 200);
+      let result = Math.round(base * percent / 100);
+      q = {
+        display: `Mennyi ${percent}% <b>${base}</b>-nak/nek?`,
+        answer: result
+      };
+    }
+
+    // --- EGYENLETEK ÁTRENDEZÉSE ---
+    else if (category === "Egyenletek átrendezése") {
+      let x = getRandomInt(-10, 10), a = getRandomInt(1, 5), b = getRandomInt(-10, 10);
+      let result = a * x + b;
+      q = {
+        display: `${a}x ${b >= 0 ? "+" : "-"} ${Math.abs(b)} = ${result}. x = ?`,
+        answer: x
+      };
+    }
+
+    // --- Default fallback ---
+    else if (!q.display) {
+      q = { display: "Hiba: kategória nincs implementálva", answer: null };
+    }
+
     questions.push(q);
   }
 }
