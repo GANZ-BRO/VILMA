@@ -21,6 +21,33 @@ let score = 0, startTime = 0, timerInterval = null, currentQuestion = 0, questio
 let best = { score: 0, time: null };
 let gameActive = false;
 
+// --- ÚJ: utolsó választott feladattípus és nehézség tárolása és visszatöltése ---
+
+// Mentsük el a választásokat minden váltáskor
+function saveLastSelection() {
+  localStorage.setItem("vilma-last-category", categorySelect.value);
+  localStorage.setItem("vilma-last-difficulty", difficultySelect.value);
+}
+
+// Töltsük vissza induláskor, ha van mentett érték
+function loadLastSelection() {
+  const lastCat = localStorage.getItem("vilma-last-category");
+  const lastDiff = localStorage.getItem("vilma-last-difficulty");
+  if (lastCat) categorySelect.value = lastCat;
+  if (lastDiff) difficultySelect.value = lastDiff;
+}
+
+// Eseménykezelők: minden változáskor mentsük el
+categorySelect.addEventListener("change", function () {
+  saveLastSelection();
+  loadBest();
+});
+difficultySelect.addEventListener("change", function () {
+  saveLastSelection();
+  loadBest();
+});
+
+
 // --- LEGJOBB EREDMÉNY MENTÉSE/BETÖLTÉSE ---
 function loadBest() {
   const diff = difficultySelect.value;
