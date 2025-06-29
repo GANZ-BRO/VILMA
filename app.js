@@ -121,63 +121,79 @@ function simplifyFraction(num, denom) {
 
 
 function generateBracketedExpression(opCount, min, max) {
-  // Generáljunk egy műveletsort
+  // Generáljunk egy műveletsort: szám, művelet, szám, művelet, szám, ...
   const opList = ["+", "-", "×", "÷"];
-  let nums = [];
-  let ops = [];
-  for (let i = 0; i <= opCount; i++) {
-    nums.push(getRandomInt(min, max));
-  }
-  for (let i = 0; i < opCount; i++) {
-    ops.push(opList[getRandomInt(0, opList.length - 1)]);
+  let elements = [];
+  for (let i = 0; i < opCount + opCount + 1; i++) {
+    if (i % 2 === 0) {
+      // szám
+      elements.push(getRandomInt(min, max));
+    } else {
+      // műveleti jel
+      elements.push(opList[getRandomInt(0, opList.length - 1)]);
+    }
   }
 
-  // Zárójelek generálása (egyszerű stratégia: véletlenszerű, nem átfedő párok)
-  let parenPairs = [];
-  let maxParens = Math.floor(opCount / 2);
-  let numParens = getRandomInt(1, maxParens);
-  let used = Array(opCount).fill(false);
+  // Lehetséges zárójelezhető szakaszok: csak (szám művelet szám) minták, vagyis páros indexekre (szám) tehető (
+  // és az utána lévő művelet+szám után tehető )
+  let possibleParenRanges = [];
+  for (let i = 0; i < elements.length - 2; i += 2) {
+    // i: szám, i+1: művelet, i+2: szám
+    possibleParenRanges.push([i, i + 2]);
+  }
 
+  // Válasszunk véletlenül néhány nem átfedő szakaszt
+  let parenRanges = [];
+  let used = Array(elements.length).fill(false);
+  let numParens = getRandomInt(1, Math.max(1, Math.floor(opCount/2)));
   let tries = 0;
-  while (parenPairs.length < numParens && tries < 50) {
-    let start = getRandomInt(0, opCount - 1);
-    let end = getRandomInt(start + 1, opCount);
-
+  while (parenRanges.length < numParens && tries < 50) {
+    let idx = getRandomInt(0, possibleParenRanges.length - 1);
+    let [start, end] = possibleParenRanges[idx];
+    // Ellenőrizzük, hogy nem fed át mással
     let overlap = false;
-    for (let k = start; k < end; k++) {
-      if (used[k]) {
+    for (let j = start; j <= end; j++) {
+      if (used[j]) {
         overlap = true;
         break;
       }
     }
     if (!overlap) {
-      parenPairs.push([start, end]);
-      for (let k = start; k < end; k++) used[k] = true;
+      parenRanges.push([start, end]);
+      for (let j = start; j <= end; j++) used[j] = true;
     }
     tries++;
   }
-  // Rendezzük balról jobbra
-  parenPairs.sort((a, b) => a[0] - b[0]);
+  // Balról jobbra sorba
+  parenRanges.sort((a, b) => a[0] - b[0]);
 
-  // Kifejezés összeállítása
-  let exprParts = [];
+  // Beszúrjuk a zárójeleket
+  let exprParts = elements.slice();
   let offset = 0;
-  let parenOpens = {};
-  let parenCloses = {};
-  for (let [s, e] of parenPairs) {
-    parenOpens[s] = (parenOpens[s] || 0) + 1;
-    parenCloses[e] = (parenCloses[e] || 0) + 1;
-  }
-  for (let i = 0; i < nums.length; i++) {
-    if (parenOpens[i]) exprParts.push("(".repeat(parenOpens[i]));
-    exprParts.push(nums[i]);
-    if (i < ops.length) {
-      exprParts.push(ops[i]);
-    }
-    if (parenCloses[i]) exprParts.push(")".repeat(parenCloses[i]));
+  for (let [start, end] of parenRanges) {
+    exprParts.splice(start + offset, 0, "(");
+    offset++;
+    exprParts.splice(end + 1 + offset, 0, ")");
+    offset++;
   }
 
-  let displayExpr = exprParts.join(' ');
+  // Helyes szóközözés látványoshoz
+  let displayExpr = "";
+  for (let i = 0; i < exprParts.length; i++) {
+    if (exprParts[i] === "(" || exprParts[i] === ")") {
+      displayExpr += exprParts[i] + " ";
+    } else if (
+      typeof exprParts[i] === "string" &&
+      ["+", "-", "×", "÷"].includes(exprParts[i])
+    ) {
+      displayExpr += " " + exprParts[i] + " ";
+    } else {
+      displayExpr += exprParts[i];
+    }
+  }
+  displayExpr = displayExpr.trim();
+
+  // Kiértékeléshez összeállítás JS szintaxisra
   let evalExpr = displayExpr.replace(/×/g, '*').replace(/÷/g, '/').replace(/\s/g, '');
   let answer;
   try {
@@ -189,45 +205,24 @@ function generateBracketedExpression(opCount, min, max) {
   return { display: displayExpr, answer: answer };
 }
 
+
+
 function generateQuestions() {
   const { min, max } = DIFFICULTY_SETTINGS[difficultySelect.value];
   const category = categorySelect.value;
   questions = [];
 
-  // Helper: nem átfedő zárójelezett szakaszok generálása, balról jobbra rendezve
-  function generateParenRanges(opCount, minParens, maxParens) {
-    let numParens = getRandomInt(minParens, maxParens);
-    let tries = 0;
-    let ranges = [];
-    while (ranges.length < numParens && tries < 100) {
-      let start = getRandomInt(0, opCount - 1);
-      let end = getRandomInt(start + 1, opCount);
-      // Minimum két számot zárjon be
-      // Ellenőrizzük, hogy nem fed át mással
-      if (!ranges.some(([s, e]) => !(end <= s || start >= e))) {
-        ranges.push([start, end]);
-      }
-      tries++;
-    }
-    // balról jobbra rendezzük, hogy a beszúrások ne tolódjanak el
-    ranges.sort((a, b) => a[0] - b[0]);
-    return ranges;
-  }
+  for (let i = 0; i < QUESTIONS; i++) {
+    let q = {};
 
- for (let i = 0; i < QUESTIONS; i++) {
-  let q = {};
+    if (category === "Zárójeles kifejezések") {
+      // Nehézség szinttől függő opCount
+      let opCount = 2;
+      if (difficultySelect.value === "medium") opCount = 4;
+      if (difficultySelect.value === "hard") opCount = 6;
+      q = generateBracketedExpression(opCount, min, max);
+    }
 
-  if (category === "Zárójeles kifejezések") {
-    let opCount = 2, minParens = 1, maxParens = 1;
-    if (difficultySelect.value === "medium") {
-      opCount = 4;
-    }
-    if (difficultySelect.value === "hard") {
-      opCount = 6;
-    }
-    const { min, max } = DIFFICULTY_SETTINGS[difficultySelect.value];
-    q = generateBracketedExpression(opCount, min, max);
-  }
 
     else if (category === "Mind a négy művelet") {
       let opCount = 2;
