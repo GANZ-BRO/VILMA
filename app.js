@@ -120,6 +120,75 @@ function simplifyFraction(num, denom) {
 }
 
 
+function generateBracketedExpression(opCount, min, max) {
+  // Generáljunk egy műveletsort
+  const opList = ["+", "-", "×", "÷"];
+  let nums = [];
+  let ops = [];
+  for (let i = 0; i <= opCount; i++) {
+    nums.push(getRandomInt(min, max));
+  }
+  for (let i = 0; i < opCount; i++) {
+    ops.push(opList[getRandomInt(0, opList.length - 1)]);
+  }
+
+  // Zárójelek generálása (egyszerű stratégia: véletlenszerű, nem átfedő párok)
+  let parenPairs = [];
+  let maxParens = Math.floor(opCount / 2);
+  let numParens = getRandomInt(1, maxParens);
+  let used = Array(opCount).fill(false);
+
+  let tries = 0;
+  while (parenPairs.length < numParens && tries < 50) {
+    let start = getRandomInt(0, opCount - 1);
+    let end = getRandomInt(start + 1, opCount);
+
+    let overlap = false;
+    for (let k = start; k < end; k++) {
+      if (used[k]) {
+        overlap = true;
+        break;
+      }
+    }
+    if (!overlap) {
+      parenPairs.push([start, end]);
+      for (let k = start; k < end; k++) used[k] = true;
+    }
+    tries++;
+  }
+  // Rendezzük balról jobbra
+  parenPairs.sort((a, b) => a[0] - b[0]);
+
+  // Kifejezés összeállítása
+  let exprParts = [];
+  let offset = 0;
+  let parenOpens = {};
+  let parenCloses = {};
+  for (let [s, e] of parenPairs) {
+    parenOpens[s] = (parenOpens[s] || 0) + 1;
+    parenCloses[e] = (parenCloses[e] || 0) + 1;
+  }
+  for (let i = 0; i < nums.length; i++) {
+    if (parenOpens[i]) exprParts.push("(".repeat(parenOpens[i]));
+    exprParts.push(nums[i]);
+    if (i < ops.length) {
+      exprParts.push(ops[i]);
+    }
+    if (parenCloses[i]) exprParts.push(")".repeat(parenCloses[i]));
+  }
+
+  let displayExpr = exprParts.join(' ');
+  let evalExpr = displayExpr.replace(/×/g, '*').replace(/÷/g, '/').replace(/\s/g, '');
+  let answer;
+  try {
+    answer = eval(evalExpr);
+    answer = Math.round(answer);
+  } catch {
+    answer = "?";
+  }
+  return { display: displayExpr, answer: answer };
+}
+
 function generateQuestions() {
   const { min, max } = DIFFICULTY_SETTINGS[difficultySelect.value];
   const category = categorySelect.value;
@@ -145,67 +214,20 @@ function generateQuestions() {
     return ranges;
   }
 
-  for (let i = 0; i < QUESTIONS; i++) {
-    let q = {};
+ for (let i = 0; i < QUESTIONS; i++) {
+  let q = {};
 
-    if (category === "Zárójeles kifejezések") {
-      let opCount = 2, minParens = 1, maxParens = 1;
-      if (difficultySelect.value === "medium") {
-        opCount = 4; minParens = 2; maxParens = 2;
-      }
-      if (difficultySelect.value === "hard") {
-        opCount = 6; minParens = 3; maxParens = 5;
-      }
-      const opList = ["+", "-", "×", "÷"];
-      let nums = [];
-      let ops = [];
-      let lastVal = getRandomInt(min, max);
-      nums.push(lastVal);
-      for (let j = 0; j < opCount; j++) {
-        let op = opList[getRandomInt(0, 3)];
-        if (op === "÷") {
-          let divisor = getRandomInt(1, Math.max(2, max));
-          lastVal = lastVal * divisor;
-          nums[j] = lastVal;
-          nums[j + 1] = divisor;
-        } else {
-          nums[j + 1] = getRandomInt(min, max);
-        }
-        ops[j] = op;
-        lastVal = nums[j + 1];
-      }
-      // Kifejezés mint tömb
-      let exprParts = [];
-      for (let j = 0; j < opCount; j++) {
-        exprParts.push(nums[j]);
-        exprParts.push(ops[j]);
-      }
-      exprParts.push(nums[opCount]);
-
-      // Zárójelek helyeinek generálása
-      let parenRanges = generateParenRanges(opCount, minParens, maxParens);
-
-      // Zárójelek beszúrása balról jobbra, indexeket követve
-      let offset = 0;
-      parenRanges.forEach(([s, e]) => {
-        exprParts.splice(s * 2 + offset, 0, "(");
-        offset++;
-        exprParts.splice((e + 1) * 2 + offset - 1, 0, ")");
-        offset++;
-      });
-
-      let displayExpr = exprParts.join(" ");
-      let evalExpr = displayExpr.replace(/×/g, '*').replace(/÷/g, '/').replace(/\s/g, '');
-
-      let answer;
-      try {
-        answer = eval(evalExpr);
-        answer = Math.round(answer);
-      } catch {
-        answer = "?";
-      }
-      q = { display: displayExpr, answer: answer };
+  if (category === "Zárójeles kifejezések") {
+    let opCount = 2, minParens = 1, maxParens = 1;
+    if (difficultySelect.value === "medium") {
+      opCount = 4;
     }
+    if (difficultySelect.value === "hard") {
+      opCount = 6;
+    }
+    const { min, max } = DIFFICULTY_SETTINGS[difficultySelect.value];
+    q = generateBracketedExpression(opCount, min, max);
+  }
 
     else if (category === "Mind a négy művelet") {
       let opCount = 2;
