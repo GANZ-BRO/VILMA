@@ -1,43 +1,44 @@
-// --- ALAPBEÁLLÍTÁSOK ---
-const QUESTIONS = 10;
+// Segédfüggvények
+function getRandomInt(a, b) {
+  // zárt intervallum [a, b]
+  return Math.floor(Math.random() * (b - a + 1)) + a;
+}
+function simplifyFraction(num, denom) {
+  function gcd(a, b) { return b === 0 ? a : gcd(b, a % b); }
+  let g = gcd(Math.abs(num), Math.abs(denom));
+  return [num / g, denom / g];
+}
+
+// Nehézségi szintekhez tartozó minimum és maximum számok
 const DIFFICULTY_SETTINGS = {
-  easy: { min: 0, max: 10 },
-  medium: { min: -10, max: 20 },
-  hard: { min: -50, max: 50 }
+  easy: { min: 1, max: 10 },
+  medium: { min: 5, max: 50 },
+  hard: { min: 10, max: 100 }
 };
 
-// --- HTML ELEMEK ---
-const quizContainer = document.getElementById("quiz");
-const timerDisplay = document.getElementById("timer");
-const bestStats = document.getElementById("best-stats");
-const difficultySelect = document.getElementById("difficulty");
-const categorySelect = document.getElementById("category");
-const startBtn = document.getElementById("start-btn");
-const restartBtn = document.getElementById("restart-btn");
-const themeToggle = document.getElementById("theme-toggle");
+let currentQuestion = 0;
+let score = 0;
+let questions = [];
+let best = 0;
 
-// --- ÁLLAPOTVÁLTOZÓK ---
-let score = 0, startTime = 0, timerInterval = null, currentQuestion = 0, questions = [];
-let best = { score: 0, time: null };
-let gameActive = false;
+const QUESTIONS = 10;
+const categorySelect = document.getElementById("categorySelect");
+const difficultySelect = document.getElementById("difficultySelect");
+const quizContainer = document.getElementById("quizContainer");
+const bestContainer = document.getElementById("bestContainer");
+const startBtn = document.getElementById("startBtn");
 
-// --- ÚJ: utolsó választott feladattípus és nehézség tárolása és visszatöltése ---
-
-// Mentsük el a választásokat minden váltáskor
+// --- Utolsó választott feladattípus és nehézség tárolása és visszatöltése ---
 function saveLastSelection() {
   localStorage.setItem("vilma-last-category", categorySelect.value);
   localStorage.setItem("vilma-last-difficulty", difficultySelect.value);
 }
-
-// Töltsük vissza induláskor, ha van mentett érték
 function loadLastSelection() {
   const lastCat = localStorage.getItem("vilma-last-category");
   const lastDiff = localStorage.getItem("vilma-last-difficulty");
   if (lastCat) categorySelect.value = lastCat;
   if (lastDiff) difficultySelect.value = lastDiff;
 }
-
-// Eseménykezelők: minden változáskor mentsük el
 categorySelect.addEventListener("change", function () {
   saveLastSelection();
   loadBest();
@@ -47,166 +48,80 @@ difficultySelect.addEventListener("change", function () {
   loadBest();
 });
 
-
-// --- LEGJOBB EREDMÉNY MENTÉSE/BETÖLTÉSE ---
-function loadBest() {
-  const diff = difficultySelect.value;
-  const cat = categorySelect.value;
-  try {
-    const bestRaw = localStorage.getItem("vilma-best-" + cat + "-" + diff);
-    best = bestRaw ? JSON.parse(bestRaw) : { score: 0, time: null };
-  } catch { best = { score: 0, time: null }; }
-  showBest();
-}
-function saveBest(newScore, time) {
-  const diff = difficultySelect.value;
-  const cat = categorySelect.value;
-  if (newScore > best.score || (newScore === best.score && (best.time === null || time < best.time))) {
-    best = { score: newScore, time: time };
-    localStorage.setItem("vilma-best-" + cat + "-" + diff, JSON.stringify(best));
-    showBest();
-  }
-}
-function showBest() {
-  if (best.score > 0) {
-    bestStats.innerHTML = `🏆 <b>Legjobb eredmény:</b> ${best.time} mp (${categoryLabel()} / ${difficultyLabel()})`;
-    bestStats.style.display = "";
-  } else {
-    bestStats.style.display = "none";
-  }
-}
-function difficultyLabel() {
-  switch(difficultySelect.value) {
-    case "easy": return "Könnyű";
-    case "medium": return "Közepes";
-    case "hard": return "Nehéz";
-    default: return "";
-  }
-}
-function categoryLabel() {
-  return categorySelect.options[categorySelect.selectedIndex].textContent;
-}
-
-// --- TÉMA VÁLTÁS ---
-function applyTheme() {
-  const dark = localStorage.getItem("vilma-theme") !== "light";
-  document.body.classList.toggle("light", !dark);
-}
-themeToggle.addEventListener("click", function() {
-  const isLight = document.body.classList.contains("light");
-  localStorage.setItem("vilma-theme", isLight ? "dark" : "light");
-  applyTheme();
-});
-applyTheme();
-
-// --- NEHÉZSÉG ÉS KATEGÓRIA KEZELÉSE ---
-difficultySelect.addEventListener("change", loadBest);
-categorySelect.addEventListener("change", loadBest);
-
-// --- IDŐZÍTŐ ---
-function updateTimer() {
-  const elapsed = Math.floor((Date.now() - startTime) / 1000);
-  timerDisplay.textContent = `⏱️ Idő: ${elapsed} mp`;
-}
-
-// --- FELADATSOR GENERÁLÁSA ---
-function getRandomInt(min, max) {
-  return Math.floor(Math.random() * (max - min + 1)) + min;
-}
-function gcd(a, b) { return b === 0 ? a : gcd(b, a % b); }
-function simplifyFraction(num, denom) {
-  let d = gcd(Math.abs(num), Math.abs(denom));
-  return [num/d, denom/d];
-}
-
-
+// --- GENERÁLÓ FÜGGVÉNYEK ---
 function generateQuestions() {
   const { min, max } = DIFFICULTY_SETTINGS[difficultySelect.value];
   const category = categorySelect.value;
   questions = [];
 
-  // Helper: nem átfedő zárójelezett szakaszok generálása, balról jobbra rendezve
-  function generateParenRanges(opCount, minParens, maxParens) {
-    let numParens = getRandomInt(minParens, maxParens);
-    let tries = 0;
-    let ranges = [];
-    while (ranges.length < numParens && tries < 100) {
-      let start = getRandomInt(0, opCount - 1);
-      let end = getRandomInt(start + 1, opCount);
-      // Minimum két számot zárjon be
-      // Ellenőrizzük, hogy nem fed át mással
-      if (!ranges.some(([s, e]) => !(end <= s || start >= e))) {
-        ranges.push([start, end]);
-      }
-      tries++;
+  // Helper: egyszerű zárójeles kifejezés generálása (könnyű szinthez)
+  function simpleParenExpr(min, max) {
+    const opList = ["+", "-", "×", "÷"];
+    let num1 = getRandomInt(min, max);
+    let num2 = getRandomInt(min, max);
+    let op = opList[getRandomInt(0, 3)];
+    // Mindig egész osztás
+    if (op === "÷") {
+      num2 = getRandomInt(1, Math.max(2, max));
+      num1 = num2 * getRandomInt(min, max);
     }
-    // balról jobbra rendezzük, hogy a beszúrások ne tolódjanak el
-    ranges.sort((a, b) => a[0] - b[0]);
-    return ranges;
+    let expr = `(${num1} ${op} ${num2})`;
+    let evalExpr = expr.replace(/×/g, '*').replace(/÷/g, '/');
+    let answer = Math.round(eval(evalExpr));
+    return { expr, answer };
   }
 
   for (let i = 0; i < QUESTIONS; i++) {
     let q = {};
 
-    if (category === "Zárójeles kifejezések") {
-      let opCount = 2, minParens = 1, maxParens = 1;
-      if (difficultySelect.value === "medium") {
-        opCount = 4; minParens = 2; maxParens = 2;
-      }
-      if (difficultySelect.value === "hard") {
-        opCount = 6; minParens = 3; maxParens = 5;
-      }
-      const opList = ["+", "-", "×", "÷"];
-      let nums = [];
-      let ops = [];
-      let lastVal = getRandomInt(min, max);
-      nums.push(lastVal);
-      for (let j = 0; j < opCount; j++) {
-        let op = opList[getRandomInt(0, 3)];
-        if (op === "÷") {
-          let divisor = getRandomInt(1, Math.max(2, max));
-          lastVal = lastVal * divisor;
-          nums[j] = lastVal;
-          nums[j + 1] = divisor;
-        } else {
-          nums[j + 1] = getRandomInt(min, max);
+    // --- ZÁRÓJELES MŰVELETEK ---
+    if (category === "Zárójeles műveletek") {
+      if (difficultySelect.value === "easy") {
+        // Egyetlen zárójeles művelet
+        let one = simpleParenExpr(min, max);
+        q = { display: one.expr, answer: one.answer };
+      } else if (difficultySelect.value === "medium") {
+        // 2 vagy 3 zárójeles részkifejezés összeadva vagy kivonva
+        let count = getRandomInt(2, 3);
+        let exprs = [];
+        let ops = [];
+        for (let j = 0; j < count; j++) {
+          let kifej = simpleParenExpr(min, max);
+          exprs.push(kifej.expr);
+          ops.push(j === 0 ? "" : (Math.random() < 0.5 ? " + " : " - "));
         }
-        ops[j] = op;
-        lastVal = nums[j + 1];
+        let evalExpr = exprs[0];
+        let answer = eval(exprs[0].replace(/×/g, '*').replace(/÷/g, '/'));
+        for (let j = 1; j < count; j++) {
+          evalExpr += ops[j] + exprs[j];
+          let op = ops[j].trim();
+          let val = eval(exprs[j].replace(/×/g, '*').replace(/÷/g, '/'));
+          answer = op === "+" ? answer + val : answer - val;
+        }
+        q = { display: exprs.map((e, idx) => (idx === 0 ? e : ops[idx] + e)).join(""), answer: Math.round(answer) };
+      } else if (difficultySelect.value === "hard") {
+        // 4 vagy 5 zárójeles részkifejezés összeadva vagy kivonva
+        let count = getRandomInt(4, 5);
+        let exprs = [];
+        let ops = [];
+        for (let j = 0; j < count; j++) {
+          let kifej = simpleParenExpr(min, max);
+          exprs.push(kifej.expr);
+          ops.push(j === 0 ? "" : (Math.random() < 0.5 ? " + " : " - "));
+        }
+        let evalExpr = exprs[0];
+        let answer = eval(exprs[0].replace(/×/g, '*').replace(/÷/g, '/'));
+        for (let j = 1; j < count; j++) {
+          evalExpr += ops[j] + exprs[j];
+          let op = ops[j].trim();
+          let val = eval(exprs[j].replace(/×/g, '*').replace(/÷/g, '/'));
+          answer = op === "+" ? answer + val : answer - val;
+        }
+        q = { display: exprs.map((e, idx) => (idx === 0 ? e : ops[idx] + e)).join(""), answer: Math.round(answer) };
       }
-      // Kifejezés mint tömb
-      let exprParts = [];
-      for (let j = 0; j < opCount; j++) {
-        exprParts.push(nums[j]);
-        exprParts.push(ops[j]);
-      }
-      exprParts.push(nums[opCount]);
-
-      // Zárójelek helyeinek generálása
-      let parenRanges = generateParenRanges(opCount, minParens, maxParens);
-
-      // Zárójelek beszúrása balról jobbra, indexeket követve
-      let offset = 0;
-      parenRanges.forEach(([s, e]) => {
-        exprParts.splice(s * 2 + offset, 0, "(");
-        offset++;
-        exprParts.splice((e + 1) * 2 + offset - 1, 0, ")");
-        offset++;
-      });
-
-      let displayExpr = exprParts.join(" ");
-      let evalExpr = displayExpr.replace(/×/g, '*').replace(/÷/g, '/').replace(/\s/g, '');
-
-      let answer;
-      try {
-        answer = eval(evalExpr);
-        answer = Math.round(answer);
-      } catch {
-        answer = "?";
-      }
-      q = { display: displayExpr, answer: answer };
     }
 
+    // --- MIND A NÉGY MŰVELET ---
     else if (category === "Mind a négy művelet") {
       let opCount = 2;
       if (difficultySelect.value === "medium") opCount = 3;
@@ -312,94 +227,22 @@ function generateQuestions() {
   }
 }
 
-
-// --- SZÁMBILLENTYŰZET ---
-function renderNumpad(answerState, onChange) {
-  const rows = [
-    ['1','2','3','/','←'],
-    ['4','5','6','.','submit'],
-    ['7','8','9','0','-']
-  ];
-  const numpadDiv = document.createElement('div');
-  numpadDiv.className = 'numpad';
-
-  rows.forEach((row) => {
-    const rowDiv = document.createElement('div');
-    rowDiv.className = 'numpad-row';
-    row.forEach((key) => {
-      if (key === 'submit') {
-        const enterIcon = `<svg viewBox="0 0 48 48" width="1.2em" height="1.2em" style="display:block;margin:auto;" aria-hidden="true" focusable="false"><path d="M40 6v23H14.83l6.58-6.59L19 20l-10 10 10 10 2.41-2.41L14.83 31H44V6z" fill="currentColor"/></svg>`;
-        const submitBtn = document.createElement("button");
-        submitBtn.type = "button";
-        submitBtn.className = "numpad-btn numpad-submit-btn";
-        submitBtn.setAttribute("aria-label", "Küldés (Enter)");
-        submitBtn.innerHTML = `<span>${enterIcon}</span>`;
-        submitBtn.onclick = () => {
-          if (!gameActive) return;
-          let val = answerState.value.trim();
-          if (val === "" || val === "-") {
-            alert("Írj be egy választ!");
-            return;
-          }
-          let correct = false;
-          if (categorySelect.value === "Törtek") {
-            let [ansNum, ansDen] = (questions[currentQuestion] || {}).answer?.split('/').map(Number);
-            let [userNum, userDen] = val.split('/').map(Number);
-            if (userNum && userDen) {
-              let [simpUserNum, simpUserDen] = simplifyFraction(userNum, userDen);
-              if (simpUserNum === ansNum && simpUserDen === ansDen) correct = true;
-            }
-          } else if (["Zárójeles kifejezések","Egyenletek átrendezése","Százalékszámítás"].includes(categorySelect.value)) {
-            if (parseFloat(val) === (questions[currentQuestion] || {}).answer) correct = true;
-          } else {
-            if (parseFloat(val) === (questions[currentQuestion] || {}).answer) correct = true;
-          }
-          if (correct) {
-            score++;
-            currentQuestion++;
-            showQuestion(currentQuestion);
-          } else {
-            alert("Nem jó válasz, próbáld újra!");
-          }
-        };
-        rowDiv.appendChild(submitBtn);
-      } else {
-        const btn = document.createElement('button');
-        btn.type = 'button';
-        btn.className = 'numpad-btn';
-        btn.textContent = key;
-        btn.tabIndex = 0;
-        btn.onclick = () => {
-          if (key === '←') {
-            answerState.value = answerState.value.slice(0, -1);
-          } else if (key === '-') {
-            if (!answerState.value.startsWith('-')) {
-              answerState.value = '-' + answerState.value;
-            } else {
-              answerState.value = answerState.value.substring(1);
-            }
-          } else if (key === '/') {
-            if (!answerState.value.includes('/')) {
-              answerState.value += '/';
-            }
-          } else if (key === '.') {
-            if (answerState.value !== "" && !answerState.value.includes('.')) {
-              answerState.value += '.';
-            }
-          } else {
-            answerState.value += key;
-          }
-          onChange(answerState.value);
-        };
-        rowDiv.appendChild(btn);
-      }
-    });
-    numpadDiv.appendChild(rowDiv);
-  });
-  return numpadDiv;
+// --- LEGNAGYOBB EREDMÉNY TÁROLÁS/BETÖLTÉS ---
+function loadBest() {
+  const key = "vilma-best-" + categorySelect.value + "-" + difficultySelect.value;
+  const bestStr = localStorage.getItem(key);
+  best = bestStr ? parseInt(bestStr) : 0;
+  bestContainer.textContent = "Legjobb eredmény: " + best + " / " + QUESTIONS;
+}
+function saveBest() {
+  if (score > best) {
+    const key = "vilma-best-" + categorySelect.value + "-" + difficultySelect.value;
+    localStorage.setItem(key, score);
+    loadBest();
+  }
 }
 
-// --- JÁTÉK LOGIKA ---
+// --- FELADAT MEGJELENÍTÉSE ---
 function showQuestion(index) {
   quizContainer.innerHTML = "";
   if (index >= QUESTIONS) {
@@ -409,51 +252,83 @@ function showQuestion(index) {
   const q = questions[index];
   const div = document.createElement("div");
   div.innerHTML = `<label>${index + 1}. feladat: ${q.display} = </label>`;
+
   let answerState = { value: "" };
-  const answerView = document.createElement("div");
-  answerView.className = "answer-view";
-  answerView.textContent = "";
-  div.appendChild(answerView);
 
-  const numpad = renderNumpad(answerState, function(val) {
-    answerView.textContent = val;
+  function submitAnswer() {
+    let val = answerState.value.trim();
+    if (val === "" || val === "-") {
+      alert("Írj be egy választ!");
+      return;
+    }
+    let correct = false;
+    if (categorySelect.value === "Törtek") {
+      let [ansNum, ansDen] = (questions[currentQuestion] || {}).answer?.split('/').map(Number);
+      let [userNum, userDen] = val.split('/').map(Number);
+      if (userNum && userDen) {
+        let [simpUserNum, simpUserDen] = simplifyFraction(userNum, userDen);
+        if (simpUserNum === ansNum && simpUserDen === ansDen) correct = true;
+      }
+    } else if (["Zárójeles műveletek","Egyenletek átrendezése","Százalékszámítás"].includes(categorySelect.value)) {
+      if (parseFloat(val) === (questions[currentQuestion] || {}).answer) correct = true;
+    } else {
+      if (parseFloat(val) === (questions[currentQuestion] || {}).answer) correct = true;
+    }
+    if (correct) {
+      score++;
+      currentQuestion++;
+      showQuestion(currentQuestion);
+    } else {
+      alert("Nem jó válasz, próbáld újra!");
+    }
+  }
+
+  const input = document.createElement("input");
+  input.type = "text";
+  input.className = "answer-view";
+  input.setAttribute("aria-label", "Válasz");
+  input.addEventListener("input", (e) => {
+    const filtered = e.target.value.replace(/[^0-9\-\.\/]/g, "");
+    if (filtered !== e.target.value) {
+      e.target.value = filtered;
+    }
+    answerState.value = filtered;
   });
-
-  const inputRow = document.createElement('div');
-  inputRow.className = 'numpad-container';
-  inputRow.appendChild(numpad);
-  div.appendChild(inputRow);
+  input.addEventListener("keydown", function(e) {
+    const allowed = [
+      "0","1","2","3","4","5","6","7","8","9","-",".","/","Backspace","Delete","ArrowLeft","ArrowRight","Tab","Enter"
+    ];
+    if (!allowed.includes(e.key)) {
+      e.preventDefault();
+    }
+    if (e.key === "Enter") {
+      submitAnswer();
+    }
+  });
+  div.appendChild(input);
   quizContainer.appendChild(div);
+  input.focus();
 }
 
-function startGame() {
-  gameActive = true;
+// --- JÁTÉK VEGE ---
+function finishGame() {
+  quizContainer.innerHTML = `<h2>Vége! Eredményed: ${score} / ${QUESTIONS}</h2>
+    <button id="restartBtn">Újra</button>`;
+  saveBest();
+  document.getElementById("restartBtn").onclick = () => {
+    score = 0;
+    currentQuestion = 0;
+    generateQuestions();
+    showQuestion(currentQuestion);
+  };
+}
+
+// --- KEZDÉS ---
+startBtn.onclick = () => {
   score = 0;
   currentQuestion = 0;
   generateQuestions();
-  showQuestion(0);
-  startTime = Date.now();
-  updateTimer();
-  clearInterval(timerInterval);
-  timerInterval = setInterval(updateTimer, 1000);
-  restartBtn.style.display = "none";
-  startBtn.style.display = "none";
-  bestStats.style.opacity = "0.55";
-}
-function finishGame() {
-  gameActive = false;
-  clearInterval(timerInterval);
-  const elapsed = Math.floor((Date.now() - startTime) / 1000);
-  timerDisplay.textContent = `⏱️ Idő: ${elapsed} mp (Vége)`;
-  quizContainer.innerHTML = `<p style="font-size:1.2em;"><b>Gratulálok!</b> ${elapsed} másodperc alatt végeztél.</p>`;
-  saveBest(score, elapsed);
-  restartBtn.style.display = "";
-  startBtn.style.display = "";
-  bestStats.style.opacity = "1";
-}
-restartBtn.onclick = startGame;
-startBtn.onclick = startGame;
-
-// --- INDÍTÁS ---
-loadLastSelection(); // Először töltsük vissza az utolsó választást!
+  showQuestion(currentQuestion);
+};
+loadLastSelection();
 loadBest();
