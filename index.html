@@ -2,35 +2,50 @@
 <html lang="hu">
 <head>
   <meta charset="UTF-8">
-  <title>Vilma matek gyakorló</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+  <title>Matematika gyakorlás</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="icon-192.png">
+  <meta name="theme-color" content="#3578e5">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <h1>Vilma matek gyakorló</h1>
-  <div>
-    <label for="categorySelect">Feladattípus:</label>
-    <select id="categorySelect">
-      <option value="Összeadás">Összeadás</option>
-      <option value="Kivonás">Kivonás</option>
-      <option value="Szorzás">Szorzás</option>
-      <option value="Osztás">Osztás</option>
-      <option value="Törtek">Törtek</option>
-      <option value="Százalékszámítás">Százalékszámítás</option>
-      <option value="Egyenletek átrendezése">Egyenletek átrendezése</option>
-      <option value="Mind a négy művelet">Mind a négy művelet</option>
-      <option value="Zárójeles műveletek">Zárójeles műveletek</option>
-    </select>
-    <label for="difficultySelect">Nehézség:</label>
-    <select id="difficultySelect">
-      <option value="easy">Könnyű</option>
-      <option value="medium">Közepes</option>
-      <option value="hard">Nehéz</option>
-    </select>
-    <button id="startBtn">Kezdés</button>
-  </div>
-  <div id="bestContainer"></div>
-  <div id="quizContainer"></div>
-  <script src="app.js"></script>
+  <main>
+    <header>
+      <h1>Matematika gyakorlás</h1>
+      <button id="theme-toggle" aria-label="Téma váltása">🌗</button>
+    </header>
+    <div class="settings">
+      <label for="category">Kategória:
+        <select id="category">
+          <option value="Összeadás">Összeadás</option>
+          <option value="Kivonás">Kivonás</option>
+          <option value="Szorzás">Szorzás</option>
+          <option value="Osztás">Osztás</option>
+          <option value="Mind a négy művelet">Mind a négy művelet</option>
+          <option value="Zárójeles kifejezések">Zárójeles kifejezések</option>
+          <option value="Törtek">Törtek</option>
+          <option value="Százalékszámítás">Százalékszámítás</option>
+          <option value="Egyenletek átrendezése">Egyenletek átrendezése</option>
+        </select>
+      </label>
+      <label for="difficulty">Nehézségi szint:
+        <select id="difficulty">
+          <option value="easy">Könnyű</option>
+          <option value="medium">Közepes</option>
+          <option value="hard">Nehéz</option>
+        </select>
+      </label>
+      <button class="big-btn" id="start-btn">Játék indítása</button>
+    </div>
+    <div class="game-stats">
+      <span class="stat" id="timer">⏱️ Idő: 0 mp</span>
+    </div>
+    <div class="best" id="best-stats" style="display:none;"></div>
+    <section id="quiz" aria-label="Feladatsor"></section>
+    <button class="big-btn" id="restart-btn" style="display:none;">Újrajátszás</button>
+  </main>
+  <script src="app.js" defer></script>
+  <script src="sw-reg.js" defer></script>
 </body>
 </html>
