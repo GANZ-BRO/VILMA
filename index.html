@@ -28,7 +28,18 @@
     body.light select { background: var(--input-bg-light); color: var(--input-text-light); border: 1px solid var(--input-border-light);}
     .game-stats { display: flex; flex-wrap: wrap; gap: 1em; align-items: center; justify-content: space-between; margin-bottom: 1em;}
     .stat { font-weight: bold; font-size: 1.05em;}
-    .best { font-size: 0.98em; color: var(--success); margin-top: 0.25em;}
+    .best { font-size: 0.98em; margin-top: 0.25em;}
+    @media (prefers-color-scheme: dark) {
+  .best {
+    color: #32CD32; /* Világos zöld sötét módhoz */
+  }
+}
+
+@media (prefers-color-scheme: light) {
+  .best {
+    color: #006400; /* Sötétebb zöld világos módhoz */
+  }
+}
     #quiz > div { margin-bottom: 18px; border-radius: 8px; padding: 1em; background: rgba(0,0,0,0.05); box-shadow: 0 2px 8px 0 rgba(0,0,0,0.05);}
     body.light #quiz > div { background: rgba(0,0,0,0.01); box-shadow: 0 2px 8px 0 rgba(0,0,0,0.07);}
     label { font-size: 1.08em; display: block; margin-bottom: 0.4em;}
