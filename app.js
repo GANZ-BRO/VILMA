@@ -464,15 +464,26 @@ function startGame() {
   clearInterval(timerInterval);
   timerInterval = setInterval(updateTimer, 1000);
 
-  // Rejtsd el a nehézségi és kategória választót
-  difficultySelect.style.display = "none";
-  categorySelect.style.display = "none";
+  // Kategória kiírása
+  const categoryLabelElem = document.getElementById("category-label");
+  if (categoryLabelElem) {
+    categoryLabelElem.textContent = 'Kategória: ' + categorySelect.options[categorySelect.selectedIndex].textContent;
+    categoryLabelElem.style.display = '';
+    categorySelect.style.display = 'none';
+  }
+
+  // --- ÚJ: Nehézségi szint kiírása ---
+  const difficultyLabelElem = document.getElementById("difficulty-label");
+  if (difficultyLabelElem) {
+    difficultyLabelElem.textContent = 'Nehézségi szint: ' + difficultySelect.options[difficultySelect.selectedIndex].textContent;
+    difficultyLabelElem.style.display = '';
+    difficultySelect.style.display = 'none';
+  }
 
   restartBtn.style.display = "none";
   startBtn.style.display = "none";
   bestStats.style.opacity = "0.55";
 }
-
 
 function finishGame() {
   gameActive = false;
@@ -482,9 +493,21 @@ function finishGame() {
   quizContainer.innerHTML = `<p style="font-size:1.2em;"><b>Gratulálok!</b> ${elapsed} másodperc alatt végeztél.</p>`;
   saveBest(score, elapsed);
 
-  // Hozd vissza a nehézségi és kategória választót
-  difficultySelect.style.display = "block";
-  categorySelect.style.display = "block";
+  // Kategória visszaállítása
+  const categoryLabelElem = document.getElementById("category-label");
+  if (categoryLabelElem) {
+    categoryLabelElem.textContent = 'Kategória: ';
+    categoryLabelElem.style.display = '';
+    categorySelect.style.display = 'inline-block';
+  }
+
+  // --- ÚJ: Nehézségi szint visszaállítása ---
+  const difficultyLabelElem = document.getElementById("difficulty-label");
+  if (difficultyLabelElem) {
+    difficultyLabelElem.textContent = 'Nehézségi szint: ';
+    difficultyLabelElem.style.display = '';
+    difficultySelect.style.display = 'inline-block';
+  }
 
   restartBtn.style.display = "";
   startBtn.style.display = "";
