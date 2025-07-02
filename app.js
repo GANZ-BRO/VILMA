@@ -451,6 +451,8 @@ function showQuestion(index) {
   quizContainer.appendChild(div);
 }
 
+
+
 function startGame() {
   gameActive = true;
   score = 0;
@@ -461,10 +463,17 @@ function startGame() {
   updateTimer();
   clearInterval(timerInterval);
   timerInterval = setInterval(updateTimer, 1000);
+
+  // Rejtsd el a nehézségi és kategória választót
+  difficultySelect.style.display = "none";
+  categorySelect.style.display = "none";
+
   restartBtn.style.display = "none";
   startBtn.style.display = "none";
   bestStats.style.opacity = "0.55";
 }
+
+
 function finishGame() {
   gameActive = false;
   clearInterval(timerInterval);
@@ -472,10 +481,17 @@ function finishGame() {
   timerDisplay.textContent = `⏱️ Idő: ${elapsed} mp (Vége)`;
   quizContainer.innerHTML = `<p style="font-size:1.2em;"><b>Gratulálok!</b> ${elapsed} másodperc alatt végeztél.</p>`;
   saveBest(score, elapsed);
+
+  // Hozd vissza a nehézségi és kategória választót
+  difficultySelect.style.display = "block";
+  categorySelect.style.display = "block";
+
   restartBtn.style.display = "";
   startBtn.style.display = "";
   bestStats.style.opacity = "1";
 }
+
+
 restartBtn.onclick = startGame;
 startBtn.onclick = startGame;
 
