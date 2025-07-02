@@ -15,29 +15,31 @@
       <h1>Matematika gyakorlás</h1>
       <button id="theme-toggle" aria-label="Téma váltása">🌗</button>
     </header>
-    <div class="settings">
-      <label for="category">Kategória:
-        <select id="category">
-          <option value="Összeadás">Összeadás</option>
-          <option value="Kivonás">Kivonás</option>
-          <option value="Szorzás">Szorzás</option>
-          <option value="Osztás">Osztás</option>
-          <option value="Mind a négy művelet">Mind a négy művelet</option>
-          <option value="Zárójeles kifejezések">Zárójeles kifejezések</option>
-          <option value="Törtek">Törtek</option>
-          <option value="Százalékszámítás">Százalékszámítás</option>
-          <option value="Egyenletek átrendezése">Egyenletek átrendezése</option>
-        </select>
-      </label>
-      <label for="difficulty">Nehézségi szint:
-        <select id="difficulty">
-          <option value="easy">Könnyű</option>
-          <option value="medium">Közepes</option>
-          <option value="hard">Nehéz</option>
-        </select>
-      </label>
-      <button class="big-btn" id="start-btn">Játék indítása</button>
-    </div>
+<div class="settings">
+  <label for="category">Kategória:
+    <select id="category">
+      <option value="Összeadás">Összeadás</option>
+      <option value="Kivonás">Kivonás</option>
+      <option value="Szorzás">Szorzás</option>
+      <option value="Osztás">Osztás</option>
+      <option value="Mind a négy művelet">Mind a négy művelet</option>
+      <option value="Zárójeles kifejezések">Zárójeles kifejezések</option>
+      <option value="Törtek">Törtek</option>
+      <option value="Százalékszámítás">Százalékszámítás</option>
+      <option value="Egyenletek átrendezése">Egyenletek átrendezése</option>
+    </select>
+    <span id="category-value" style="display:none; margin-left: 0.5em;"></span>
+  </label>
+  <label for="difficulty">Nehézségi szint:
+    <select id="difficulty">
+      <option value="easy">Könnyű</option>
+      <option value="medium">Közepes</option>
+      <option value="hard">Nehéz</option>
+    </select>
+    <span id="difficulty-value" style="display:none; margin-left: 0.5em;"></span>
+  </label>
+  <button class="big-btn" id="start-btn">Játék indítása</button>
+</div>
     <div class="game-stats">
       <span class="stat" id="timer">⏱️ Idő: 0 mp</span>
     </div>
