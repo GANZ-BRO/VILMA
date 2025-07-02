@@ -464,6 +464,12 @@ function startGame() {
   clearInterval(timerInterval);
   timerInterval = setInterval(updateTimer, 1000);
 
+  
+  // Selectek tiltása
+  categorySelect.disabled = true;
+  difficultySelect.disabled = true;
+  
+  
   // Kategória kiírása
   const categoryLabelElem = document.getElementById("category-label");
   if (categoryLabelElem) {
@@ -472,7 +478,7 @@ function startGame() {
     categorySelect.style.display = 'none';
   }
 
-  // --- ÚJ: Nehézségi szint kiírása ---
+  //  Nehézségi szint kiírása 
   const difficultyLabelElem = document.getElementById("difficulty-label");
   if (difficultyLabelElem) {
     difficultyLabelElem.textContent = 'Nehézségi szint: ' + difficultySelect.options[difficultySelect.selectedIndex].textContent;
