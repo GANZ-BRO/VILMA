@@ -437,17 +437,22 @@ function showQuestion(index) {
     `<div class="question-number">${QUESTIONS} / ${index + 1}. feladat:</div>
      <div class="question-text">${q.display} = </div>`;
   let answerState = { value: "" };
-  const answerRow = document.createElement("div");
-answerRow.className = "answer-row";
-if (categorySelect.value === "Egyenletek átrendezése") {
-  const prefixSpan = document.createElement("span");
-  prefixSpan.textContent = "X = ";
-  prefixSpan.className = "answer-prefix";
-  answerRow.appendChild(prefixSpan);
-}
-answerRow.appendChild(answerView);
-div.appendChild(answerRow);
 
+  // Helyes sorrend és deklaráció!
+  const answerView = document.createElement("div");
+  answerView.className = "answer-view";
+  answerView.textContent = "";
+
+  const answerRow = document.createElement("div");
+  answerRow.className = "answer-row";
+  if (categorySelect.value === "Egyenletek átrendezése") {
+    const prefixSpan = document.createElement("span");
+    prefixSpan.textContent = "X = ";
+    prefixSpan.className = "answer-prefix";
+    answerRow.appendChild(prefixSpan);
+  }
+  answerRow.appendChild(answerView);
+  div.appendChild(answerRow);
 
   const numpad = renderNumpad(answerState, function(val) {
     answerView.textContent = val;
@@ -457,6 +462,7 @@ div.appendChild(answerRow);
   inputRow.className = 'numpad-container';
   inputRow.appendChild(numpad);
   div.appendChild(inputRow);
+
   quizContainer.appendChild(div);
 }
 
