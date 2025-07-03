@@ -33,6 +33,12 @@ label { font-size: 1.08em; display: block; margin-bottom: 0.4em;}
   margin-bottom: 0.7em;
 }
 
+.answer-prefix {
+  font-weight: bold;
+  margin-right: 0.5em;
+  font-size: 1.1em;
+}
+
 .answer-view {
   width: 69%;
   font-size: 1.8em;
