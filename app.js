@@ -520,6 +520,8 @@ function finishGame() {
   restartBtn.style.display = "";
   startBtn.style.display = "";
   bestStats.style.opacity = "1";
+  categorySelect.disabled = false;
+  difficultySelect.disabled = false;
 }
 
 
