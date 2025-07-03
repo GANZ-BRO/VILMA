@@ -25,11 +25,11 @@ label { font-size: 1.08em; display: block; margin-bottom: 0.4em;}
 
 
 .question-number {
-  font-weight: bold;
-  font-size: 1.2em;
   margin-bottom: 0.2em;
 }
 .question-text {
+  font-weight: bold;
+  font-size: 1.8em;
   margin-bottom: 0.7em;
 }
 
