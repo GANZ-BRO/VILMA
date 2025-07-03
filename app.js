@@ -434,7 +434,7 @@ function showQuestion(index) {
   const q = questions[index];
   const div = document.createElement("div");
   div.innerHTML =
-    `<div class="question-number">${index + 1}. feladat:</div>
+    `<div class="question-number">${QUESTIONS} / ${index + 1}. feladat:</div>
      <div class="question-text">${q.display} = </div>`;
   let answerState = { value: "" };
   const answerView = document.createElement("div");
