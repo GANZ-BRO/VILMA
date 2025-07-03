@@ -22,6 +22,17 @@ body.light select { background: var(--input-bg-light); color: var(--input-text-l
 #quiz > div { margin-bottom: 18px; border-radius: 8px; padding: 1em; background: rgba(0,0,0,0.05); box-shadow: 0 2px 8px 0 rgba(0,0,0,0.05);}
 body.light #quiz > div { background: rgba(0,0,0,0.01); box-shadow: 0 2px 8px 0 rgba(0,0,0,0.07);}
 label { font-size: 1.08em; display: block; margin-bottom: 0.4em;}
+
+
+.question-number {
+  font-weight: bold;
+  font-size: 1.2em;
+  margin-bottom: 0.2em;
+}
+.question-text {
+  margin-bottom: 0.7em;
+}
+
 .answer-view {
   width: 69%;
   font-size: 1.8em;
