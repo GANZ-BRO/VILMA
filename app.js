@@ -1,5 +1,5 @@
 // --- ALAPBEÁLLÍTÁSOK ---
-const QUESTIONS = 10;
+const QUESTIONS = 5;
 const DIFFICULTY_SETTINGS = {
   easy: { min: 0, max: 10 },
   medium: { min: -10, max: 20 },
@@ -309,11 +309,11 @@ function generateQuestions() {
 
     // --- SZÁZALÉKSZÁMÍTÁS ---
     else if (category === "Százalékszámítás") {
-      let percent = [10, 20, 25, 50, 75][getRandomInt(0, 4)];
-      let base = getRandomInt(20, 200);
+      let percent = [5, 10, 20, 25, 50, 75, 120, 125, 150, 250,][getRandomInt(0, 4)];
+      let base = getRandomInt(10, 200);
       let result = Math.round(base * percent / 100);
       q = {
-        display: `Mennyi ${percent}% <b>${base}</b>-nak/nek?`,
+        display: `Mennyi ${base} , <b>${percent}%</b>-a ?`,
         answer: result
       };
     }
@@ -434,7 +434,7 @@ function showQuestion(index) {
   const q = questions[index];
   const div = document.createElement("div");
   div.innerHTML =
-    `<div class="question-number">${index + 1}. feladat</div>
+    `<div class="question-number">${index + 1}. feladat:</div>
      <div class="question-text">${q.display} = </div>`;
   let answerState = { value: "" };
   const answerView = document.createElement("div");
