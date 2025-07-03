@@ -323,7 +323,7 @@ function generateQuestions() {
       let x = getRandomInt(-10, 10), a = getRandomInt(1, 5), b = getRandomInt(-10, 10);
       let result = a * x + b;
       q = {
-        display: `${a}x ${b >= 0 ? "+" : "-"} ${Math.abs(b)} = ${result}. x = ?`,
+        display: `${a}x ${b >= 0 ? "+" : "-"} ${Math.abs(b)} = ${result}    | x`,
         answer: x
       };
     }
