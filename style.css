@@ -56,6 +56,13 @@ body.light .answer-view {
   font-size: 1.8em;
   height: 0.6em;
 }
+
+.blue-percent {
+  color: #0074D9;   /* Ez egy erős, világos kék, jól látszik sötét és világos háttéren is */
+  font-weight: 600; /* opcionális, ha egy picit félkövérre akarod, de nem muszáj */
+}
+
+
 .big-btn, button { display: inline-block; font-size: 1.2em; padding: 0.7em 1.3em; border: none; border-radius: 9px; margin: 0.5em 0 0.5em 0; background: var(--primary); color: #fff; font-weight: 600; cursor: pointer; transition: background 0.2s;}
 button:hover, .big-btn:hover, button:focus, .big-btn:focus { background: var(--primary-dark); outline: none;}
 #theme-toggle { font-size: 1.4em; border-radius: 50%; width: 2.3em; height: 2.3em; padding: 0; background: none; color: inherit; box-shadow: none; border: 2px solid currentColor; margin: 0;}

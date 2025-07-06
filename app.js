@@ -307,16 +307,44 @@ function generateQuestions() {
       };
     }
 
-    // --- SZÁZALÉKSZÁMÍTÁS ---
-    else if (category === "Százalékszámítás") {
-      let percent = [5, 10, 20, 25, 50, 75, 120, 125, 150, 250,][getRandomInt(0, 4)];
-      let base = getRandomInt(10, 200);
-      let result = Math.round(base * percent / 100);
-      q = {
-        display: `Mennyi ${base} , <b>${percent}%</b>-a ?`,
-        answer: result
-      };
+else if (category === "Százalékszámítás") {
+  let percentArrEasy = [10, 20, 50, 120, 150, 250];
+  let percentArrMedium = [5, 10, 20, 25, 50, 75, 120, 125, 150, 250];
+  let percentArrHard = [5, 10, 20, 25, 50, 75, 120, 125, 150, 250];
+
+  let percentArr;
+  let baseCandidates = [];
+
+  if (difficultySelect.value === "easy") {
+    percentArr = percentArrEasy;
+    // csak 0-ra végződő számok 10-től 200-ig
+    for (let i = 10; i <= 200; i += 10) baseCandidates.push(i);
+  } else if (difficultySelect.value === "medium") {
+    percentArr = percentArrMedium;
+    // csak 0-ra vagy 5-re végződő számok 10-től 200-ig
+    for (let i = 10; i <= 200; i += 5) {
+      if (i % 5 === 0) baseCandidates.push(i);
     }
+  } else {
+    percentArr = percentArrHard;
+    // bármi 10-től 200-ig
+    for (let i = 10; i <= 200; i++) baseCandidates.push(i);
+  }
+
+  let percent = percentArr[getRandomInt(0, percentArr.length - 1)];
+  let base = baseCandidates[getRandomInt(0, baseCandidates.length - 1)];
+  let result = Math.round(base * percent / 100);
+
+  let lastDigit = base % 10;
+  let rag = (lastDigit === 3 || lastDigit === 6) ? "-nak" : "-nek";
+  let percentStr = percent.toString();
+  let nevelo = (percentStr.startsWith("5")) ? "az" : "a";
+
+  q = {
+    display: `Mennyi ${base}${rag} ${nevelo} <span class="blue-percent">${percent}%</span>-a ?`,
+    answer: result
+  };
+}
 
     // --- EGYENLETEK ÁTRENDEZÉSE ---
     else if (category === "Egyenletek átrendezése") {
@@ -424,11 +452,20 @@ function renderNumpad(answerState, onChange) {
               let correctAnswer = (questions[currentQuestion] || {}).answer.replace(',', '.');
               let userAnswer = val.replace(',', '.');
               if (parseFloat(userAnswer) === parseFloat(correctAnswer)) correct = true;
-          } else if (["Zárójeles kifejezések","Egyenletek átrendezése","Százalékszámítás"].includes(categorySelect.value)) {
-              if (parseFloat(val) === (questions[currentQuestion] || {}).answer) correct = true;
-            } else {
-              if (parseFloat(val) === (questions[currentQuestion] || {}).answer) correct = true;
-          }
+          } else if (categorySelect.value === "Százalékszámítás") {
+    let correctAnswer = questions[currentQuestion]?.answer;
+    let userAnswer = parseFloat(val.replace(',', '.'));
+    // Fogadja el a pontos tizedest és a kerekített egész választ is
+    if (
+      userAnswer === correctAnswer || 
+      Math.round(userAnswer) === Math.round(correctAnswer)
+    ) {
+      correct = true;
+    }
+}
+else if (["Zárójeles kifejezések","Egyenletek átrendezése"].includes(categorySelect.value)) {
+    if (parseFloat(val) === (questions[currentQuestion] || {}).answer) correct = true;
+}
           if (correct) {
             score++;
             currentQuestion++;
