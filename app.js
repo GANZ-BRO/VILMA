@@ -1,4 +1,4 @@
-// --- ALAPBEÁLLÍTÁSOK ---
+  // --- ALAPBEÁLLÍTÁSOK ---
 const QUESTIONS = 5;
 const DIFFICULTY_SETTINGS = {
   easy: { min: 0, max: 10 },
@@ -419,10 +419,15 @@ function renderNumpad(answerState, onChange) {
               let [simpUserNum, simpUserDen] = simplifyFraction(userNum, userDen);
               if (simpUserNum === ansNum && simpUserDen === ansDen) correct = true;
             }
+          } else if (categorySelect.value === "Villamos mértékegységek") {
+              // A pont és a vessző egyenértékű
+              let correctAnswer = (questions[currentQuestion] || {}).answer.replace(',', '.');
+              let userAnswer = val.replace(',', '.');
+              if (parseFloat(userAnswer) === parseFloat(correctAnswer)) correct = true;
           } else if (["Zárójeles kifejezések","Egyenletek átrendezése","Százalékszámítás"].includes(categorySelect.value)) {
-            if (parseFloat(val) === (questions[currentQuestion] || {}).answer) correct = true;
-          } else {
-            if (parseFloat(val) === (questions[currentQuestion] || {}).answer) correct = true;
+              if (parseFloat(val) === (questions[currentQuestion] || {}).answer) correct = true;
+            } else {
+              if (parseFloat(val) === (questions[currentQuestion] || {}).answer) correct = true;
           }
           if (correct) {
             score++;
