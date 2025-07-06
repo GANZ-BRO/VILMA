@@ -1,0 +1,141 @@
+:root {
+  --bg-dark: #121212; --text-dark: #f1f1f1; --input-bg-dark: #1e1e1e; --input-text-dark: #f1f1f1; --input-border-dark: #444;
+  --bg-light: #f1f1f1; --text-light: #121212; --input-bg-light: #fff; --input-text-light: #121212; --input-border-light: #ccc;
+  --primary: #3578e5; --primary-dark: #2851a3; --success: #4bb543;
+  --submit-btn-bg: #52aaff;
+  --submit-btn-bg-hover: #199cff;
+}
+body { font-family: sans-serif; margin: 0; padding: 0; background: var(--bg-dark); color: var(--text-dark); min-height: 100vh; transition: background 0.3s, color 0.3s;}
+body.light { background: var(--bg-light); color: var(--text-light);}
+main { max-width: 440px; margin: auto; padding: 1em;}
+header { display: flex; align-items: center; justify-content: space-between; gap: 0.5em; flex-wrap: wrap;}
+h1 { font-size: 1.4em; margin: 0;}
+.settings { display: flex; gap: 0.6em; flex-wrap: wrap; margin: 1em 0; align-items: center; justify-content: space-between;}
+.settings label { font-size: 1em; font-weight: 500;}
+select { font-size: 1.05em; padding: 0.5em; border-radius: 6px; border: 1px solid var(--input-border-dark); background: var(--input-bg-dark); color: var(--input-text-dark); margin-top: 4px; transition: background 0.3s, color 0.3s, border 0.3s;}
+body.light select { background: var(--input-bg-light); color: var(--input-text-light); border: 1px solid var(--input-border-light);}
+.game-stats { display: flex; flex-wrap: wrap; gap: 1em; align-items: center; justify-content: space-between; margin-bottom: 1em;}
+.stat { font-weight: bold; font-size: 1.05em;}
+.best { font-size: 0.98em; margin-top: 0.25em;}
+@media (prefers-color-scheme: dark) {.best {color: #32CD32;}}
+@media (prefers-color-scheme: light) {.best {color: #006400;}}
+#quiz > div { margin-bottom: 18px; border-radius: 8px; padding: 1em; background: rgba(0,0,0,0.05); box-shadow: 0 2px 8px 0 rgba(0,0,0,0.05);}
+body.light #quiz > div { background: rgba(0,0,0,0.01); box-shadow: 0 2px 8px 0 rgba(0,0,0,0.07);}
+label { font-size: 1.08em; display: block; margin-bottom: 0.4em;}
+
+
+.question-number {
+  margin-bottom: 0.2em;
+}
+.question-text {
+  font-weight: bold;
+  font-size: 1.8em;
+  margin-bottom: 0.7em;
+}
+
+.answer-prefix {
+  font-weight: bold;
+  margin-right: 0.5em;
+  font-size: 1.1em;
+}
+
+.answer-view {
+  width: 69%;
+  font-size: 1.8em;
+  height: 0.6em;
+  padding: 0.7em 1em;
+  border-radius: 6px;
+  border: 1px solid var(--input-border-dark);
+  background: #333;
+  color: var(--input-text-dark);
+}
+body.light .answer-view {
+  background: #ddd;
+  color: var(--input-text-light);
+  border: 1px solid var(--input-border-light);
+  font-size: 1.8em;
+  height: 0.6em;
+}
+
+.blue-percent {
+  color: #0074D9;   /* Ez egy erős, világos kék, jól látszik sötét és világos háttéren is */
+  font-weight: 600; /* opcionális, ha egy picit félkövérre akarod, de nem muszáj */
+}
+
+
+.big-btn, button { display: inline-block; font-size: 1.2em; padding: 0.7em 1.3em; border: none; border-radius: 9px; margin: 0.5em 0 0.5em 0; background: var(--primary); color: #fff; font-weight: 600; cursor: pointer; transition: background 0.2s;}
+button:hover, .big-btn:hover, button:focus, .big-btn:focus { background: var(--primary-dark); outline: none;}
+#theme-toggle { font-size: 1.4em; border-radius: 50%; width: 2.3em; height: 2.3em; padding: 0; background: none; color: inherit; box-shadow: none; border: 2px solid currentColor; margin: 0;}
+.numpad-row { display: flex; gap: 0.5em; margin-bottom: 0.5em; width: 100%;}
+.numpad {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1em;
+  margin-top: 0.7em;
+  justify-content: flex-start;
+  width: 100%;
+  max-width: 340px;
+  min-width: 220px;
+}
+.numpad-btn,
+.numpad-submit-btn {
+  flex: 1 1 0;
+  width: 100%;
+  min-width: 0;
+  aspect-ratio: 1/1;
+  font-size: 1.25em;
+  border-radius: 0.5em;
+  border: none;
+  background: var(--input-bg-dark);
+  color: var(--input-text-dark);
+  border: 1px solid var(--input-border-dark);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  transition: background 0.2s, color 0.2s;
+  max-height: 4em;
+}
+body.light .numpad-btn, body.light .numpad-submit-btn {
+  background: var(--input-bg-light); color: var(--input-text-light); border: 1px solid var(--input-border-light);
+}
+.numpad-btn:active, .numpad-btn:focus, .numpad-submit-btn:active, .numpad-submit-btn:focus {
+  background: var(--primary); color: #fff; outline: none;
+}
+.numpad-container { display: flex; flex-direction: column; align-items: flex-start; gap: 1.1em; width: 100%; }
+.numpad-submit-btn {
+  background: var(--submit-btn-bg);
+  color: #fff;
+  border: 1px solid #199cff;
+}
+.numpad-submit-btn:hover, .numpad-submit-btn:focus { background: var(--submit-btn-bg-hover); outline: none;}
+.numpad-submit-btn > span {
+  display: block;
+  width: 100%;
+  height: 100%;
+  text-align: center;
+  font-size: inherit;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  margin: 0;
+  padding: 0;
+}
+@media (max-width: 600px) {
+  main { padding: 0.5em;}
+  h1 { font-size: 1.1em;}
+  .settings { flex-direction: column; gap: 0.3em;}
+  .game-stats { flex-direction: column; gap: 0.3em;}
+  .big-btn, button { width: 100%; }
+  .numpad { max-width: 100%; min-width: 0; }
+  .numpad-row { gap: 0.2em; }
+  .numpad-btn, .numpad-submit-btn {
+    font-size: 1.05em;
+    max-height: 2.6em;
+  }
+}
+#quiz > div > label { font-size: 1.5em; font-weight: bold; }
+#theme-toggle { font-size: 1em; width: 1.8em; height: 1.8em; }
