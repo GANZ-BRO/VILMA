@@ -327,7 +327,52 @@ function generateQuestions() {
         answer: x
       };
     }
+    else if (category === "Villamos mértékegységek") {
+      const types = [
+        () => {
+          let mA = getRandomInt(100, 5000);
+          return {
+            display: `<b>${mA} mA</b> = ? A`,
+            answer: (mA / 1000).toString()
+          };
+        },
+        () => {
+          let kOhm = (getRandomInt(1, 20) / 10).toFixed(1);
+          return {
+            display: `<b>${kOhm} kΩ</b> = ? Ω`,
+            answer: (parseFloat(kOhm) * 1000).toString()
+          };
+        },
+        () => {
+          let ohm = getRandomInt(100, 5000);
+          return {
+            display: `<b>${ohm} Ω</b> = ? kΩ`,
+            answer: (ohm / 1000).toString()
+          };
+        },
+        () => {
+          let amp = (getRandomInt(1, 20) / 100).toFixed(2);
+          return {
+            display: `<b>${amp} A</b> = ? mA`,
+            answer: (parseFloat(amp) * 1000).toString()
+          };
+        },
+        () => {
+          let mV = getRandomInt(500, 5000);
+          return {
+            display: `<b>${mV} mV</b> = ? V`,
+            answer: (mV / 1000).toString()
+          };
+        }
+      ];
+      let task = types[getRandomInt(0, types.length - 1)]();
+      q = {
+        display: task.display,
+        answer: task.answer
+      };
+    }
 
+      
     // --- Default fallback ---
     else if (!q.display) {
       q = { display: "Hiba: kategória nincs implementálva", answer: null };
