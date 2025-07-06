@@ -336,7 +336,12 @@ else if (category === "Százalékszámítás") {
   let result = Math.round(base * percent / 100);
 
   let lastDigit = base % 10;
+  let lastTwoDigits = base % 100; 
   let rag = (lastDigit === 3 || lastDigit === 6) ? "-nak" : "-nek";
+  let rag = (lastDigit === 3 || lastDigit === 6 || lastDigit === 8 || 
+               lastTwoDigits === 0 || lastTwoDigits === 20 || lastTwoDigits === 30 || 
+               lastTwoDigits === 60 || lastTwoDigits === 80) ? "-nak" : "-nek";
+  
   let percentStr = percent.toString();
   let nevelo = (percentStr.startsWith("5")) ? "az" : "a";
 
