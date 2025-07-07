@@ -468,7 +468,7 @@ function renderNumpad(answerState, onChange) {
       correct = true;
     }
 }
-else if (["Zárójeles kifejezések","Egyenletek átrendezése"].includes(categorySelect.value)) {
+else if (["Összeadás","Kivonás","Szorzás","Osztás","Mind a négy művelet","Zárójeles kifejezések","Egyenletek átrendezése"].includes(categorySelect.value)) {
     if (parseFloat(val) === (questions[currentQuestion] || {}).answer) correct = true;
 }
           if (correct) {
