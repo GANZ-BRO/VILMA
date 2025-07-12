@@ -1,11 +1,11 @@
 {
-  "name": "Matematika gyakorlás",
-  "short_name": "VILMA",
+  "name": "Villamosságtan ALapjaI gyakorlás",
+  "short_name": "VALI",
   "start_url": ".",
   "display": "standalone",
   "background_color": "#121212",
   "theme_color": "#3578e5",
-  "description": "Matematika gyakorló alkalmazás offline móddal.",
+  "description": "Villamosságtan gyakorló alkalmazás offline móddal.",
   "icons": [
     {
       "src": "icon-192.png",
