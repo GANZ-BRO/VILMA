@@ -237,16 +237,15 @@ const taskTypes = [
       } else if (difficulty === "medium") {
         base = getRandomInt(-10, 20);
         exponent = getRandomInt(2, 4);
-        if (base < 0) exponent = 2; // Negatív alaphoz csak páros kitevő, hogy pozitív legyen
+        if (base < 0) exponent = 2;
       } else {
         base = getRandomInt(-50, 50);
         exponent = getRandomInt(2, 5);
-        if (base < 0) exponent = 2; // Negatív alaphoz csak páros kitevő
+        if (base < 0) exponent = 2;
       }
       answer = Math.pow(base, exponent);
-      // Ellenőrizzük, hogy az eredmény ésszerű legyen (pl. ne legyen túl nagy)
       if (Math.abs(answer) > 100000) {
-        base = getRandomInt(1, 10); // Ha túl nagy, egyszerűbb alap
+        base = getRandomInt(1, 10);
         exponent = 2;
         answer = Math.pow(base, exponent);
       }
@@ -346,8 +345,9 @@ function categoryLabel() {
 
 // --- TÉMA VÁLTÁS ---
 function applyTheme() {
-  const dark = localStorage.getItem("vilma-theme") !== "light";
-  document.body.classList.toggle("light", !dark);
+  const theme = localStorage.getItem("vilma-theme") || "dark"; // Alapértelmezett sötét mód
+  const isLight = theme === "light";
+  document.body.classList.toggle("light", isLight);
 }
 
 themeToggle.addEventListener("click", function () {
@@ -355,7 +355,6 @@ themeToggle.addEventListener("click", function () {
   localStorage.setItem("vilma-theme", isLight ? "dark" : "light");
   applyTheme();
 });
-applyTheme();
 
 // --- NEHÉZSÉG ÉS KATEGÓRIA KEZELÉSE ---
 difficultySelect.addEventListener("change", loadBest);
@@ -637,3 +636,4 @@ startBtn.onclick = startGame;
 loadCategories();
 loadLastSelection();
 loadBest();
+applyTheme(); // Téma alkalmazása induláskor

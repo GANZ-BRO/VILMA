@@ -4,6 +4,106 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>VILMA gyakorlás</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #1e1e1e; /* Sötét mód alapértelmezett háttér */
+            color: #ffffff; /* Sötét mód szöveg */
+            transition: background-color 0.3s, color 0.3s;
+            margin: 20px;
+        }
+        body.light {
+            background-color: #ffffff; /* Világos mód háttér */
+            color: #000000; /* Világos mód szöveg */
+        }
+        .subtitle {
+            font-size: 1.5em;
+            margin-bottom: 20px;
+        }
+        .numpad {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .numpad-row {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+        .numpad-btn {
+            padding: 10px;
+            font-size: 1.2em;
+            border: 1px solid #444;
+            background-color: #333; /* Sötét mód gomb háttér */
+            color: #ffffff; /* Sötét mód gomb szöveg */
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        .numpad-btn:hover {
+            background-color: #555;
+        }
+        body.light .numpad-btn {
+            background-color: #f0f0f0; /* Világos mód gomb háttér */
+            color: #000000; /* Világos mód gomb szöveg */
+            border: 1px solid #ccc;
+        }
+        body.light .numpad-btn:hover {
+            background-color: #ddd;
+        }
+        .numpad-submit-btn {
+            background-color: #0066cc; /* Küldés gomb színe */
+        }
+        .numpad-submit-btn:hover {
+            background-color: #0055aa;
+        }
+        body.light .numpad-submit-btn {
+            background-color: #0077dd;
+        }
+        body.light .numpad-submit-btn:hover {
+            background-color: #0066cc;
+        }
+        .question-text {
+            font-size: 1.3em;
+            margin: 10px 0;
+        }
+        .question-number {
+            font-size: 1.1em;
+            color: #cccccc; /* Sötét mód kérdés száma */
+        }
+        body.light .question-number {
+            color: #333333; /* Világos mód kérdés száma */
+        }
+        sup {
+            font-size: 0.8em;
+            vertical-align: super;
+        }
+        .blue-percent {
+            color: #00f; /* Százalékjel kék színe sötét módban */
+        }
+        body.light .blue-percent {
+            color: #0000ff; /* Százalékjel kék színe világos módban */
+        }
+        #theme-toggle {
+            padding: 8px 12px;
+            font-size: 1em;
+            cursor: pointer;
+            background-color: #333;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+        }
+        body.light #theme-toggle {
+            background-color: #f0f0f0;
+            color: #000;
+        }
+        #theme-toggle:hover {
+            background-color: #555;
+        }
+        body.light #theme-toggle:hover {
+            background-color: #ddd;
+        }
+    </style>
 </head>
 <body>
     <header>
