@@ -1,64 +1,37 @@
 <!DOCTYPE html>
 <html lang="hu">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
-  <title>VILLMA</title>
-  <link rel="manifest" href="manifest.json">
-  <link rel="icon" href="icon-192.png">
-  <meta name="theme-color" content="#3578e5">
-  <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VILMA gyakorlás</title>
 </head>
 <body>
-  <main>
     <header>
-      <p class="subtitle">VILMA gyak</p>
+      <p class="subtitle">VILMA gyakorlás</p>
       <button id="theme-toggle" aria-label="Téma váltása">🌗</button>
     </header>
-    <div class="settings">
-      <label for="category">Kategória:
-        <select id="category">
-          <option value="Összeadás">Összeadás</option>
-          <option value="Kivonás">Kivonás</option>
-          <option value="Szorzás">Szorzás</option>
-          <option value="Osztás">Osztás</option>
-          <option value="Mind a négy művelet">Mind a négy művelet</option>
-          <option value="Zárójeles kifejezések">Zárójeles kifejezések</option>
-          <option value="Törtek">Törtek</option>
-          <option value="Százalékszámítás">Százalékszámítás</option>
-          <option value="Egyenletek átrendezése">Egyenletek átrendezése</option>
-          <option value="Villamos mértékegységek">Villamos mértékegységek</option>
-        </select>
-        <span id="category-value" style="display:none; margin-left: 0.5em;"></span>
-      </label>
-      <label for="difficulty">Nehézségi szint:
-        <select id="difficulty">
-          <option value="easy">Könnyű</option>
-          <option value="medium">Közepes</option>
-          <option value="hard">Nehéz</option>
-        </select>
-        <span id="difficulty-value" style="display:none; margin-left: 0.5em;"></span>
-      </label>
-      <button class="big-btn" id="start-btn">Játék indítása</button>
-    </div>
-    <div class="game-stats">
-      <span class="stat" id="timer">⏱️ Idő: 0 mp</span>
-    </div>
-    <div class="best" id="best-stats" style="display:none;"></div>
-    <section id="quiz" aria-label="Feladatsor"></section>
-    <button class="big-btn" id="restart-btn" style="display:none;">Újrajátszás</button>
-  </main>
-  <script src="app.js" defer></script>
-  <script src="sw-reg.js" defer></script>
-  <style>
-    .subtitle {
-      margin: 0.5em 0 0.5em 0;
-      font-size: 0.95em;
-      color: #3578e5;
-      font-weight: 500;
-      letter-spacing: 0.01em;
-      text-align: center;
-    }
-  </style>
+    
+    <label for="category">Kategória:</label>
+    <select id="category" name="category">
+        <!-- Kategóriák JavaScriptből töltődnek be -->
+    </select>
+    
+    <label for="difficulty">Nehézségi szint:</label>
+    <select id="difficulty" name="difficulty">
+        <option value="easy">Könnyű</option>
+        <option value="medium">Közepes</option>
+        <option value="hard">Kihívás</option>
+    </select>
+    
+    <button onclick="startGame()">Játék indítása</button>
+    
+    <p>⏱️ Idő: <span id="time">0</span> mp</p>
+    
+    <button id="restart-btn" style="display: none;">Újrajátszás</button>
+    
+    <div id="best-stats"></div>
+    <div id="quiz"></div>
+    
+    <script src="app.js"></script>
 </body>
 </html>
