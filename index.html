@@ -21,14 +21,18 @@
             margin-bottom: 20px;
         }
         .numpad {
-            display: none; /* Alapértelmezett rejtett numpad */
+            display: none;
             flex-direction: column;
             gap: 10px;
             margin-top: 10px;
-            min-height: 120px; /* Fix magasság a hely fenntartásához */
+            min-height: 150px; /* Nagyobb min-height a stabilitás érdekében */
+            position: sticky;
+            bottom: 0;
+            background-color: inherit; /* Örökli a body háttérszínt */
+            z-index: 10; /* Előrébb kerül a többi elemhez képest */
         }
         .numpad.active {
-            display: flex; /* Látható, ha aktív */
+            display: flex;
         }
         .numpad-row {
             display: flex;
@@ -106,6 +110,9 @@
         }
         body.light #theme-toggle:hover {
             background-color: #ddd;
+        }
+        #quiz {
+            min-height: 100px; /* Hely fenntartása a kérdésnek */
         }
     </style>
 </head>
