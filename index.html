@@ -7,24 +7,28 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #1e1e1e; /* Sötét mód alapértelmezett háttér */
-            color: #ffffff; /* Sötét mód szöveg */
+            background-color: #1e1e1e;
+            color: #ffffff;
             transition: background-color 0.3s, color 0.3s;
             margin: 20px;
         }
         body.light {
-            background-color: #ffffff; /* Világos mód háttér */
-            color: #000000; /* Világos mód szöveg */
+            background-color: #ffffff;
+            color: #000000;
         }
         .subtitle {
             font-size: 1.5em;
             margin-bottom: 20px;
         }
         .numpad {
-            display: flex;
+            display: none; /* Alapértelmezett rejtett numpad */
             flex-direction: column;
             gap: 10px;
             margin-top: 10px;
+            min-height: 120px; /* Fix magasság a hely fenntartásához */
+        }
+        .numpad.active {
+            display: flex; /* Látható, ha aktív */
         }
         .numpad-row {
             display: flex;
@@ -35,8 +39,8 @@
             padding: 10px;
             font-size: 1.2em;
             border: 1px solid #444;
-            background-color: #333; /* Sötét mód gomb háttér */
-            color: #ffffff; /* Sötét mód gomb szöveg */
+            background-color: #333;
+            color: #ffffff;
             cursor: pointer;
             border-radius: 5px;
         }
@@ -44,15 +48,15 @@
             background-color: #555;
         }
         body.light .numpad-btn {
-            background-color: #f0f0f0; /* Világos mód gomb háttér */
-            color: #000000; /* Világos mód gomb szöveg */
+            background-color: #f0f0f0;
+            color: #000000;
             border: 1px solid #ccc;
         }
         body.light .numpad-btn:hover {
             background-color: #ddd;
         }
         .numpad-submit-btn {
-            background-color: #0066cc; /* Küldés gomb színe */
+            background-color: #0066cc;
         }
         .numpad-submit-btn:hover {
             background-color: #0055aa;
@@ -69,20 +73,20 @@
         }
         .question-number {
             font-size: 1.1em;
-            color: #cccccc; /* Sötét mód kérdés száma */
+            color: #cccccc;
         }
         body.light .question-number {
-            color: #333333; /* Világos mód kérdés száma */
+            color: #333333;
         }
         sup {
             font-size: 0.8em;
             vertical-align: super;
         }
         .blue-percent {
-            color: #00f; /* Százalékjel kék színe sötét módban */
+            color: #00f;
         }
         body.light .blue-percent {
-            color: #0000ff; /* Százalékjel kék színe világos módban */
+            color: #0000ff;
         }
         #theme-toggle {
             padding: 8px 12px;
@@ -131,6 +135,7 @@
     
     <div id="best-stats"></div>
     <div id="quiz"></div>
+    <div id="numpad-container" class="numpad"></div>
     
     <script src="app.js"></script>
 </body>

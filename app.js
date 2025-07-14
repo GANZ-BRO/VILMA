@@ -267,6 +267,7 @@ const categorySelect = document.getElementById("category");
 const startBtn = document.querySelector("button[onclick='startGame()']");
 const restartBtn = document.getElementById("restart-btn");
 const themeToggle = document.getElementById("theme-toggle");
+const numpadContainer = document.getElementById("numpad-container");
 
 // --- KATEGÓRIÁK BETÖLTÉSE ---
 function loadCategories() {
@@ -345,7 +346,7 @@ function categoryLabel() {
 
 // --- TÉMA VÁLTÁS ---
 function applyTheme() {
-  const theme = localStorage.getItem("vilma-theme") || "dark"; // Alapértelmezett sötét mód
+  const theme = localStorage.getItem("vilma-theme") || "dark";
   const isLight = theme === "light";
   document.body.classList.toggle("light", isLight);
 }
@@ -363,7 +364,7 @@ categorySelect.addEventListener("change", loadBest);
 // --- IDŐZÍTŐ ---
 function updateTimer() {
   const elapsed = Math.floor((Date.now() - startTime) / 1000);
-  timerDisplay.textContent = `⏱️ Idő: ${elapsed} mp`;
+  timerDisplay.textContent = `${elapsed}`;
 }
 
 // --- SEGÉDFÜGGVÉNYEK ---
@@ -483,7 +484,7 @@ function renderNumpad(answerState, onChange) {
     ['7', '8', '9', '0', '-']
   ];
   const numpadDiv = document.createElement('div');
-  numpadDiv.className = 'numpad';
+  numpadDiv.className = 'numpad active';
 
   rows.forEach((row) => {
     const rowDiv = document.createElement('div');
@@ -569,10 +570,14 @@ function renderNumpad(answerState, onChange) {
 // --- JÁTÉK LOGIKA ---
 function showQuestion(index) {
   quizContainer.innerHTML = "";
+  numpadContainer.innerHTML = "";
+  numpadContainer.classList.remove("active");
+
   if (index >= QUESTIONS) {
     finishGame();
     return;
   }
+
   const q = questions[index];
   const div = document.createElement("div");
   div.innerHTML =
@@ -588,10 +593,8 @@ function showQuestion(index) {
     answerView.textContent = val;
   });
 
-  const inputRow = document.createElement('div');
-  inputRow.className = 'numpad-container';
-  inputRow.appendChild(numpad);
-  div.appendChild(inputRow);
+  numpadContainer.appendChild(numpad);
+  numpadContainer.classList.add("active");
   quizContainer.appendChild(div);
 }
 
@@ -618,8 +621,10 @@ function finishGame() {
   gameActive = false;
   clearInterval(timerInterval);
   const elapsed = Math.floor((Date.now() - startTime) / 1000);
-  timerDisplay.textContent = `⏱️ Idő: ${elapsed} mp (Vége)`;
+  timerDisplay.textContent = `${elapsed} (Vége)`;
   quizContainer.innerHTML = `<p style="font-size:1.2em;"><b>Gratulálok!</b> ${elapsed} másodperc alatt végeztél.</p>`;
+  numpadContainer.innerHTML = "";
+  numpadContainer.classList.remove("active");
   saveBest(score, elapsed);
 
   restartBtn.style.display = "";
@@ -636,4 +641,4 @@ startBtn.onclick = startGame;
 loadCategories();
 loadLastSelection();
 loadBest();
-applyTheme(); // Téma alkalmazása induláskor
+applyTheme();
