@@ -536,7 +536,7 @@ function renderNumpad(answerState, onChange) {
         btn.type = 'button';
         btn.className = 'numpad-btn';
         btn.textContent = key;
-        btn.tabIndex = 0;
+        btn.tabIndex = -1;
         btn.onclick = () => {
           if (key === '←') {
             answerState.value = answerState.value.slice(0, -1);
@@ -580,6 +580,7 @@ function showQuestion(index) {
 
   const q = questions[index];
   const div = document.createElement("div");
+  div.className = "question-container";
   div.innerHTML =
     `<div class="question-number">${QUESTIONS} / ${index + 1}. feladat:</div>
      <div class="question-text">${q.display} = </div>`;
@@ -596,6 +597,8 @@ function showQuestion(index) {
   numpadContainer.appendChild(numpad);
   numpadContainer.classList.add("active");
   quizContainer.appendChild(div);
+
+  div.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
 function startGame() {
