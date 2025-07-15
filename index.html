@@ -1,41 +1,36 @@
 <!DOCTYPE html>
+
 <html lang="hu">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Villamosságtan ALapjaI gyakorlás</title>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1, user-scalable=no" name="viewport"/>
+<title>VILLMA</title>
+<link href="manifest.json" rel="manifest"/>
+<link href="icon-192.png" rel="icon"/>
+<meta content="#3578e5" name="theme-color"/>
+<link href="style.css" rel="stylesheet"/>
 </head>
 <body>
-    <header>
-      <p class="subtitle">Villamosságtan ALapjaI gyakorlás</p>
-      <button id="theme-toggle" aria-label="Téma váltása">🌗</button>
-    </header>
-    
-    <label for="category">Kategória:</label>
-    <select id="category" name="category">
-        <option value="alapfogalmak">Alapfogalmak</option>
-        <option value="elektronikai_alkatreszek">Elektronikai alkatrészek</option>
-        <option value="soros_parhuzamos">Soros - Párhuzamos kapcsolások</option>
-        <option value="ohm_torveny">Ohm törvény</option>
-        <option value="hurok_torveny">Hurok Törvény</option>
-        <option value="csomoponti_torveny">Csomóponti Törvény</option>
-        <option value="mind_a_harom">Mind a Három</option>
-        <option value="proba_panel">Próba panel bekötés</option>
-    </select>
-    
-    <label for="difficulty">Nehézségi szint:</label>
-    <select id="difficulty" name="difficulty">
-        <option value="konnyu">Könnyű</option>
-        <option value="kozepes">Közepes</option>
-        <option value="nehez">Nehéz</option>
-    </select>
-    
-    <button onclick="startGame()">Játék indítása</button>
-    
-    <p>⏱️ Idő: <span id="time">0</span> mp</p>
-    
-    <button onclick="restartGame()">Újrajátszás</button>
-    
-    <script src="script.js"></script>
+<header>
+<p class="subtitle">VILMA gyakorlás</p>
+<button aria-label="Téma váltása" id="theme-toggle">🌗</button>
+</header>
+<label for="category">Kategória:</label>
+<select id="category" name="category">
+<!-- Kategóriák JavaScriptből töltődnek be -->
+</select>
+<label for="difficulty">Nehézségi szint:</label>
+<select id="difficulty" name="difficulty">
+<option value="easy">Könnyű</option>
+<option value="medium">Közepes</option>
+<option value="hard">Kihívás</option>
+</select>
+<button onclick="startGame()">Játék indítása</button>
+<p>⏱️ Idő: <span id="time">0</span> mp</p>
+<button id="restart-btn" style="display: none;">Újrajátszás</button>
+<div id="best-stats"></div>
+<div id="quiz"></div>
+<div class="numpad" id="numpad-container"></div>
+<script src="app.js"></script>
 </body>
 </html>
