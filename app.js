@@ -479,12 +479,12 @@ function generateQuestions() {
 // --- SZÁMBILLENTYŰZET ---
 function renderNumpad(answerState, onChange) {
   const rows = [
-    ['1', '2', '3', '/', '←'],
-    ['4', '5', '6', '.', 'submit'],
-    ['7', '8', '9', '0', '-']
+    ['1','2','3','/','←'],
+    ['4','5','6','.','submit'],
+    ['7','8','9','0','-']
   ];
   const numpadDiv = document.createElement('div');
-  numpadDiv.className = 'numpad active';
+  numpadDiv.className = 'numpad';
 
   rows.forEach((row) => {
     const rowDiv = document.createElement('div');
@@ -505,23 +505,32 @@ function renderNumpad(answerState, onChange) {
             return;
           }
           let correct = false;
-          const currentTask = questions[currentQuestion] || {};
-          if (currentTask.answerType === "fraction") {
-            let [ansNum, ansDen] = currentTask.answer.split('/').map(Number);
+          if (categorySelect.value === "Törtek") {
+            let [ansNum, ansDen] = (questions[currentQuestion] || {}).answer?.split('/').map(Number);
             let [userNum, userDen] = val.split('/').map(Number);
             if (userNum && userDen) {
               let [simpUserNum, simpUserDen] = simplifyFraction(userNum, userDen);
               if (simpUserNum === ansNum && simpUserDen === ansDen) correct = true;
             }
-          } else if (currentTask.answerType === "decimal") {
-            let correctAnswer = currentTask.answer.replace(',', '.');
-            let userAnswer = val.replace(',', '.');
-            if (parseFloat(userAnswer) === parseFloat(correctAnswer)) correct = true;
-          } else if (currentTask.answerType === "number") {
-            let correctAnswer = parseFloat(currentTask.answer);
-            let userAnswer = parseFloat(val.replace(',', '.'));
-            if (userAnswer === correctAnswer || Math.round(userAnswer) === Math.round(correctAnswer)) correct = true;
-          }
+          } else if (categorySelect.value === "Villamos mértékegységek") {
+              // A pont és a vessző egyenértékű
+              let correctAnswer = (questions[currentQuestion] || {}).answer.replace(',', '.');
+              let userAnswer = val.replace(',', '.');
+              if (parseFloat(userAnswer) === parseFloat(correctAnswer)) correct = true;
+          } else if (categorySelect.value === "Százalékszámítás") {
+    let correctAnswer = questions[currentQuestion]?.answer;
+    let userAnswer = parseFloat(val.replace(',', '.'));
+    // Fogadja el a pontos tizedest és a kerekített egész választ is
+    if (
+      userAnswer === correctAnswer || 
+      Math.round(userAnswer) === Math.round(correctAnswer)
+    ) {
+      correct = true;
+    }
+}
+else if (["Összeadás","Kivonás","Szorzás","Osztás","Mind a négy művelet","Zárójeles kifejezések","Egyenletek átrendezése"].includes(categorySelect.value)) {
+    if (parseFloat(val) === (questions[currentQuestion] || {}).answer) correct = true;
+}
           if (correct) {
             score++;
             currentQuestion++;
@@ -536,7 +545,7 @@ function renderNumpad(answerState, onChange) {
         btn.type = 'button';
         btn.className = 'numpad-btn';
         btn.textContent = key;
-        btn.tabIndex = -1;
+        btn.tabIndex = 0;
         btn.onclick = () => {
           if (key === '←') {
             answerState.value = answerState.value.slice(0, -1);
@@ -570,9 +579,6 @@ function renderNumpad(answerState, onChange) {
 // --- JÁTÉK LOGIKA ---
 function showQuestion(index) {
   quizContainer.innerHTML = "";
-  numpadContainer.innerHTML = "";
-  numpadContainer.classList.remove("active");
-
   if (index >= QUESTIONS) {
     finishGame();
     return;

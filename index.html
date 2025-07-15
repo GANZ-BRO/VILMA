@@ -1,187 +1,36 @@
 <!DOCTYPE html>
+
 <html lang="hu">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1">
-    <title>VILMA gyakorlás</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #1e1e1e;
-            color: #ffffff;
-            transition: background-color 0.3s, color 0.3s;
-            margin: 20px;
-            touch-action: none;
-        }
-        body.light {
-            background-color: #ffffff;
-            color: #000000;
-        }
-        .subtitle {
-            font-size: 1.5em;
-            margin-bottom: 20px;
-        }
-        .question-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center; /* Középre igazítás */
-            gap: 10px;
-        }
-        .numpad {
-            display: none;
-            flex-direction: column;
-            gap: 10px;
-            margin-top: 10px;
-            min-height: 150px;
-            position: sticky;
-            bottom: 0;
-            background-color: inherit;
-            z-index: 10;
-            max-width: 300px; /* Numpad szélesség korlátozása */
-            margin-left: auto;
-            margin-right: auto;
-        }
-        .numpad.active {
-            display: flex;
-        }
-        .numpad-row {
-            display: flex;
-            gap: 10px;
-            justify-content: center;
-        }
-        .numpad-btn {
-            padding: 10px;
-            font-size: 1.2em;
-            border: 1px solid #444;
-            background-color: #333;
-            color: #ffffff;
-            cursor: pointer;
-            border-radius: 5px;
-            flex: 1; /* Egyenlő szélesség a gomboknak */
-            text-align: center;
-        }
-        .numpad-btn:hover {
-            background-color: #555;
-        }
-        body.light .numpad-btn {
-            background-color: #f0f0f0;
-            color: #000000;
-            border: 1px solid #ccc;
-        }
-        body.light .numpad-btn:hover {
-            background-color: #ddd;
-        }
-        .numpad-submit-btn {
-            background-color: #0066cc;
-        }
-        .numpad-submit-btn:hover {
-            background-color: #0055aa;
-        }
-        body.light .numpad-submit-btn {
-            background-color: #0077dd;
-        }
-        body.light .numpad-submit-btn:hover {
-            background-color: #0066cc;
-        }
-        .question-text {
-            font-size: 1.3em;
-            margin: 10px 0;
-            text-align: center; /* Kérdés szövege is középen */
-        }
-        .question-number {
-            font-size: 1.1em;
-            color: #cccccc;
-            text-align: center;
-        }
-        body.light .question-number {
-            color: #333333;
-        }
-        .answer-view {
-            font-size: 1.4em;
-            font-weight: bold;
-            padding: 8px;
-            margin: 10px 0;
-            border: 2px solid #666;
-            background-color: #2a2a2a;
-            border-radius: 5px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
-            min-width: 150px;
-            min-height: 40px;
-            box-sizing: border-box;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            max-width: 300px; /* Igazítás a numpad szélességéhez */
-            align-self: center; /* Középre igazítás a flex konténerben */
-        }
-        body.light .answer-view {
-            border: 2px solid #999;
-            background-color: #e6f0ff;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-        }
-        sup {
-            font-size: 0.8em;
-            vertical-align: super;
-        }
-        .blue-percent {
-            color: #00f;
-        }
-        body.light .blue-percent {
-            color: #0000ff;
-        }
-        #theme-toggle {
-            padding: 8px 12px;
-            font-size: 1em;
-            cursor: pointer;
-            background-color: #333;
-            color: #fff;
-            border: none;
-            border-radius: 5px;
-        }
-        body.light #theme-toggle {
-            background-color: #f0f0f0;
-            color: #000;
-        }
-        #theme-toggle:hover {
-            background-color: #555;
-        }
-        body.light #theme-toggle:hover {
-            background-color: #ddd;
-        }
-        #quiz {
-            min-height: 100px;
-        }
-    </style>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1, user-scalable=no" name="viewport"/>
+<title>VILLMA</title>
+<link href="manifest.json" rel="manifest"/>
+<link href="icon-192.png" rel="icon"/>
+<meta content="#3578e5" name="theme-color"/>
+<link href="style.css" rel="stylesheet"/>
 </head>
 <body>
-    <header>
-      <p class="subtitle">VILMA gyakorlás</p>
-      <button id="theme-toggle" aria-label="Téma váltása">🌗</button>
-    </header>
-    
-    <label for="category">Kategória:</label>
-    <select id="category" name="category">
-        <!-- Kategóriák JavaScriptből töltődnek be -->
-    </select>
-    
-    <label for="difficulty">Nehézségi szint:</label>
-    <select id="difficulty" name="difficulty">
-        <option value="easy">Könnyű</option>
-        <option value="medium">Közepes</option>
-        <option value="hard">Kihívás</option>
-    </select>
-    
-    <button onclick="startGame()">Játék indítása</button>
-    
-    <p>⏱️ Idő: <span id="time">0</span> mp</p>
-    
-    <button id="restart-btn" style="display: none;">Újrajátszás</button>
-    
-    <div id="best-stats"></div>
-    <div id="quiz"></div>
-    <div id="numpad-container" class="numpad"></div>
-    
-    <script src="app.js"></script>
+<header>
+<p class="subtitle">VILMA gyakorlás</p>
+<button aria-label="Téma váltása" id="theme-toggle">🌗</button>
+</header>
+<label for="category">Kategória:</label>
+<select id="category" name="category">
+<!-- Kategóriák JavaScriptből töltődnek be -->
+</select>
+<label for="difficulty">Nehézségi szint:</label>
+<select id="difficulty" name="difficulty">
+<option value="easy">Könnyű</option>
+<option value="medium">Közepes</option>
+<option value="hard">Kihívás</option>
+</select>
+<button onclick="startGame()">Játék indítása</button>
+<p>⏱️ Idő: <span id="time">0</span> mp</p>
+<button id="restart-btn" style="display: none;">Újrajátszás</button>
+<div id="best-stats"></div>
+<div id="quiz"></div>
+<div class="numpad" id="numpad-container"></div>
+<script src="app.js"></script>
 </body>
 </html>
