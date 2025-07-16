@@ -559,33 +559,45 @@ function renderNumpad(answerState, onChange) {
             return;
           }
 
+          // Normalizáljuk az inputot: vesszőt tizedes törtet jelző pontra cseréljük
+          val = val.replace(',', '.');
+
           if (currentTask.answerType === "fraction") {
             const [ansNum, ansDen] = currentTask.answer.split('/').map(Number);
             const [userNum, userDen] = val.split('/').map(Number);
-            if (!isNaN(userNum) && !isNaN(userDen) && userDen !== 0) {
-              const [simpUserNum, simpUserDen] = simplifyFraction(userNum, userDen);
-              if (simpUserNum === ansNum && simpUserDen === ansDen) {
-                correct = true;
-              }
+            if (isNaN(userNum) || isNaN(userDen) || userDen === 0) {
+              alert("Érvénytelen tört formátum! Írj be egy törtet, pl. '3/4'.");
+              return;
+            }
+            const [simpUserNum, simpUserDen] = simplifyFraction(userNum, userDen);
+            if (simpUserNum === ansNum && simpUserDen === ansDen) {
+              correct = true;
             }
           } else if (currentTask.answerType === "decimal") {
-            const correctAnswer = parseFloat(currentTask.answer.replace(',', '.'));
-            const userAnswer = parseFloat(val.replace(',', '.'));
-            if (!isNaN(userAnswer) && !isNaN(correctAnswer) && userAnswer === correctAnswer) {
+            const correctAnswer = parseFloat(currentTask.answer);
+            const userAnswer = parseFloat(val);
+            if (isNaN(userAnswer)) {
+              alert("Érvénytelen szám! Írj be egy tizedes törtet, pl. '3.14'.");
+              return;
+            }
+            if (Math.abs(userAnswer - correctAnswer) < 0.0001) { // Kis különbség megengedése lebegőpontos hibák miatt
               correct = true;
             }
           } else if (currentTask.answerType === "number") {
-            const correctAnswer = parseInt(currentTask.answer.replace(',', '.'));
-            const userAnswer = parseInt(val.replace(',', '.'));
-            if (!isNaN(userAnswer) && !isNaN(correctAnswer)) {
-              if (categorySelect.value === "Százalékszámítás") {
-                if (userAnswer === correctAnswer || Math.round(parseFloat(val.replace(',', '.'))) === correctAnswer) {
-                  correct = true;
-                }
-              } else {
-                if (userAnswer === correctAnswer) {
-                  correct = true;
-                }
+            const correctAnswer = parseInt(currentTask.answer);
+            const userAnswer = parseFloat(val); // parseFloat, hogy törtet is elfogadjon
+            if (isNaN(userAnswer)) {
+              alert("Érvénytelen szám! Írj be egy egész számot.");
+              return;
+            }
+            // Százalékszámítás esetén törtet is elfogadunk, ha kerekítve helyes
+            if (categorySelect.value === "Százalékszámítás") {
+              if (Math.round(userAnswer) === correctAnswer) {
+                correct = true;
+              }
+            } else {
+              if (userAnswer === correctAnswer) {
+                correct = true;
               }
             }
           }
@@ -595,13 +607,7 @@ function renderNumpad(answerState, onChange) {
             currentQuestion++;
             showQuestion(currentQuestion);
           } else {
-            if (currentTask.answerType === "fraction" && (isNaN(userNum) || isNaN(userDen) || userDen === 0)) {
-              alert("Érvénytelen tört formátum! Írj be egy törtet, pl. '3/4'.");
-            } else if ((currentTask.answerType === "decimal" || currentTask.answerType === "number") && isNaN(userAnswer)) {
-              alert("Érvénytelen szám! Írj be egy számot.");
-            } else {
-              alert("Nem jó válasz, próbáld újra!");
-            }
+            alert("Nem jó válasz, próbáld újra!");
           }
         };
         rowDiv.appendChild(submitBtn);
