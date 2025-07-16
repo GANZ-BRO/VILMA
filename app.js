@@ -1,10 +1,22 @@
 // --- ALAPBEÁLLÍTÁSOK ---
 const QUESTIONS = 5;
 const DIFFICULTY_SETTINGS = {
-  easy: { min: 0, max: 10 },
-  medium: { min: -10, max: 20 },
-  hard: { min: -50, max: 50 }
+  easy: { min: 0, max: 10 }, // Könnyű: kis számok a gyengébb diákok számára
+  medium: { min: -20, max: 20 }, // Közepes: negatív számok, nagyobb tartomány
+  hard: { min: -100, max: 100 } // Kihívás: nagy számok, egyetemi szint
 };
+
+// --- MOTIVÁLÓ ÜZENETEK ---
+const motivationalMessages = [
+  "Szuper munka, igazi matekzseni vagy!",
+  "Fantasztikus, így kell ezt csinálni!",
+  "Látom, nem lehet téged megállítani, csak így tovább!",
+  "Bravó, ezt a nehéz feladatot is megoldottad!",
+  "Kiváló, egyre közelebb vagy a csúcshoz!",
+  "Hűha, ez egy profi megoldás volt!",
+  "Nagyszerű, a matek mestere vagy!",
+  "Remekül teljesítesz, folytasd ebben a szellemben!"
+];
 
 // --- FELADATTÍPUSOK ---
 const taskTypes = [
@@ -14,6 +26,14 @@ const taskTypes = [
     generate: (difficulty) => {
       const { min, max } = DIFFICULTY_SETTINGS[difficulty];
       let num1 = getRandomInt(min, max), num2 = getRandomInt(min, max);
+      if (difficulty === "hard") {
+        let num3 = getRandomInt(min, max);
+        return {
+          display: `<b>${num1}</b> + <b>${num2}</b> + <b>${num3}</b>`,
+          answer: (num1 + num2 + num3).toString(),
+          answerType: "number"
+        };
+      }
       return {
         display: `<b>${num1}</b> + <b>${num2}</b>`,
         answer: (num1 + num2).toString(),
@@ -27,6 +47,14 @@ const taskTypes = [
     generate: (difficulty) => {
       const { min, max } = DIFFICULTY_SETTINGS[difficulty];
       let num1 = getRandomInt(min, max), num2 = getRandomInt(min, max);
+      if (difficulty === "hard") {
+        let num3 = getRandomInt(min, max);
+        return {
+          display: `<b>${num1}</b> - <b>${num2}</b> - <b>${num3}</b>`,
+          answer: (num1 - num2 - num3).toString(),
+          answerType: "number"
+        };
+      }
       return {
         display: `<b>${num1}</b> - <b>${num2}</b>`,
         answer: (num1 - num2).toString(),
@@ -40,6 +68,14 @@ const taskTypes = [
     generate: (difficulty) => {
       const { min, max } = DIFFICULTY_SETTINGS[difficulty];
       let num1 = getRandomInt(min, max), num2 = getRandomInt(min, max);
+      if (difficulty === "hard") {
+        let num3 = getRandomInt(Math.floor(min / 2), Math.floor(max / 2));
+        return {
+          display: `<b>${num1}</b> × <b>${num2}</b> × <b>${num3}</b>`,
+          answer: (num1 * num2 * num3).toString(),
+          answerType: "number"
+        };
+      }
       return {
         display: `<b>${num1}</b> × <b>${num2}</b>`,
         answer: (num1 * num2).toString(),
@@ -56,6 +92,15 @@ const taskTypes = [
       let maxDivisor = difficulty === "easy" ? 10 : difficulty === "medium" ? 20 : 50;
       let num2 = getRandomInt(minDivisor, maxDivisor);
       let answer = getRandomInt(min, max);
+      if (difficulty === "hard") {
+        let num3 = getRandomInt(minDivisor, maxDivisor);
+        let num1 = answer * num2 * num3;
+        return {
+          display: `<b>${num1}</b> ÷ <b>${num2}</b> ÷ <b>${num3}</b>`,
+          answer: (num1 / num2 / num3).toString(),
+          answerType: "number"
+        };
+      }
       return {
         display: `<b>${num2 * answer}</b> ÷ <b>${num2}</b>`,
         answer: answer.toString(),
@@ -68,14 +113,14 @@ const taskTypes = [
     value: "mind_negy_muvelet",
     generate: (difficulty) => {
       const { min, max } = DIFFICULTY_SETTINGS[difficulty];
-      let opCount = difficulty === "easy" ? 2 : difficulty === "medium" ? 3 : 4;
+      let opCount = difficulty === "easy" ? 2 : difficulty === "medium" ? 3 : 5;
       const opList = ["+", "-", "×", "÷"];
       let nums = [];
       let ops = [];
       let lastVal = getRandomInt(min, max);
       nums.push(lastVal);
       let minDivisor = difficulty === "easy" ? 1 : difficulty === "medium" ? 2 : 5;
-      let maxDivisor = difficulty === "easy" ? 10 : difficulty === "medium" ? 20 : 50;
+      let maxDivisor = difficulty === "easy" ? 10 : difficulty === "medium" ? 20 : 100;
       for (let j = 0; j < opCount; j++) {
         let op = opList[getRandomInt(0, 3)];
         if (op === "÷") {
@@ -113,7 +158,7 @@ const taskTypes = [
     value: "zarojeles_kifejezesek",
     generate: (difficulty) => {
       const { min, max } = DIFFICULTY_SETTINGS[difficulty];
-      let opCount = difficulty === "easy" ? 2 : difficulty === "medium" ? 4 : 6;
+      let opCount = difficulty === "easy" ? 2 : difficulty === "medium" ? 4 : 8;
       return generateBracketedExpression(opCount, min, max);
     }
   },
@@ -123,9 +168,20 @@ const taskTypes = [
     generate: (difficulty) => {
       const { min, max } = DIFFICULTY_SETTINGS[difficulty];
       let minDenom = difficulty === "easy" ? 2 : difficulty === "medium" ? 3 : 5;
-      let maxDenom = difficulty === "easy" ? 8 : difficulty === "medium" ? 12 : 20;
+      let maxDenom = difficulty === "easy" ? 8 : difficulty === "medium" ? 15 : 30;
       let b = getRandomInt(minDenom, maxDenom), d = getRandomInt(minDenom, maxDenom);
       let a = getRandomInt(1, b - 1), c = getRandomInt(1, d - 1);
+      if (difficulty === "hard") {
+        let e = getRandomInt(1, b - 1), f = getRandomInt(minDenom, maxDenom);
+        let numerator = (a * d * f + c * b * f + e * b * d);
+        let denominator = b * d * f;
+        let [num, denom] = simplifyFraction(numerator, denominator);
+        return {
+          display: `${a}/${b} + ${c}/${d} + ${e}/${f}`,
+          answer: `${num}/${denom}`,
+          answerType: "fraction"
+        };
+      }
       let numerator = a * d + c * b;
       let denominator = b * d;
       let [num, denom] = simplifyFraction(numerator, denominator);
@@ -140,17 +196,17 @@ const taskTypes = [
     name: "Százalékszámítás",
     value: "szazalekszamitas",
     generate: (difficulty) => {
-      let percentArrEasy = [10, 20, 50, 120, 150, 250];
-      let percentArrMedium = [5, 10, 20, 25, 50, 75, 120, 125, 150, 250];
-      let percentArrHard = [2, 5, 15, 33, 66, 75, 80, 125, 150, 200, 300];
+      let percentArrEasy = [10, 20, 50, 100];
+      let percentArrMedium = [5, 15, 25, 50, 75, 100];
+      let percentArrHard = [2, 3, 7, 15, 33, 66, 125, 150, 200];
       let percentArr = difficulty === "easy" ? percentArrEasy : difficulty === "medium" ? percentArrMedium : percentArrHard;
       let baseCandidates = [];
       if (difficulty === "easy") {
-        for (let i = 10; i <= 200; i += 10) baseCandidates.push(i);
+        for (let i = 10; i <= 100; i += 10) baseCandidates.push(i);
       } else if (difficulty === "medium") {
-        for (let i = 10; i <= 200; i += 5) if (i % 5 === 0) baseCandidates.push(i);
+        for (let i = 10; i <= 200; i += 5) baseCandidates.push(i);
       } else {
-        for (let i = 10; i <= 200; i++) baseCandidates.push(i);
+        for (let i = 10; i <= 500; i++) baseCandidates.push(i);
       }
       let percent = percentArr[getRandomInt(0, percentArr.length - 1)];
       let base = baseCandidates[getRandomInt(0, baseCandidates.length - 1)];
@@ -174,10 +230,23 @@ const taskTypes = [
     value: "egyenletek_atrendezese",
     generate: (difficulty) => {
       const { min, max } = DIFFICULTY_SETTINGS[difficulty];
-      let aMin = difficulty === "easy" ? 1 : difficulty === "medium" ? 2 : 3;
-      let aMax = difficulty === "easy" ? 5 : difficulty === "medium" ? 10 : 20;
-      let bMin = difficulty === "easy" ? -5 : difficulty === "medium" ? -15 : -30;
-      let bMax = difficulty === "easy" ? 5 : difficulty === "medium" ? 15 : 30;
+      if (difficulty === "hard") {
+        let a = getRandomInt(2, 10);
+        let b = getRandomInt(2, 10);
+        let c = getRandomInt(2, 10);
+        let d = getRandomInt(-50, 50);
+        let x = getRandomInt(min, max);
+        let result = (a * x * b) / c + d;
+        return {
+          display: `${a}x × ${b} ÷ ${c} ${d >= 0 ? "+" : "-"} ${Math.abs(d)} = ${result}    | x`,
+          answer: x.toString(),
+          answerType: "number"
+        };
+      }
+      let aMin = difficulty === "easy" ? 1 : 2;
+      let aMax = difficulty === "easy" ? 5 : 10;
+      let bMin = difficulty === "easy" ? -5 : -15;
+      let bMax = difficulty === "easy" ? 5 : 15;
       let x = getRandomInt(min, max);
       let a = getRandomInt(aMin, aMax);
       let b = getRandomInt(bMin, bMax);
@@ -196,7 +265,7 @@ const taskTypes = [
       const ranges = {
         easy: { mAMin: 100, mAMax: 1000, kOhmMin: 1, kOhmMax: 10, ohmMin: 100, ohmMax: 1000, ampMin: 1, ampMax: 10, mVMin: 100, mVMax: 1000 },
         medium: { mAMin: 100, mAMax: 3000, kOhmMin: 1, kOhmMax: 15, ohmMin: 100, ohmMax: 3000, ampMin: 1, ampMax: 15, mVMin: 100, mVMax: 3000 },
-        hard: { mAMin: 100, mAMax: 5000, kOhmMin: 1, kOhmMax: 20, ohmMin: 100, ohmMax: 5000, ampMin: 1, ampMax: 20, mVMin: 100, mVMax: 5000 }
+        hard: { mAMin: 100, mAMax: 10000, kOhmMin: 1, kOhmMax: 50, ohmMin: 100, ohmMax: 10000, ampMin: 1, ampMax: 50, mVMin: 100, mVMax: 10000 }
       };
       const { mAMin, mAMax, kOhmMin, kOhmMax, ohmMin, ohmMax, ampMin, ampMax, mVMin, mVMax } = ranges[difficulty];
       const types = [
@@ -209,7 +278,7 @@ const taskTypes = [
           };
         },
         () => {
-          let kOhm = (getRandomInt(kOhmMin, kOhmMax) / 10).toFixed(1);
+          let kOhm = (getRandomInt(kOhmMin * 10, kOhmMax * 10) / 10).toFixed(1);
           return {
             display: `<b>${kOhm} kΩ</b> = ? Ω`,
             answer: (parseFloat(kOhm) * 1000).toString(),
@@ -225,7 +294,7 @@ const taskTypes = [
           };
         },
         () => {
-          let amp = (getRandomInt(ampMin, ampMax) / 100).toFixed(2);
+          let amp = (getRandomInt(ampMin * 100, ampMax * 100) / 100).toFixed(2);
           return {
             display: `<b>${amp} A</b> = ? mA`,
             answer: (parseFloat(amp) * 1000).toString(),
@@ -259,11 +328,11 @@ const taskTypes = [
         if (base < 0) exponent = 2;
       } else {
         base = getRandomInt(-50, 50);
-        exponent = getRandomInt(2, 5);
-        if (base < 0) exponent = getRandomInt(2, 3);
+        exponent = getRandomInt(3, 6);
+        if (base < 0) exponent = getRandomInt(3, 4);
       }
       answer = Math.pow(base, exponent);
-      if (Math.abs(answer) > 100000) {
+      if (Math.abs(answer) > 1000000) {
         base = getRandomInt(1, 10);
         exponent = 2;
         answer = Math.pow(base, exponent);
@@ -280,12 +349,35 @@ const taskTypes = [
     value: "ohm_torveny",
     generate: (difficulty) => {
       const { min, max } = DIFFICULTY_SETTINGS[difficulty];
-      let maxI = difficulty === "easy" ? 10 : difficulty === "medium" ? 15 : 20;
-      let maxR = difficulty === "easy" ? 10 : difficulty === "medium" ? 50 : 100;
-      let I = getRandomInt(1, maxI); // Áram (A)
-      let R = getRandomInt(1, maxR); // Ellenállás (Ω)
-      let U = I * R; // Feszültség (V)
-      let type = getRandomInt(0, 2); // Változó: U, I, vagy R
+      let maxI = difficulty === "easy" ? 10 : difficulty === "medium" ? 20 : 50;
+      let maxR = difficulty === "easy" ? 10 : difficulty === "medium" ? 50 : 200;
+      let I = getRandomInt(1, maxI);
+      let R = getRandomInt(1, maxR);
+      let U = I * R;
+      let type = getRandomInt(0, 2);
+      if (difficulty === "hard") {
+        let R2 = getRandomInt(1, maxR);
+        U = I * (R + R2);
+        if (type === 0) {
+          return {
+            display: `Mennyi a feszültség, ha <b>I = ${I} A</b> és <b>R = ${R} Ω + ${R2} Ω</b>?`,
+            answer: U.toString(),
+            answerType: "number"
+          };
+        } else if (type === 1) {
+          return {
+            display: `Mennyi az áram, ha <b>U = ${U} V</b> és <b>R = ${R} Ω + ${R2} Ω</b>?`,
+            answer: I.toString(),
+            answerType: "decimal"
+          };
+        } else {
+          return {
+            display: `Mennyi az ellenállás, ha <b>U = ${U} V</b> és <b>I = ${I} A</b>?`,
+            answer: (R + R2).toString(),
+            answerType: "number"
+          };
+        }
+      }
       if (type === 0) {
         return {
           display: `Mennyi a feszültség, ha <b>I = ${I} A</b> és <b>R = ${R} Ω</b>?`,
@@ -312,11 +404,20 @@ const taskTypes = [
     value: "teljesitmeny",
     generate: (difficulty) => {
       const { min, max } = DIFFICULTY_SETTINGS[difficulty];
-      let maxU = difficulty === "easy" ? 20 : difficulty === "medium" ? 50 : 100;
-      let maxI = difficulty === "easy" ? 10 : difficulty === "medium" ? 15 : 20;
-      let U = getRandomInt(10, maxU); // Feszültség (V)
-      let I = getRandomInt(1, maxI); // Áram (A)
-      let P = U * I; // Teljesítmény (W)
+      let maxU = difficulty === "easy" ? 20 : difficulty === "medium" ? 50 : 200;
+      let maxI = difficulty === "easy" ? 10 : difficulty === "medium" ? 20 : 50;
+      let U = getRandomInt(10, maxU);
+      let I = getRandomInt(1, maxI);
+      let P = U * I;
+      if (difficulty === "hard") {
+        let I2 = getRandomInt(1, maxI);
+        P = U * (I + I2);
+        return {
+          display: `Mennyi a teljesítmény, ha <b>U = ${U} V</b>, <b>I₁ = ${I} A</b> és <b>I₂ = ${I2} A</b>?`,
+          answer: P.toString(),
+          answerType: "number"
+        };
+      }
       return {
         display: `Mennyi a teljesítmény, ha <b>U = ${U} V</b> és <b>I = ${I} A</b>?`,
         answer: P.toString(),
@@ -447,6 +548,87 @@ function simplifyFraction(num, denom) {
   return [num / d, denom / d];
 }
 
+function generateBracketedExpression(opCount, min, max) {
+  const opList = ["+", "-", "×", "÷"];
+  let elements, exprParts, displayExpr, answer;
+  let maxTries = 100;
+  let tryCount = 0;
+  let minDivisor = opCount === 2 ? 1 : opCount === 4 ? 2 : 5;
+  let maxDivisor = opCount === 2 ? 10 : opCount === 4 ? 20 : 100;
+  do {
+    elements = [];
+    for (let i = 0; i < opCount + opCount + 1; i++) {
+      if (i % 2 === 0) {
+        elements.push(getRandomInt(min, max));
+      } else {
+        let op = opList[getRandomInt(0, opList.length - 1)];
+        if (op === "÷") {
+          elements.push(op);
+          elements[i - 1] = elements[i - 1] * getRandomInt(minDivisor, maxDivisor);
+        } else {
+          elements.push(op);
+        }
+      }
+    }
+    let possibleParenRanges = [];
+    for (let i = 0; i < elements.length - 2; i += 2) {
+      possibleParenRanges.push([i, i + 2]);
+    }
+    let parenRanges = [];
+    let used = Array(elements.length).fill(false);
+    let numParens = getRandomInt(1, Math.max(1, Math.floor(opCount / 2)));
+    let tries = 0;
+    while (parenRanges.length < numParens && tries < 50) {
+      let idx = getRandomInt(0, possibleParenRanges.length - 1);
+      let [start, end] = possibleParenRanges[idx];
+      let overlap = false;
+      for (let j = start; j <= end; j++) {
+        if (used[j]) { overlap = true; break; }
+      }
+      if (!overlap) {
+        parenRanges.push([start, end]);
+        for (let j = start; j <= end; j++) used[j] = true;
+      }
+      tries++;
+    }
+    parenRanges.sort((a, b) => a[0] - b[0]);
+    exprParts = elements.slice();
+    let offset = 0;
+    for (let [start, end] of parenRanges) {
+      exprParts.splice(start + offset, 0, "(");
+      offset++;
+      exprParts.splice(end + 1 + offset, 0, ")");
+      offset++;
+    }
+    displayExpr = "";
+    for (let i = 0; i < exprParts.length; i++) {
+      if (exprParts[i] === "(" || exprParts[i] === ")") {
+        displayExpr += exprParts[i] + " ";
+      } else if (["+", "-", "×", "÷"].includes(exprParts[i])) {
+        displayExpr += " " + exprParts[i] + " ";
+      } else {
+        displayExpr += exprParts[i];
+      }
+    }
+    displayExpr = displayExpr.trim();
+    let evalExpr = displayExpr.replace(/×/g, '*').replace(/÷/g, '/').replace(/\s/g, '');
+    try {
+      answer = eval(evalExpr);
+    } catch {
+      answer = null;
+    }
+    tryCount++;
+  } while (
+    (typeof answer !== "number" || !isFinite(answer) || isNaN(answer) || answer !== Math.round(answer)) 
+    && tryCount < maxTries
+  );
+  return {
+    display: displayExpr,
+    answer: Math.round(answer).toString(),
+    answerType: "number"
+  };
+}
+
 // --- FELADATSOR GENERÁLÁSA ---
 function generateQuestions() {
   const difficulty = difficultySelect.value;
@@ -533,7 +715,7 @@ function renderNumpad(answerState, onChange) {
               alert("Érvénytelen szám! Írj be egy egész számot.");
               return;
             }
-            if (categorySelect.value === "Százalékszámítás") {
+            if (categorySelect.value === "szazalekszamitas") {
               if (Math.round(userAnswer) === correctAnswer) {
                 correct = true;
               }
@@ -546,6 +728,13 @@ function renderNumpad(answerState, onChange) {
 
           if (correct) {
             score++;
+            // Motiváló üzenetek
+            if (difficultySelect.value === "hard") {
+              const message = motivationalMessages[getRandomInt(0, motivationalMessages.length - 1)];
+              alert(message);
+            } else if (difficultySelect.value === "medium" && currentQuestion === QUESTIONS - 2) {
+              alert("Gratulálok, csak így tovább, mindjárt a végére érsz!");
+            }
             currentQuestion++;
             showQuestion(currentQuestion);
           } else {
