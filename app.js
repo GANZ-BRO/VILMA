@@ -529,7 +529,7 @@ function renderNumpad(answerState, onChange) {
     }
 }
 else if (["Összeadás","Kivonás","Szorzás","Osztás","Mind a négy művelet","Zárójeles kifejezések","Egyenletek átrendezése"].includes(categorySelect.value)) {
-    if (parseFloat(val) === (questions[currentQuestion] || {}).answer) correct = true;
+    if (parseFloat(val.replace(',', '.')) === parseFloat((questions[currentQuestion] || {}).answer).replace(',', '.'))) correct = true;
 }
           if (correct) {
             score++;
