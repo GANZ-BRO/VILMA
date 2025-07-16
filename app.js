@@ -163,6 +163,37 @@ const taskTypes = [
     }
   },
   {
+    name: "Hatványozás",
+    value: "hatvanyozas",
+    generate: (difficulty) => {
+      const { min, max } = DIFFICULTY_SETTINGS[difficulty];
+      let base, exponent, answer;
+      if (difficulty === "easy") {
+        base = getRandomInt(1, 10);
+        exponent = getRandomInt(2, 3);
+      } else if (difficulty === "medium") {
+        base = getRandomInt(-10, 20);
+        exponent = getRandomInt(2, 4);
+        if (base < 0) exponent = 2;
+      } else {
+        base = getRandomInt(-50, 50);
+        exponent = getRandomInt(3, 6);
+        if (base < 0) exponent = getRandomInt(3, 4);
+      }
+      answer = Math.pow(base, exponent);
+      if (Math.abs(answer) > 1000000) {
+        base = getRandomInt(1, 10);
+        exponent = 2;
+        answer = Math.pow(base, exponent);
+      }
+      return {
+        display: `Mennyi <b>${base}<sup>${exponent}</sup></b>?`,
+        answer: answer.toString(),
+        answerType: "number"
+      };
+    }
+  },
+  {
     name: "Törtek",
     value: "tortek",
     generate: (difficulty) => {
@@ -311,37 +342,6 @@ const taskTypes = [
         }
       ];
       return types[getRandomInt(0, types.length - 1)]();
-    }
-  },
-  {
-    name: "Hatványozás",
-    value: "hatvanyozas",
-    generate: (difficulty) => {
-      const { min, max } = DIFFICULTY_SETTINGS[difficulty];
-      let base, exponent, answer;
-      if (difficulty === "easy") {
-        base = getRandomInt(1, 10);
-        exponent = getRandomInt(2, 3);
-      } else if (difficulty === "medium") {
-        base = getRandomInt(-10, 20);
-        exponent = getRandomInt(2, 4);
-        if (base < 0) exponent = 2;
-      } else {
-        base = getRandomInt(-50, 50);
-        exponent = getRandomInt(3, 6);
-        if (base < 0) exponent = getRandomInt(3, 4);
-      }
-      answer = Math.pow(base, exponent);
-      if (Math.abs(answer) > 1000000) {
-        base = getRandomInt(1, 10);
-        exponent = 2;
-        answer = Math.pow(base, exponent);
-      }
-      return {
-        display: `Mennyi <b>${base}<sup>${exponent}</sup></b>?`,
-        answer: answer.toString(),
-        answerType: "number"
-      };
     }
   },
   {
