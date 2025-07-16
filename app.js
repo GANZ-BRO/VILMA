@@ -255,6 +255,51 @@ const taskTypes = [
         answerType: "number"
       };
     }
+  },
+  {
+    name: "Ohm-törvény",
+    value: "ohm_torveny",
+    generate: (difficulty) => {
+      const { min, max } = DIFFICULTY_SETTINGS[difficulty];
+      let I = getRandomInt(1, max > 10 ? 10 : max); // Áram (A)
+      let R = getRandomInt(1, max > 100 ? 100 : max); // Ellenállás (Ω)
+      let U = I * R; // Feszültség (V)
+      let type = getRandomInt(0, 2); // Változó: U, I, vagy R
+      if (type === 0) {
+        return {
+          display: `Mennyi a feszültség, ha <b>I = ${I} A</b> és <b>R = ${R} Ω</b>?`,
+          answer: U.toString(),
+          answerType: "number"
+        };
+      } else if (type === 1) {
+        return {
+          display: `Mennyi az áram, ha <b>U = ${U} V</b> és <b>R = ${R} Ω</b>?`,
+          answer: I.toString(),
+          answerType: "decimal"
+        };
+      } else {
+        return {
+          display: `Mennyi az ellenállás, ha <b>U = ${U} V</b> és <b>I = ${I} A</b>?`,
+          answer: R.toString(),
+          answerType: "number"
+        };
+      }
+    }
+  },
+  {
+    name: "Teljesítmény",
+    value: "teljesitmeny",
+    generate: (difficulty) => {
+      const { min, max } = DIFFICULTY_SETTINGS[difficulty];
+      let U = getRandomInt(10, max > 100 ? 100 : max); // Feszültség (V)
+      let I = getRandomInt(1, max > 10 ? 10 : max); // Áram (A)
+      let P = U * I; // Teljesítmény (W)
+      return {
+        display: `Mennyi a teljesítmény, ha <b>U = ${U} V</b> és <b>I = ${I} A</b>?`,
+        answer: P.toString(),
+        answerType: "number"
+      };
+    }
   }
 ];
 
@@ -464,27 +509,30 @@ function generateQuestions() {
   const difficulty = difficultySelect.value;
   const category = categorySelect.value;
   questions = [];
-
   const taskType = taskTypes.find(t => t.value === category);
   if (!taskType) {
     questions.push({ display: "Hiba: kategória nincs implementálva", answer: null, answerType: "number" });
     return;
   }
-
   for (let i = 0; i < QUESTIONS; i++) {
-    questions.push(taskType.generate(difficulty));
+    const task = taskType.generate(difficulty);
+    if (!task.answer || task.answer === "?") {
+      task.display = "Hiba: érvénytelen feladat generálódott";
+      task.answer = null;
+    }
+    questions.push(task);
   }
 }
 
 // --- SZÁMBILLENTYŰZET ---
 function renderNumpad(answerState, onChange) {
   const rows = [
-    ['1','2','3','/','←'],
-    ['4','5','6','.','submit'],
-    ['7','8','9','0','-']
+    ['1', '2', '3', '/', '←'],
+    ['4', '5', '6', '.', 'submit'],
+    ['7', '8', '9', '0', '-']
   ];
   const numpadDiv = document.createElement('div');
-  numpadDiv.className = 'numpad';
+  numpadDiv.className = 'numpad active';
 
   rows.forEach((row) => {
     const rowDiv = document.createElement('div');
@@ -505,38 +553,55 @@ function renderNumpad(answerState, onChange) {
             return;
           }
           let correct = false;
-          if (categorySelect.value === "Törtek") {
-            let [ansNum, ansDen] = (questions[currentQuestion] || {}).answer?.split('/').map(Number);
-            let [userNum, userDen] = val.split('/').map(Number);
-            if (userNum && userDen) {
-              let [simpUserNum, simpUserDen] = simplifyFraction(userNum, userDen);
-              if (simpUserNum === ansNum && simpUserDen === ansDen) correct = true;
+          const currentTask = questions[currentQuestion] || {};
+          if (!currentTask.answer) {
+            alert("Hiba: nincs válasz definiálva!");
+            return;
+          }
+
+          if (currentTask.answerType === "fraction") {
+            const [ansNum, ansDen] = currentTask.answer.split('/').map(Number);
+            const [userNum, userDen] = val.split('/').map(Number);
+            if (!isNaN(userNum) && !isNaN(userDen) && userDen !== 0) {
+              const [simpUserNum, simpUserDen] = simplifyFraction(userNum, userDen);
+              if (simpUserNum === ansNum && simpUserDen === ansDen) {
+                correct = true;
+              }
             }
-          } else if (categorySelect.value === "Villamos mértékegységek") {
-              // A pont és a vessző egyenértékű
-              let correctAnswer = (questions[currentQuestion] || {}).answer.replace(',', '.');
-              let userAnswer = val.replace(',', '.');
-              if (parseFloat(userAnswer) === parseFloat(correctAnswer)) correct = true;
-          } else if (categorySelect.value === "Százalékszámítás") {
-    let correctAnswer = questions[currentQuestion]?.answer;
-    let userAnswer = parseFloat(val.replace(',', '.'));
-    // Fogadja el a pontos tizedest és a kerekített egész választ is
-    if (
-      userAnswer === correctAnswer || 
-      Math.round(userAnswer) === Math.round(correctAnswer)
-    ) {
-      correct = true;
-    }
-}
-else if (["Összeadás","Kivonás","Szorzás","Osztás","Mind a négy művelet","Zárójeles kifejezések","Egyenletek átrendezése"].includes(categorySelect.value)) {
-    if (parseFloat(val.replace(',', '.')) === parseFloat((questions[currentQuestion] || {}).answer).replace(',', '.'))) correct = true;
-}
+          } else if (currentTask.answerType === "decimal") {
+            const correctAnswer = parseFloat(currentTask.answer.replace(',', '.'));
+            const userAnswer = parseFloat(val.replace(',', '.'));
+            if (!isNaN(userAnswer) && !isNaN(correctAnswer) && userAnswer === correctAnswer) {
+              correct = true;
+            }
+          } else if (currentTask.answerType === "number") {
+            const correctAnswer = parseInt(currentTask.answer.replace(',', '.'));
+            const userAnswer = parseInt(val.replace(',', '.'));
+            if (!isNaN(userAnswer) && !isNaN(correctAnswer)) {
+              if (categorySelect.value === "Százalékszámítás") {
+                if (userAnswer === correctAnswer || Math.round(parseFloat(val.replace(',', '.'))) === correctAnswer) {
+                  correct = true;
+                }
+              } else {
+                if (userAnswer === correctAnswer) {
+                  correct = true;
+                }
+              }
+            }
+          }
+
           if (correct) {
             score++;
             currentQuestion++;
             showQuestion(currentQuestion);
           } else {
-            alert("Nem jó válasz, próbáld újra!");
+            if (currentTask.answerType === "fraction" && (isNaN(userNum) || isNaN(userDen) || userDen === 0)) {
+              alert("Érvénytelen tört formátum! Írj be egy törtet, pl. '3/4'.");
+            } else if ((currentTask.answerType === "decimal" || currentTask.answerType === "number") && isNaN(userAnswer)) {
+              alert("Érvénytelen szám! Írj be egy számot.");
+            } else {
+              alert("Nem jó válasz, próbáld újra!");
+            }
           }
         };
         rowDiv.appendChild(submitBtn);
@@ -545,7 +610,7 @@ else if (["Összeadás","Kivonás","Szorzás","Osztás","Mind a négy művelet",
         btn.type = 'button';
         btn.className = 'numpad-btn';
         btn.textContent = key;
-        btn.tabIndex = 0;
+        btn.tabIndex = -1;
         btn.onclick = () => {
           if (key === '←') {
             answerState.value = answerState.value.slice(0, -1);
@@ -600,6 +665,7 @@ function showQuestion(index) {
     answerView.textContent = val;
   });
 
+  numpadContainer.innerHTML = "";
   numpadContainer.appendChild(numpad);
   numpadContainer.classList.add("active");
   quizContainer.appendChild(div);

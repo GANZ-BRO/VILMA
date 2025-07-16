@@ -1,36 +1,43 @@
 <!DOCTYPE html>
-
 <html lang="hu">
 <head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1, user-scalable=no" name="viewport"/>
-<title>VILLMA</title>
-<link href="manifest.json" rel="manifest"/>
-<link href="icon-192.png" rel="icon"/>
-<meta content="#3578e5" name="theme-color"/>
-<link href="style.css" rel="stylesheet"/>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1, user-scalable=no" name="viewport"/>
+    <title>VILMA</title>
+    <link href="manifest.json" rel="manifest"/>
+    <link href="icon-192.png" rel="icon"/>
+    <meta content="#3578e5" name="theme-color"/>
+    <link href="style.css" rel="stylesheet"/>
 </head>
 <body>
-<header>
-<p class="subtitle">VILMA gyakorlás</p>
-<button aria-label="Téma váltása" id="theme-toggle">🌗</button>
-</header>
-<label for="category">Kategória:</label>
-<select id="category" name="category">
-<!-- Kategóriák JavaScriptből töltődnek be -->
-</select>
-<label for="difficulty">Nehézségi szint:</label>
-<select id="difficulty" name="difficulty">
-<option value="easy">Könnyű</option>
-<option value="medium">Közepes</option>
-<option value="hard">Kihívás</option>
-</select>
-<button onclick="startGame()">Játék indítása</button>
-<p>⏱️ Idő: <span id="time">0</span> mp</p>
-<button id="restart-btn" style="display: none;">Újrajátszás</button>
-<div id="best-stats"></div>
-<div id="quiz"></div>
-<div class="numpad" id="numpad-container"></div>
-<script src="app.js"></script>
+    <header>
+        <h1 class="subtitle">VILMA gyakorlás</h1>
+        <button aria-label="Téma váltása" id="theme-toggle">🌗</button>
+    </header>
+    <main>
+        <div class="settings">
+            <div>
+                <label for="category">Kategória:</label>
+                <select id="category" name="category"></select>
+            </div>
+            <div>
+                <label for="difficulty">Nehézségi szint:</label>
+                <select id="difficulty" name="difficulty">
+                    <option value="easy">Könnyű</option>
+                    <option value="medium">Közepes</option>
+                    <option value="hard">Kihívás</option>
+                </select>
+            </div>
+        </div>
+        <div class="game-stats">
+            <button aria-label="Játék indítása" onclick="startGame()" class="big-btn">Játék indítása</button>
+            <button aria-label="Újrajátszás" id="restart-btn" class="big-btn" style="display: none;">Újrajátszás</button>
+            <p class="stat">⏱️ Idő: <span id="time">0</span> mp</p>
+            <div id="best-stats" class="best"></div>
+        </div>
+        <div id="quiz"></div>
+        <div id="numpad-container"></div>
+    </main>
+    <script src="app.js"></script>
 </body>
 </html>
