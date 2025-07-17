@@ -12,8 +12,9 @@
   --primary: #3578e5;
   --primary-dark: #2851a3;
   --success: #4bb543;
-  --submit-btn-bg: #52aaff;
+  --submit-btn-bg: #52aaff; /* Kék az Enter gombhoz */
   --submit-btn-bg-hover: #199cff;
+  --flash-color: #90EE90; /* Világoszöld a numpad felvillanáshoz */
 }
 
 body {
@@ -35,52 +36,53 @@ body.light {
 main {
   max-width: 440px;
   margin: auto;
-  padding: 0.5em; /* Szorosabb: csökkentve 1em-ről */
+  padding: 0.5em;
+  position: relative; /* Hogy a téma váltó fix pozíciója működjön */
 }
 
 header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 0.3em; /* Szorosabb: csökkentve 0.5em-ről */
+  gap: 0.3em;
   flex-wrap: wrap;
-  padding: 0.3em 0.5em; /* Szorosabb: csökkentve 0.5em 1em-ről */
+  padding: 0.3em 0.5em;
 }
 
 h1.subtitle {
-  font-size: 1.2em; /* Szorosabb: csökkentve 1.4em-ről */
+  font-size: 1.2em; /* VALI gyakorlás cím mérete */
   margin: 0;
   font-weight: 600;
 }
 
 .settings {
   display: flex;
-  flex-direction: column; /* Függőleges elrendezés a szorosabb megjelenéshez */
-  gap: 0.5em; /* Szorosabb: csökkentve 1em-ről */
-  margin: 0.5em 0; /* Szorosabb: csökkentve 1em-ről */
+  flex-direction: column;
+  gap: 0.5em;
+  margin: 0.5em 0;
 }
 
 .settings > div {
   display: flex;
-  align-items: center; /* Címke és választó egy sorban */
-  gap: 0.5em; /* Szorosabb térköz a címke és a választó között */
+  align-items: center;
+  gap: 0.5em;
 }
 
 .settings label {
-  font-size: 0.95em; /* Szorosabb: csökkentve 1em-ről */
+  font-size: 0.95em;
   font-weight: 500;
-  white-space: nowrap; /* Címke ne törjön sorba */
+  white-space: nowrap;
 }
 
 select {
-  font-size: 0.95em; /* Szorosabb: csökkentve 1.05em-ről */
-  padding: 0.3em; /* Szorosabb: csökkentve 0.5em-ről */
-  border-radius: 4px; /* Kisebb lekerekítés */
+  font-size: 0.95em;
+  padding: 0.3em;
+  border-radius: 4px;
   border: 1px solid var(--input-border-dark);
   background: var(--input-bg-dark);
   color: var(--input-text-dark);
-  width: auto; /* Automatikus szélesség az egysoros elrendezéshez */
-  flex-grow: 1; /* Kitölti a rendelkezésre álló helyet */
+  width: auto;
+  flex-grow: 1;
   transition: background 0.3s, color 0.3s, border 0.3s;
 }
 
@@ -93,20 +95,20 @@ body.light select {
 .game-stats {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5em; /* Szorosabb: csökkentve 1em-ről */
+  gap: 0.5em;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 0.5em; /* Szorosabb: csökkentve 1em-ről */
+  margin-bottom: 0.5em;
 }
 
 .stat {
   font-weight: bold;
-  font-size: 1em; /* Szorosabb: csökkentve 1.05em-ről */
+  font-size: 1em;
 }
 
 .best {
-  font-size: 0.9em; /* Szorosabb: csökkentve 0.98em-ről */
-  margin-top: 0.2em; /* Szorosabb: csökkentve 0.25em-ről */
+  font-size: 0.9em;
+  margin-top: 0.2em;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -118,11 +120,11 @@ body.light select {
 }
 
 #quiz > div {
-  margin-bottom: 12px; /* Szorosabb: csökkentve 18px-ről */
-  border-radius: 6px; /* Kisebb lekerekítés */
-  padding: 0.5em; /* Szorosabb: csökkentve 1em-ről */
+  margin-bottom: 12px;
+  border-radius: 6px;
+  padding: 0.5em;
   background: rgba(0,0,0,0.05);
-  box-shadow: 0 2px 6px 0 rgba(0,0,0,0.05); /* Finomabb árnyék */
+  box-shadow: 0 2px 6px 0 rgba(0,0,0,0.05);
 }
 
 body.light #quiz > div {
@@ -134,36 +136,36 @@ body.light #quiz > div {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 6px; /* Szorosabb: csökkentve 10px-ről */
+  gap: 6px;
 }
 
 .question-number {
-  margin-bottom: 0.1em; /* Szorosabb: csökkentve 0.2em-ről */
-  font-size: 1.1em; /* Szorosabb: csökkentve 1.2em-ről */
+  margin-bottom: 0.1em;
+  font-size: 1.1em;
 }
 
 .question-text {
   font-weight: bold;
-  font-size: 1.6em; /* Szorosabb: csökkentve 1.8em-ről */
-  margin-bottom: 0.5em; /* Szorosabb: csökkentve 0.7em-ről */
+  font-size: 1.6em;
+  margin-bottom: 0.5em;
 }
 
 .answer-view {
-  font-size: 1.3em; /* Szorosabb: csökkentve 1.4em-ről */
-  padding: 6px; /* Szorosabb: csökkentve 8px-ről */
-  margin: 6px 0; /* Szorosabb: csökkentve 10px-ről */
+  font-size: 1.3em;
+  padding: 6px;
+  margin: 6px 0;
   border: 2px solid var(--input-border-dark);
   background: var(--input-bg-dark);
   color: var(--input-text-dark);
-  border-radius: 4px; /* Kisebb lekerekítés */
-  min-width: 120px; /* Szorosabb: csökkentve 150px-ről */
-  min-height: 36px; /* Szorosabb: csökkentve 40px-ről */
+  border-radius: 4px;
+  min-width: 120px;
+  min-height: 36px;
   box-sizing: border-box;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   text-align: center;
-  max-width: 250px; /* Szorosabb: csökkentve 300px-ről */
+  max-width: 250px;
   align-self: center;
 }
 
@@ -180,11 +182,11 @@ body.light .answer-view {
 
 .big-btn, button {
   display: inline-block;
-  font-size: 1.1em; /* Szorosabb: csökkentve 1.2em-ről */
-  padding: 0.5em 1em; /* Szorosabb: csökkentve 0.7em 1.3em-ről */
+  font-size: 1.1em;
+  padding: 0.5em 1em;
   border: none;
-  border-radius: 6px; /* Kisebb lekerekítés */
-  margin: 0.3em 0; /* Szorosabb: csökkentve 0.5em-ről */
+  border-radius: 6px;
+  margin: 0.3em 0;
   background: var(--primary);
   color: #fff;
   font-weight: 600;
@@ -205,15 +207,18 @@ button:hover, .big-btn:hover, button:focus, .big-btn:focus {
   background: none;
   color: inherit;
   box-shadow: none;
-  border: none; /* Ovális alakzat eltávolítva */
+  border: none;
   margin: 0;
+  position: absolute; /* Fix pozíció a téma váltóhoz */
+  top: 0.5em;
+  right: 0.5em;
 }
 
 .numpad {
   display: none;
   flex-direction: column;
-  gap: 0.3em; /* Szorosabb: csökkentve 0.5em-ről */
-  margin-top: 6px; /* Szorosabb: csökkentve 10px-ről */
+  gap: 0.3em;
+  margin-top: 6px;
   position: sticky;
   bottom: 0;
   background: inherit;
@@ -229,15 +234,15 @@ button:hover, .big-btn:hover, button:focus, .big-btn:focus {
 
 .numpad-row {
   display: flex;
-  gap: 0.3em; /* Szorosabb: csökkentve 0.5em-ről */
+  gap: 0.3em;
   width: 100%;
 }
 
 .numpad-btn, .numpad-submit-btn {
   flex: 1;
   aspect-ratio: 1/1;
-  font-size: 1.2em; /* Szorosabb: csökkentve 1.25em-ről */
-  border-radius: 0.4em; /* Kisebb lekerekítés */
+  font-size: 1.2em;
+  border-radius: 0.4em;
   border: none;
   background: var(--input-bg-dark);
   color: var(--input-text-dark);
@@ -249,7 +254,7 @@ button:hover, .big-btn:hover, button:focus, .big-btn:focus {
   padding: 0;
   box-sizing: border-box;
   transition: background 0.2s, color 0.2s, transform 0.1s;
-  max-height: 3.5em; /* Szorosabb: csökkentve 4em-ről */
+  max-height: 3.5em;
 }
 
 body.light .numpad-btn, body.light .numpad-submit-btn {
@@ -258,14 +263,18 @@ body.light .numpad-btn, body.light .numpad-submit-btn {
   border: 1px solid var(--input-border-light);
 }
 
-.numpad-btn:active, .numpad-btn:focus, .numpad-submit-btn:active, .numpad-submit-btn:focus {
-  background: var(--primary);
-  color: #fff;
-  outline: 2px solid var(--primary-dark);
+.numpad-btn.flash {
+  background: var(--flash-color); /* Világoszöld felvillanás */
+  transition: background 0.2s;
+}
+
+.numpad-btn:active, .numpad-btn:focus {
+  background: transparent; /* Tartós kék szín eltávolítva */
+  outline: none;
 }
 
 .numpad-submit-btn {
-  background: var(--submit-btn-bg);
+  background: var(--submit-btn-bg); /* Kék szín az Enter gombhoz */
   color: #fff;
   border: 1px solid #199cff;
 }
@@ -287,17 +296,17 @@ body.light .numpad-btn, body.light .numpad-submit-btn {
 
 @media (max-width: 600px) {
   main {
-    padding: 0.3em; /* Szorosabb: csökkentve 0.5em-ről */
+    padding: 0.3em;
   }
   h1.subtitle {
-    font-size: 1em; /* Szorosabb: csökkentve 1.1em-ről */
+    font-size: 1em;
   }
   .settings {
-    gap: 0.3em; /* Szorosabb: csökkentve 0.5em-ről */
+    gap: 0.3em;
   }
   .game-stats {
     flex-direction: column;
-    gap: 0.3em; /* Szorosabb: csökkentve 0.5em-ről */
+    gap: 0.3em;
   }
   .big-btn, button {
     width: 100%;
@@ -307,10 +316,10 @@ body.light .numpad-btn, body.light .numpad-submit-btn {
     min-width: 0;
   }
   .numpad-row {
-    gap: 0.1em; /* Szorosabb: csökkentve 0.2em-ről */
+    gap: 0.1em;
   }
   .numpad-btn, .numpad-submit-btn {
-    font-size: 1em; /* Szorosabb: csökkentve 1.05em-ről */
-    max-height: 2.8em; /* Szorosabb: csökkentve 3em-ről */
+    font-size: 1em;
+    max-height: 2.8em;
   }
 }

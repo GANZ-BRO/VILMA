@@ -1,5 +1,5 @@
 // --- ALAPBEÁLLÍTÁSOK ---
-const QUESTIONS = 5;
+const QUESTIONS = 5; // Feladatok száma egy játékban
 const DIFFICULTY_SETTINGS = {
   easy: { min: 0, max: 10 }, // Könnyű: kis számok a gyengébb diákok számára
   medium: { min: -20, max: 20 }, // Közepes: negatív számok, nagyobb tartomány
@@ -17,6 +17,23 @@ const motivationalMessages = [
   "Nagyszerű, a matek mestere vagy!",
   "Remekül teljesítesz, folytasd ebben a szellemben!"
 ];
+
+// --- SEGÉDFÜGGVÉNYEK ---
+// Véletlenszám generátor egész számokhoz
+function getRandomInt(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+// Legnagyobb közös osztó (törtek egyszerűsítéséhez)
+function gcd(a, b) { 
+  return b === 0 ? a : gcd(b, a % b); 
+}
+
+// Tört egyszerűsítése
+function simplifyFraction(num, denom) {
+  let d = gcd(Math.abs(num), Math.abs(denom));
+  return [num / d, denom / d];
+}
 
 // --- FELADATTÍPUSOK ---
 const taskTypes = [
@@ -113,38 +130,58 @@ const taskTypes = [
     value: "mind_negy_muvelet",
     generate: (difficulty) => {
       const { min, max } = DIFFICULTY_SETTINGS[difficulty];
-      let opCount = difficulty === "easy" ? 2 : difficulty === "medium" ? 3 : 5;
+      let opCount = difficulty === "easy" ? 2 : difficulty === "medium" ? 3 : 5; // Műveletek száma
       const opList = ["+", "-", "×", "÷"];
-      let nums = [];
-      let ops = [];
-      let lastVal = getRandomInt(min, max);
+      let nums = []; // Számok tömbje
+      let ops = []; // Operátorok tömbje
+      let lastVal = getRandomInt(min, max); // Kezdőérték
       nums.push(lastVal);
-      let minDivisor = difficulty === "easy" ? 1 : difficulty === "medium" ? 2 : 5;
-      let maxDivisor = difficulty === "easy" ? 10 : difficulty === "medium" ? 20 : 100;
-      for (let j = 0; j < opCount; j++) {
-        let op = opList[getRandomInt(0, 3)];
-        if (op === "÷") {
-          let divisor = getRandomInt(minDivisor, maxDivisor);
-          lastVal = lastVal * divisor;
-          nums[j] = lastVal;
-          nums[j + 1] = divisor;
-        } else {
-          nums[j + 1] = getRandomInt(min, max);
+      let minDivisor = difficulty === "easy" ? 1 : difficulty === "medium" ? 2 : 5; // Osztó minimum
+      let maxDivisor = difficulty === "easy" ? 10 : difficulty === "medium" ? 20 : 100; // Osztó maximum
+      let tryCount = 0; // Próbálkozások számlálója
+      let displayExpr, answer;
+      // Addig próbálkozunk, amíg érvényes, egész számú válasz nem születik
+      while (tryCount < 1000) {
+        nums = [getRandomInt(min, max)];
+        ops = [];
+        lastVal = nums[0];
+        for (let j = 0; j < opCount; j++) {
+          let op = opList[getRandomInt(0, 3)];
+          if (op === "÷") {
+            let divisor = getRandomInt(minDivisor, maxDivisor);
+            lastVal = lastVal * divisor; // Egész számú osztás biztosítása
+            nums[j] = lastVal;
+            nums[j + 1] = divisor;
+          } else {
+            nums[j + 1] = getRandomInt(min, max);
+          }
+          ops[j] = op;
+          lastVal = nums[j + 1];
         }
-        ops[j] = op;
-        lastVal = nums[j + 1];
+        // Kifejezés összeállítása
+        displayExpr = "" + nums[0];
+        for (let j = 0; j < opCount; j++) {
+          displayExpr += " " + ops[j] + " " + nums[j + 1];
+        }
+        let evalExpr = displayExpr.replace(/×/g, '*').replace(/÷/g, '/').replace(/\s/g, '');
+        try {
+          answer = eval(evalExpr);
+          answer = Math.round(answer); // Kerekítés egész számra
+          // Ellenőrizzük, hogy az eredmény érvényes és egész szám
+          if (typeof answer === "number" && isFinite(answer) && !isNaN(answer) && answer === Math.round(answer)) {
+            break;
+          }
+        } catch {
+          answer = "?"; // Hiba esetén
+        }
+        tryCount++;
       }
-      let displayExpr = "" + nums[0];
-      for (let j = 0; j < opCount; j++) {
-        displayExpr += " " + ops[j] + " " + nums[j + 1];
-      }
-      let evalExpr = displayExpr.replace(/×/g, '*').replace(/÷/g, '/').replace(/\s/g, '');
-      let answer;
-      try {
-        answer = eval(evalExpr);
-        answer = Math.round(answer);
-      } catch {
-        answer = "?";
+      // Ha 1000 próbálkozás után sem sikerül, egyszerű összeadás generálása
+      if (tryCount >= 1000) {
+        nums = [getRandomInt(min, max), getRandomInt(min, max)];
+        ops = ["+"];
+        displayExpr = `${nums[0]} + ${nums[1]}`;
+        answer = nums[0] + nums[1];
       }
       return {
         display: displayExpr,
@@ -447,6 +484,7 @@ function loadCategories() {
 let score = 0, startTime = 0, timerInterval = null, currentQuestion = 0, questions = [];
 let best = { score: 0, time: null };
 let gameActive = false;
+let answerState = { value: "" }; // Válasz állapota a numpadhoz
 
 // --- UTOLSÓ VÁLASZTÁS MENTÉSE/BETÖLTÉSE ---
 function saveLastSelection() {
@@ -536,18 +574,7 @@ function updateTimer() {
   timerDisplay.textContent = `${elapsed}`;
 }
 
-// --- SEGÉDFÜGGVÉNYEK ---
-function getRandomInt(min, max) {
-  return Math.floor(Math.random() * (max - min + 1)) + min;
-}
-
-function gcd(a, b) { return b === 0 ? a : gcd(b, a % b); }
-
-function simplifyFraction(num, denom) {
-  let d = gcd(Math.abs(num), Math.abs(denom));
-  return [num / d, denom / d];
-}
-
+// --- ZÁRÓJELES KIFEJEZÉSEK GENERÁLÁSA ---
 function generateBracketedExpression(opCount, min, max) {
   const opList = ["+", "-", "×", "÷"];
   let elements, exprParts, displayExpr, answer;
@@ -664,6 +691,7 @@ function renderNumpad(answerState, onChange) {
     rowDiv.className = 'numpad-row';
     row.forEach((key) => {
       if (key === 'submit') {
+        // Enter gomb (Küldés)
         const enterIcon = `<svg viewBox="0 0 48 48" width="1.2em" height="1.2em" style="display:block;margin:auto;" aria-hidden="true" focusable="false"><path d="M40 6v23H14.83l6.58-6.59L19 20l-10 10 10 10 2.41-2.41L14.83 31H44V6z" fill="currentColor"/></svg>`;
         const submitBtn = document.createElement("button");
         submitBtn.type = "button";
@@ -727,7 +755,7 @@ function renderNumpad(answerState, onChange) {
           }
 
           if (correct) {
-            score++;
+            score++; // Csak helyes válasz esetén nő a pontszám
             // Motiváló üzenetek
             if (difficultySelect.value === "hard") {
               const message = motivationalMessages[getRandomInt(0, motivationalMessages.length - 1)];
@@ -738,35 +766,38 @@ function renderNumpad(answerState, onChange) {
             currentQuestion++;
             showQuestion(currentQuestion);
           } else {
-            alert("Nem jó válasz, próbáld újra!");
+            alert("Nem jó válasz, próbáld újra!"); // Rossz válasz esetén nem nő a pontszám
           }
         };
         rowDiv.appendChild(submitBtn);
       } else {
+        // Számbillentyűk és műveleti jelek
         const btn = document.createElement('button');
         btn.type = 'button';
         btn.className = 'numpad-btn';
         btn.textContent = key;
         btn.tabIndex = -1;
         btn.onclick = () => {
+          btn.classList.add('flash'); // Világoszöld felvillanás hozzáadása
+          setTimeout(() => btn.classList.remove('flash'), 200); // 200ms után eltávolítás
           if (key === '←') {
-            answerState.value = answerState.value.slice(0, -1);
+            answerState.value = answerState.value.slice(0, -1); // Backspace
           } else if (key === '-') {
             if (!answerState.value.startsWith('-')) {
-              answerState.value = '-' + answerState.value;
+              answerState.value = '-' + answerState.value; // Negatív előjel hozzáadása
             } else {
-              answerState.value = answerState.value.substring(1);
+              answerState.value = answerState.value.substring(1); // Negatív előjel eltávolítása
             }
           } else if (key === '/') {
             if (!answerState.value.includes('/')) {
-              answerState.value += '/';
+              answerState.value += '/'; // Törtet jelző törtjel
             }
           } else if (key === '.') {
             if (answerState.value !== "" && !answerState.value.includes('.')) {
-              answerState.value += '.';
+              answerState.value += '.'; // Tizedes törtet jelző pont
             }
           } else {
-            answerState.value += key;
+            answerState.value += key; // Szám vagy egyéb karakter hozzáadása
           }
           onChange(answerState.value);
         };
