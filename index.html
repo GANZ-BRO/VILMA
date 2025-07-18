@@ -1,28 +1,69 @@
-<!DOCTYPE html>
+<script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+        </script><!DOCTYPE html>
 <html lang="hu">
 <head>
-    <meta charset="utf-8"/>
-    <meta content="width=device-width, initial-scale=1, user-scalable=no" name="viewport"/>
-    <title>VILMA</title>
-    <link href="manifest.json" rel="manifest"/>
-    <link href="icon-192.png" rel="icon"/>
-    <meta content="#3578e5" name="theme-color"/>
-    <link href="style.css" rel="stylesheet"/>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <link rel="apple-touch-icon" href="/icon-192.png">
+    <title>VILMA gyakorlás</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap">
+    <link rel="manifest" href="/manifest.json">
 </head>
 <body>
-    <header>
-        <h1 class="subtitle">VILMA gyakorlás</h1>
-        <button aria-label="Téma váltása" id="theme-toggle">🌗</button>
-    </header>
     <main>
+        <header>
+            <h1 class="subtitle">VILMA gyakorlás</h1>
+            <button id="theme-toggle" aria-label="Téma váltása">🌗</button>
+        </header>
         <div class="settings">
             <div>
                 <label for="category">Kategória:</label>
-                <select id="category" name="category"></select>
+                <select id="category"></select>
             </div>
             <div>
                 <label for="difficulty">Nehézségi szint:</label>
-                <select id="difficulty" name="difficulty">
+                <select id="difficulty">
                     <option value="easy">Könnyű</option>
                     <option value="medium">Közepes</option>
                     <option value="hard">Kihívás</option>
@@ -30,14 +71,18 @@
             </div>
         </div>
         <div class="game-stats">
-            <button aria-label="Játék indítása" onclick="startGame()" class="big-btn">Játék indítása</button>
-            <button aria-label="Újrajátszás" id="restart-btn" class="big-btn" style="display: none;">Újrajátszás</button>
-            <p class="stat">⏱️ Idő: <span id="time">0</span> mp</p>
-            <div id="best-stats" class="best"></div>
+            <button class="big-btn" onclick="startGame()">Játék indítása</button>
+            <button id="restart-btn" class="big-btn" style="display:none">Újrajátszás</button>
+            <span class="stat">⏱️ Idő: <span id="time">0</span> mp</span>
+            <span id="best-stats" class="best" style="display:none"></span>
+            <div class="progress-bar">
+                <div class="progress" style="width: 0%"></div>
+            </div>
         </div>
         <div id="quiz"></div>
         <div id="numpad-container"></div>
     </main>
     <script src="app.js"></script>
+    <script src="sw-reg.js"></script>
 </body>
 </html>
