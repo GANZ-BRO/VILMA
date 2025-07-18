@@ -269,7 +269,7 @@ const taskTypes = [
       let percentArrHard = [2, 3, 7, 15, 33, 66, 125, 150, 200];
       let percentArr = difficulty === "easy" ? percentArrEasy : difficulty === "medium" ? percentArrMedium : percentArrHard;
       let baseCandidates = [];
-      if (difficulty === "easy") {
+      if (difficult === "easy") {
         for (let i = 10; i <= 100; i += 10) baseCandidates.push(i);
       } else if (difficulty === "medium") {
         for (let i = 10; i <= 200; i += 5) baseCandidates.push(i);
@@ -386,8 +386,7 @@ const taskTypes = [
     value: "ohm_torveny",
     generate: (difficulty) => {
       const { min, max } = DIFFICULTY_SETTINGS[difficulty];
-      let maxI = difficulty === "easy" ? 10 : difficulty === "medium" ? 20 : 50
-
+      let maxI = difficulty === "easy" ? 10 : difficulty === "medium" ? 20 : 50;
       let maxR = difficulty === "easy" ? 10 : difficulty === "medium" ? 50 : 200;
       let I = getRandomInt(1, maxI);
       let R = getRandomInt(1, maxR);
@@ -478,7 +477,15 @@ const numpadContainer = document.getElementById("numpad-container");
 
 // --- KATEGÓRIÁK BETÖLTÉSE ---
 function loadCategories() {
-  categorySelect.innerHTML = taskTypes.map(task => `<option value="${task.value}">${task.name}</option>`).join('');
+  if (!categorySelect) {
+    console.error("Hiba: A categorySelect elem nem található!");
+    return;
+  }
+  try {
+    categorySelect.innerHTML = taskTypes.map(task => `<option value="${task.value}">${task.name}</option>`).join('');
+  } catch (error) {
+    console.error("Hiba a kategóriák betöltésekor:", error);
+  }
 }
 
 // --- ÁLLAPOTVÁLTOZÓK ---
@@ -590,7 +597,7 @@ function generateBracketedExpression(opCount, min, max) {
       if (i % 2 === 0) {
         elements.push(getRandomInt(min, max));
       } else {
-        let op = opList[getRandomInt( Ascending(0, opList.length - 1)];
+        let op = opList[getRandomInt(0, opList.length - 1)];
         if (op === "÷") {
           elements.push(op);
           elements[i - 1] = elements[i - 1] * getRandomInt(minDivisor, maxDivisor);
@@ -919,7 +926,12 @@ restartBtn.onclick = startGame;
 startBtn.onclick = startGame;
 
 // --- INDÍTÁS ---
-loadCategories();
-loadLastSelection();
-loadBest();
-applyTheme();
+document.addEventListener('DOMContentLoaded', () => {
+  // Késleltetett kategóriák betöltése iOS kompatibilitás miatt
+  setTimeout(() => {
+    loadCategories();
+    loadLastSelection();
+    loadBest();
+    applyTheme();
+  }, 100); // 100ms késleltetés
+});
