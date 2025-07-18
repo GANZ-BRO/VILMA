@@ -464,9 +464,10 @@ const taskTypes = [
       }
       return {
         display: `Mennyi a teljesítmény, ha <b>U = ${U} V</b> és <b>I = ${I} A</b>?`,
-        answer: P.toString(),
-        answerType: "number"
-      };
+          answer: P.toString(),
+          answerType: "number"
+        };
+      }
     }
   }
 ];
@@ -800,8 +801,12 @@ function renderNumpad(answerState, onChange) {
             } else if (difficultySelect.value === "medium" && currentQuestion === QUESTIONS - 2) {
               alert("Gratulálok, csak így tovább, mindjárt a végére érsz!");
             }
-            currentQuestion++;
-            showQuestion(currentQuestion);
+            currentQuestion++; // Következő kérdés
+            if (currentQuestion < QUESTIONS) {
+              showQuestion(currentQuestion); // Új kérdés megjelenítése
+            } else {
+              finishGame(); // Játék vége, ha minden kérdés megválaszolva
+            }
           } else {
             errorCount++; // Hibaszámláló növelése
             answerState.value = "";
