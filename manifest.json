@@ -1,11 +1,10 @@
 {
-  "name": "Matematika gyakorlás",
+  "name": "VILMA gyakorlás",
   "short_name": "VILMA",
-  "start_url": ".",
+  "start_url": "/",
   "display": "standalone",
-  "background_color": "#121212",
-  "theme_color": "#3578e5",
-  "description": "Matematika gyakorló alkalmazás offline móddal.",
+  "background_color": "#1C2526",
+  "theme_color": "#D32F2F",
   "icons": [
     {
       "src": "icon-192.png",

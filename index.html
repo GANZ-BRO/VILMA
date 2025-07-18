@@ -3,20 +3,36 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Vilma - Matek Játék</title>
+  <title>VILMA gyakorlás</title>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
+  <link rel="icon" type="image/png" href="icon-192.png"> <!-- Favicon az 192x192-es ikonra állítva -->
+  <link rel="manifest" href="manifest.json"> <!-- Manifest fájl hivatkozása -->
+  <!-- Service Worker regisztráció -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/service-worker.js')
+          .then((registration) => {
+            console.log('Service Worker regisztrálva:', registration);
+          })
+          .catch((error) => {
+            console.error('Service Worker regisztrációs hiba:', error);
+          });
+      });
+    }
+  </script>
 </head>
 <body>
   <main>
     <header>
-      <h1 class="subtitle">Vilma</h1>
+      <h1 class="subtitle">VILMA gyakorlás</h1>
       <button id="theme-toggle" aria-label="Téma váltás">
-        🌙
+        🌗
       </button>
     </header>
     <div class="game-stats">
-      <div class="stat" id="time">0</div>
+      <div class="stat" id="time">⏱️ Idő: 0 mp</div>
       <div class="best" id="best-stats"></div>
     </div>
     <div class="settings">
@@ -25,7 +41,7 @@
         <select id="category"></select>
       </div>
       <div>
-        <label for="difficulty">Nehézség:</label>
+        <label for="difficulty">Nehézségi szint:</label>
         <select id="difficulty">
           <option value="easy">Könnyű</option>
           <option value="medium">Közepes</option>
