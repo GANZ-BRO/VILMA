@@ -9,13 +9,14 @@
   --input-bg-light: #FFFFFF;
   --input-text-light: #1C2526;
   --input-border-light: #D3D8DA;
-  --primary: #D32F2F; /* Piros a feliratokhoz */
+  --primary: #D32F2F; /* Alapértelmezett piros világos módban és egyéb kontextusokban */
   --primary-dark: #B71C1C; /* Sötét piros hoverhez */
   --imperial: #4B0082; /* Imperiális bíbor a sötét módban */
   --success: #4BB543;
-  --submit-btn-bg: #D32F2F; /* Piros az Enter gombhoz */
+  --submit-btn-bg: #D32F2F; /* Piros az Enter gombhoz, mindkét módban */
   --submit-btn-bg-hover: #B71C1C; /* Sötét piros hover az Enterhez */
   --flash-color: #90EE90;
+  --primary-inverse: #2CD0D0; /* Inverz szín a sötét módban */
 }
 
 body {
@@ -71,6 +72,10 @@ h1.subtitle {
   letter-spacing: 1px;
 }
 
+body:not(.light) h1.subtitle {
+  color: var(--primary-inverse); /* Inverz szín sötét módban */
+}
+
 .settings {
   display: flex;
   flex-direction: column;
@@ -117,6 +122,11 @@ select:focus {
   box-shadow: 0 0 0 3px rgba(178, 34, 34, 0.2);
 }
 
+body:not(.light) select:focus {
+  border-color: var(--primary-inverse);
+  box-shadow: 0 0 0 3px rgba(44, 208, 208, 0.2); /* Inverz szín árnyék */
+}
+
 .game-stats {
   display: flex;
   flex-wrap: wrap;
@@ -139,6 +149,10 @@ body.light .game-stats {
   color: var(--primary);
 }
 
+body:not(.light) .stat {
+  color: var(--primary-inverse); /* Inverz szín sötét módban */
+}
+
 .best {
   font-size: 0.9em;
   margin-top: 0.2em;
@@ -159,6 +173,7 @@ body.light .game-stats {
   background: var(--input-bg-dark);
   border-radius: 4px;
   overflow: hidden;
+  margin-bottom: 1em;
 }
 
 body.light .progress-bar {
@@ -169,6 +184,10 @@ body.light .progress-bar {
   height: 100%;
   background: var(--primary);
   transition: width 0.3s ease;
+}
+
+body:not(.light) .progress {
+  background: var(--primary-inverse); /* Inverz szín a progress bar-ban sötét módban */
 }
 
 #quiz > div {
@@ -190,12 +209,24 @@ body.light #quiz > div {
   align-items: center;
   gap: 1em;
   text-align: center;
+  position: relative;
+}
+
+.question-container .progress-bar {
+  position: absolute;
+  top: -20px;
+  left: 0;
+  width: 100%;
 }
 
 .question-number {
   margin-bottom: 0.5em;
   font-size: 1.2em;
   color: var(--primary);
+}
+
+body:not(.light) .question-number {
+  color: var(--primary-inverse); /* Inverz szín sötét módban */
 }
 
 .question-text {
@@ -218,7 +249,7 @@ body.light .question-text {
   color: var(--input-text-dark);
   border-radius: 10px;
   min-width: 150px;
-  height: 50px; /* Fix magasság */
+  height: 50px;
   box-sizing: border-box;
   display: flex;
   align-items: center;
@@ -226,9 +257,9 @@ body.light .question-text {
   text-align: center;
   max-width: 300px;
   transition: background 0.2s ease, border-color 0.2s ease;
-  white-space: nowrap; /* Megakadályozza a szöveg törését */
-  overflow: hidden; /* Eltünteti a túlcsorduló tartalmat */
-  text-overflow: ellipsis; /* Pöttyökkel jelzi a túlcsordulást */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 body.light .answer-view {
@@ -245,6 +276,10 @@ body.light .answer-view {
 .blue-percent {
   color: var(--primary);
   font-weight: 700;
+}
+
+body:not(.light) .blue-percent {
+  color: var(--primary-inverse); /* Inverz szín sötét módban */
 }
 
 .big-btn, button {
@@ -267,6 +302,14 @@ button:hover, .big-btn:hover, button:focus, .big-btn:focus {
   background: var(--primary-dark);
   transform: scale(1.05);
   outline: none;
+}
+
+body:not(.light) .big-btn, body:not(.light) button {
+  background: var(--primary-inverse); /* Inverz szín sötét módban */
+}
+
+body:not(.light) .big-btn:hover, body:not(.light) button:hover, body:not(.light) .big-btn:focus, body:not(.light) button:focus {
+  background: #1A8C8C; /* Sötétebb inverz árnyalat hoverhez */
 }
 
 #theme-toggle {
@@ -365,7 +408,7 @@ body.light .numpad-btn, body.light .numpad-submit-btn {
 }
 
 .numpad-submit-btn:hover, .numpad-submit-btn:focus {
-  background: var(--submit-btn-bg-hover); /* Sötét piros hover */
+  background: var(--submit-btn-bg-hover);
   transform: scale(1.05);
   outline: 2px solid var(--primary-dark);
 }
@@ -380,11 +423,11 @@ body.light .numpad-btn, body.light .numpad-submit-btn {
 }
 
 body.light .numpad-btn {
-  background: var(--input-bg-light); /* Imperiális bíbor helyett világos mód alapértelmezett színe */
+  background: var(--input-bg-light);
   color: var(--input-text-light);
 }
 
-body.dark .numpad-btn {
+body:not(.light) .numpad-btn {
   background: var(--imperial); /* Imperiális bíbor sötét módban */
   color: var(--input-text-dark);
 }

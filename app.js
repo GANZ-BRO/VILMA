@@ -485,6 +485,7 @@ let score = 0, startTime = 0, timerInterval = null, currentQuestion = 0, questio
 let best = { score: 0, time: null };
 let gameActive = false;
 let answerState = { value: "" }; // Válasz állapota a numpadhoz
+let wrongAnswers = 0; // Helytelen válaszok száma
 
 // --- UTOLSÓ VÁLASZTÁS MENTÉSE/BETÖLTÉSE ---
 function saveLastSelection() {
@@ -691,7 +692,6 @@ function renderNumpad(answerState, onChange) {
     rowDiv.className = 'numpad-row';
     row.forEach((key) => {
       if (key === 'submit') {
-        // Enter gomb (Küldés)
         const enterIcon = `<svg viewBox="0 0 48 48" width="1.2em" height="1.2em" style="display:block;margin:auto;" aria-hidden="true" focusable="false"><path d="M40 6v23H14.83l6.58-6.59L19 20l-10 10 10 10 2.41-2.41L14.83 31H44V6z" fill="currentColor"/></svg>`;
         const submitBtn = document.createElement("button");
         submitBtn.type = "button";
@@ -712,7 +712,6 @@ function renderNumpad(answerState, onChange) {
             return;
           }
 
-          // Normalizáljuk az inputot: vesszőt tizedes törtet jelző pontra cseréljük
           val = val.replace(',', '.');
 
           if (currentTask.answerType === "fraction") {
@@ -755,8 +754,7 @@ function renderNumpad(answerState, onChange) {
           }
 
           if (correct) {
-            score++; // Csak helyes válasz esetén nő a pontszám
-            // Motiváló üzenetek
+            score++;
             if (difficultySelect.value === "hard") {
               const message = motivationalMessages[getRandomInt(0, motivationalMessages.length - 1)];
               alert(message);
@@ -766,38 +764,38 @@ function renderNumpad(answerState, onChange) {
             currentQuestion++;
             showQuestion(currentQuestion);
           } else {
-            alert("Nem jó válasz, próbáld újra!"); // Rossz válasz esetén nem nő a pontszám
+            wrongAnswers++; // Helytelen válasz számlálása
+            alert("Nem jó válasz, próbáld újra!");
           }
         };
         rowDiv.appendChild(submitBtn);
       } else {
-        // Számbillentyűk és műveleti jelek
         const btn = document.createElement('button');
         btn.type = 'button';
         btn.className = 'numpad-btn';
         btn.textContent = key;
         btn.tabIndex = -1;
         btn.onclick = () => {
-          btn.classList.add('flash'); // Világoszöld felvillanás hozzáadása
-          setTimeout(() => btn.classList.remove('flash'), 200); // 200ms után eltávolítás
+          btn.classList.add('flash');
+          setTimeout(() => btn.classList.remove('flash'), 200);
           if (key === '←') {
-            answerState.value = answerState.value.slice(0, -1); // Backspace
+            answerState.value = answerState.value.slice(0, -1);
           } else if (key === '-') {
             if (!answerState.value.startsWith('-')) {
-              answerState.value = '-' + answerState.value; // Negatív előjel hozzáadása
+              answerState.value = '-' + answerState.value;
             } else {
-              answerState.value = answerState.value.substring(1); // Negatív előjel eltávolítása
+              answerState.value = answerState.value.substring(1);
             }
           } else if (key === '/') {
             if (!answerState.value.includes('/')) {
-              answerState.value += '/'; // Törtet jelző törtjel
+              answerState.value += '/';
             }
           } else if (key === '.') {
             if (answerState.value !== "" && !answerState.value.includes('.')) {
-              answerState.value += '.'; // Tizedes törtet jelző pont
+              answerState.value += '.';
             }
           } else {
-            answerState.value += key; // Szám vagy egyéb karakter hozzáadása
+            answerState.value += key;
           }
           onChange(answerState.value);
         };
@@ -820,9 +818,11 @@ function showQuestion(index) {
   const q = questions[index];
   const div = document.createElement("div");
   div.className = "question-container";
-  div.innerHTML =
-    `<div class="question-number">${QUESTIONS} / ${index + 1}. feladat:</div>
-     <div class="question-text">${q.display} = </div>`;
+  div.innerHTML = `
+    <div class="progress-bar">
+      <div class="progress"></div>
+    </div>
+    <div class="question-text">${q.display} = </div>`;
   let answerState = { value: "" };
   const answerView = document.createElement("div");
   answerView.className = "answer-view";
@@ -838,6 +838,9 @@ function showQuestion(index) {
   numpadContainer.classList.add("active");
   quizContainer.appendChild(div);
 
+  const progress = div.querySelector('.progress');
+  if (progress) progress.style.width = `${((index + 1) / QUESTIONS) * 100}%`;
+
   div.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
@@ -845,6 +848,7 @@ function startGame() {
   gameActive = true;
   score = 0;
   currentQuestion = 0;
+  wrongAnswers = 0; // Helytelen válaszok inicializálása
   generateQuestions();
   showQuestion(0);
   startTime = Date.now();
@@ -865,7 +869,7 @@ function finishGame() {
   clearInterval(timerInterval);
   const elapsed = Math.floor((Date.now() - startTime) / 1000);
   timerDisplay.textContent = `${elapsed} (Vége)`;
-  quizContainer.innerHTML = `<p style="font-size:1.2em;"><b>Gratulálok!</b> ${elapsed} másodperc alatt végeztél.</p>`;
+  quizContainer.innerHTML = `<p style="font-size:1.2em;"><b>Gratulálok!</b> ${elapsed} másodperc alatt végeztél.<br>Helytelen válaszok száma: ${wrongAnswers}</p>`;
   numpadContainer.innerHTML = "";
   numpadContainer.classList.remove("active");
   saveBest(score, elapsed);
