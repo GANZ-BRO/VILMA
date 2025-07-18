@@ -9,11 +9,11 @@
   --input-bg-light: #FFFFFF;
   --input-text-light: #1C2526;
   --input-border-light: #D3D8DA;
-  --primary: #D32F2F; /* Alapértelmezett piros világos módban és egyéb kontextusokban */
+  --primary: #D32F2F; /* Piros a feliratokhoz */
   --primary-dark: #B71C1C; /* Sötét piros hoverhez */
-  --imperial: #4B0082; /* Imperiális bíbor a sötét módban */
+  --imperial: #3A4F54; /* Visszafogott szürke-kék sötét módban */
   --success: #4BB543;
-  --submit-btn-bg: #D32F2F; /* Piros az Enter gombhoz, mindkét módban */
+  --submit-btn-bg: #D32F2F; /* Piros az Enter gombhoz */
   --submit-btn-bg-hover: #B71C1C; /* Sötét piros hover az Enterhez */
   --flash-color: #90EE90;
   --primary-inverse: #2CD0D0; /* Inverz szín a sötét módban */
@@ -219,16 +219,6 @@ body.light #quiz > div {
   width: 100%;
 }
 
-.question-number {
-  margin-bottom: 0.5em;
-  font-size: 1.2em;
-  color: var(--primary);
-}
-
-body:not(.light) .question-number {
-  color: var(--primary-inverse); /* Inverz szín sötét módban */
-}
-
 .question-text {
   font-weight: 700;
   font-size: 1.8em;
@@ -422,13 +412,8 @@ body.light .numpad-btn, body.light .numpad-submit-btn {
   font-size: inherit;
 }
 
-body.light .numpad-btn {
-  background: var(--input-bg-light);
-  color: var(--input-text-light);
-}
-
 body:not(.light) .numpad-btn {
-  background: var(--imperial); /* Imperiális bíbor sötét módban */
+  background: var(--imperial); /* Visszafogott szürke-kék sötét módban */
   color: var(--input-text-dark);
 }
 
