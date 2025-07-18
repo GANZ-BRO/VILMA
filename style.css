@@ -9,11 +9,11 @@
   --input-bg-light: #FFFFFF;
   --input-text-light: #1C2526;
   --input-border-light: #D3D8DA;
-  --primary: #B22222;
-  --primary-dark: #8B1A1A;
+  --primary: #D32F2F; /* Új világosabb piros szín */
+  --primary-dark: #B71C1C; /* Frissített sötét árnyalat a hoverhez */
   --success: #4BB543;
-  --submit-btn-bg: #B22222;
-  --submit-btn-bg-hover: #8B1A1A;
+  --submit-btn-bg: #D32F2F; /* Frissített gomb háttere */
+  --submit-btn-bg-hover: #B71C1C; /* Frissített hover szín */
   --flash-color: #90EE90;
 }
 
@@ -64,7 +64,7 @@ body.light header {
 h1.subtitle {
   font-size: 1.5em;
   margin: 0;
-  font-weight: Light gray for text 700;
+  font-weight: 700;
   color: var(--primary);
   text-transform: uppercase;
   letter-spacing: 1px;
@@ -186,7 +186,7 @@ body.light #quiz > div {
 .question-container {
   display: flex;
   flex-direction: column;
-  alignアイテム: center;
+  align-items: center;
   gap: 1em;
   text-align: center;
 }
