@@ -32,30 +32,20 @@ self.addEventListener('activate', event => {
   self.clients.claim();
 });
 
-// Fetch: cache-ből szolgálja ki, vagy hálózatról, dinamikus cache ikonokhoz
+// Fetch: cache-ből szolgálja ki, vagy hálózatról
 self.addEventListener('fetch', event => {
+  // Csak GET kéréseket cache-elünk
   if (event.request.method !== 'GET') return;
-
   event.respondWith(
-    caches.match(event.request).then(cachedResponse => {
-      if (cachedResponse) return cachedResponse;
-
-      return fetch(event.request).then(networkResponse => {
-        // Dinamikus cache ikonokhoz és más erőforrásokhoz
-        if (event.request.url.includes('/icon-') || FILES_TO_CACHE.includes(event.request.url)) {
-          return caches.open(CACHE_NAME).then(cache => {
-            cache.put(event.request, networkResponse.clone());
-            return networkResponse;
-          });
-        }
-        return networkResponse;
+    caches.match(event.request).then(response =>
+      response ||
+      fetch(event.request).then(fetchRes => {
+        // Dinamikus cache: csak az alap fájlokat cache-eljük
+        return fetchRes;
       }).catch(() => {
-        // Offline fallback: index.html vagy alap ikon
-        if (event.request.url.includes('/icon-')) {
-          return caches.match('/icon-192.png'); // Alapértelmezett ikon offline-ban
-        }
+        // Itt adhatsz vissza offline oldalt, ha szeretnél
         return caches.match('/index.html');
-      });
-    })
+      })
+    )
   );
 });
