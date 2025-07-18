@@ -477,10 +477,17 @@ const numpadContainer = document.getElementById("numpad-container");
 
 // --- KATEGÓRIÁK BETÖLTÉSE ---
 function loadCategories() {
+  console.log("Loading categories. taskTypes:", taskTypes); // Debug log
+  if (!categorySelect) {
+    console.error("categorySelect element not found!");
+    return;
+  }
   categorySelect.innerHTML = taskTypes.map(task => `<option value="${task.value}">${task.name}</option>`).join('');
-  // Ensure the first option is selected by default
   if (categorySelect.options.length > 0) {
     categorySelect.selectedIndex = 0;
+    console.log("Categories loaded. Selected value:", categorySelect.value);
+  } else {
+    console.error("No categories loaded. taskTypes might be empty.");
   }
 }
 
@@ -886,7 +893,10 @@ restartBtn.onclick = startGame;
 startBtn.onclick = startGame;
 
 // --- INDÍTÁS ---
-loadCategories();
-loadLastSelection();
-loadBest();
-applyTheme();
+document.addEventListener("DOMContentLoaded", function() {
+  console.log("DOM fully loaded, initializing app...");
+  loadCategories();
+  loadLastSelection();
+  loadBest();
+  applyTheme();
+});
