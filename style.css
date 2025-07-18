@@ -1,31 +1,31 @@
 :root {
-  --bg-dark: #121212;
-  --text-dark: #f1f1f1;
-  --input-bg-dark: #1e1e1e;
-  --input-text-dark: #f1f1f1;
-  --input-border-dark: #444;
-  --bg-light: #f1f1f1;
-  --text-light: #121212;
-  --input-bg-light: #fff;
-  --input-text-light: #121212;
-  --input-border-light: #ccc;
-  --primary: #3578e5;
-  --primary-dark: #2851a3;
-  --success: #4bb543;
-  --submit-btn-bg: #52aaff; /* Kék az Enter gombhoz */
-  --submit-btn-bg-hover: #199cff;
-  --flash-color: #90EE90; /* Világoszöld a numpad felvillanáshoz */
+  --bg-dark: #1C2526;
+  --text-dark: #F1F1F1;
+  --input-bg-dark: #2D383A;
+  --input-text-dark: #F1F1F1;
+  --input-border-dark: #4A5F62;
+  --bg-light: #F9F9F9;
+  --text-light: #1C2526;
+  --input-bg-light: #FFFFFF;
+  --input-text-light: #1C2526;
+  --input-border-light: #D3D8DA;
+  --primary: #B22222;
+  --primary-dark: #8B1A1A;
+  --success: #4BB543;
+  --submit-btn-bg: #B22222;
+  --submit-btn-bg-hover: #8B1A1A;
+  --flash-color: #90EE90;
 }
 
 body {
-  font-family: sans-serif;
+  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   margin: 0;
   padding: 0;
   background: var(--bg-dark);
   color: var(--text-dark);
   min-height: 100vh;
   transition: background 0.3s, color 0.3s;
-  touch-action: none;
+  touch-action: auto;
 }
 
 body.light {
@@ -34,81 +34,114 @@ body.light {
 }
 
 main {
-  max-width: 440px;
-  margin: auto;
-  padding: 0.5em;
-  position: relative; /* Hogy a téma váltó fix pozíciója működjön */
+  max-width: 480px;
+  margin: 20px auto;
+  padding: 20px;
+  position: relative;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+body.light main {
+  background: rgba(0, 0, 0, 0.03);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
 header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 0.3em;
-  flex-wrap: wrap;
-  padding: 0.3em 0.5em;
+  gap: 1em;
+  padding: 1em 0;
+  border-bottom: 1px solid var(--input-border-dark);
+}
+
+body.light header {
+  border-bottom: 1px solid var(--input-border-light);
 }
 
 h1.subtitle {
-  font-size: 1.2em; /* VALI gyakorlás cím mérete */
+  font-size: 1.5em;
   margin: 0;
-  font-weight: 600;
+  font-weight: Light gray for text 700;
+  color: var(--primary);
+  text-transform: uppercase;
+  letter-spacing: 1px;
 }
 
 .settings {
   display: flex;
   flex-direction: column;
-  gap: 0.5em;
-  margin: 0.5em 0;
+  gap: 1em;
+  margin: 1em 0;
 }
 
 .settings > div {
   display: flex;
   align-items: center;
-  gap: 0.5em;
+  gap: 1em;
 }
 
 .settings label {
-  font-size: 0.95em;
-  font-weight: 500;
-  white-space: nowrap;
+  font-size: 1em;
+  font-weight: 600;
+  color: var(--text-dark);
+}
+
+body.light .settings label {
+  color: var(--text-light);
 }
 
 select {
-  font-size: 0.95em;
-  padding: 0.3em;
-  border-radius: 4px;
-  border: 1px solid var(--input-border-dark);
+  font-size: 1em;
+  padding: 0.75em;
+  border-radius: 8px;
+  border: 2px solid var(--input-border-dark);
   background: var(--input-bg-dark);
   color: var(--input-text-dark);
-  width: auto;
-  flex-grow: 1;
-  transition: background 0.3s, color 0.3s, border 0.3s;
+  width: 100%;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 body.light select {
   background: var(--input-bg-light);
   color: var(--input-text-light);
-  border: 1px solid var(--input-border-light);
+  border: 2px solid var(--input-border-light);
+}
+
+select:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(178, 34, 34, 0.2);
 }
 
 .game-stats {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5em;
+  gap: 1em;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 0.5em;
+  margin-bottom: 1em;
+  padding: 1em;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+}
+
+body.light .game-stats {
+  background: rgba(0, 0, 0, 0.05);
 }
 
 .stat {
-  font-weight: bold;
-  font-size: 1em;
+  font-weight: 600;
+  font-size: 1.1em;
+  color: var(--primary);
 }
 
 .best {
   font-size: 0.9em;
   margin-top: 0.2em;
+  color: var(--success);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -119,54 +152,79 @@ body.light select {
   .best { color: #006400; }
 }
 
+.progress-bar {
+  width: 100%;
+  height: 8px;
+  background: var(--input-bg-dark);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+body.light .progress-bar {
+  background: var(--input-bg-light);
+}
+
+.progress {
+  height: 100%;
+  background: var(--primary);
+  transition: width 0.3s ease;
+}
+
 #quiz > div {
-  margin-bottom: 12px;
-  border-radius: 6px;
-  padding: 0.5em;
-  background: rgba(0,0,0,0.05);
-  box-shadow: 0 2px 6px 0 rgba(0,0,0,0.05);
+  margin-bottom: 1.5em;
+  border-radius: 12px;
+  padding: 1.5em;
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 body.light #quiz > div {
-  background: rgba(0,0,0,0.01);
-  box-shadow: 0 2px 6px 0 rgba(0,0,0,0.07);
+  background: rgba(0, 0, 0, 0.03);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
 .question-container {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 6px;
+  alignアイテム: center;
+  gap: 1em;
+  text-align: center;
 }
 
 .question-number {
-  margin-bottom: 0.1em;
-  font-size: 1.1em;
+  margin-bottom: 0.5em;
+  font-size: 1.2em;
+  color: var(--primary);
 }
 
 .question-text {
-  font-weight: bold;
-  font-size: 1.6em;
-  margin-bottom: 0.5em;
+  font-weight: 700;
+  font-size: 1.8em;
+  margin-bottom: 0.75em;
+  color: var(--text-dark);
+}
+
+body.light .question-text {
+  color: var(--text-light);
 }
 
 .answer-view {
-  font-size: 1.3em;
-  padding: 6px;
-  margin: 6px 0;
+  font-size: 1.5em;
+  padding: 1em;
+  margin: 1em 0;
   border: 2px solid var(--input-border-dark);
   background: var(--input-bg-dark);
   color: var(--input-text-dark);
-  border-radius: 4px;
-  min-width: 120px;
-  min-height: 36px;
+  border-radius: 10px;
+  min-width: 150px;
+  min-height: 50px;
   box-sizing: border-box;
-  display: inline-flex;
+  display: flex;
   align-items: center;
   justify-content: center;
   text-align: center;
-  max-width: 250px;
-  align-self: center;
+  max-width: 300px;
+  transition: background 0.2s ease, border-color 0.2s ease;
 }
 
 body.light .answer-view {
@@ -175,23 +233,30 @@ body.light .answer-view {
   border: 2px solid var(--input-border-light);
 }
 
+.answer-view.error {
+  background: rgba(178, 34, 34, 0.3);
+  transition: background 0.2s ease;
+}
+
 .blue-percent {
-  color: #1E90FF;
-  font-weight: 600;
+  color: var(--primary);
+  font-weight: 700;
 }
 
 .big-btn, button {
   display: inline-block;
   font-size: 1.1em;
-  padding: 0.5em 1em;
+  padding: 0.75em 1.5em;
   border: none;
-  border-radius: 6px;
-  margin: 0.3em 0;
+  border-radius: 10px;
+  margin: 0.5em 0;
   background: var(--primary);
-  color: #fff;
+  color: #FFFFFF;
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.2s, transform 0.1s;
+  transition: background 0.3s ease, transform 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 1px;
 }
 
 button:hover, .big-btn:hover, button:focus, .big-btn:focus {
@@ -201,31 +266,45 @@ button:hover, .big-btn:hover, button:focus, .big-btn:focus {
 }
 
 #theme-toggle {
-  font-size: 1em;
-  width: 1.8em;
-  height: 1.8em;
+  font-size: 1.2em;
+  width: 2em;
+  height: 2em;
   background: none;
-  color: inherit;
+  color: var(--text-dark);
   box-shadow: none;
   border: none;
   margin: 0;
-  position: absolute; /* Fix pozíció a téma váltóhoz */
-  top: 0.5em;
-  right: 0.5em;
+  position: absolute;
+  top: 1em;
+  right: 1em;
+  cursor: pointer;
+  transition: color 0.3s ease;
+}
+
+body.light #theme-toggle {
+  color: var(--text-light);
 }
 
 .numpad {
   display: none;
   flex-direction: column;
-  gap: 0.3em;
-  margin-top: 6px;
+  gap: 0.5em;
+  margin-top: 1em;
   position: sticky;
   bottom: 0;
   background: inherit;
   z-index: 10;
-  max-width: 340px;
+  max-width: 400px;
   margin-left: auto;
   margin-right: auto;
+  padding: 1em;
+  border-radius: 12px 12px 0 0;
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+  touch-action: none;
+}
+
+body.light .numpad {
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
 }
 
 .numpad.active {
@@ -234,49 +313,51 @@ button:hover, .big-btn:hover, button:focus, .big-btn:focus {
 
 .numpad-row {
   display: flex;
-  gap: 0.3em;
+  gap: 0.5em;
   width: 100%;
 }
 
 .numpad-btn, .numpad-submit-btn {
   flex: 1;
   aspect-ratio: 1/1;
-  font-size: 1.2em;
-  border-radius: 0.4em;
-  border: none;
+  font-size: 1.3em;
+  border-radius: 8px;
+  border: 2px solid var(--input-border-dark);
   background: var(--input-bg-dark);
   color: var(--input-text-dark);
-  border: 1px solid var(--input-border-dark);
   display: flex;
   align-items: center;
   justify-content: center;
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  transition: background 0.2s, color 0.2s, transform 0.1s;
-  max-height: 3.5em;
+  transition: background 0.2s ease, transform 0.2s ease;
+  font-weight: 600;
+  min-width: 44px;
+  min-height: 44px;
+  -webkit-tap-highlight-color: rgba(178, 34, 34, 0.3);
 }
 
 body.light .numpad-btn, body.light .numpad-submit-btn {
   background: var(--input-bg-light);
   color: var(--input-text-light);
-  border: 1px solid var(--input-border-light);
+  border: 2px solid var(--input-border-light);
 }
 
 .numpad-btn.flash {
-  background: var(--flash-color); /* Világoszöld felvillanás */
+  background: var(--flash-color);
   transition: background 0.2s;
 }
 
 .numpad-btn:active, .numpad-btn:focus {
-  background: transparent; /* Tartós kék szín eltávolítva */
+  background: transparent;
   outline: none;
 }
 
 .numpad-submit-btn {
-  background: var(--submit-btn-bg); /* Kék szín az Enter gombhoz */
-  color: #fff;
-  border: 1px solid #199cff;
+  background: var(--submit-btn-bg);
+  color: #FFFFFF;
+  border: 2px solid var(--primary-dark);
 }
 
 .numpad-submit-btn:hover, .numpad-submit-btn:focus {
@@ -296,30 +377,57 @@ body.light .numpad-btn, body.light .numpad-submit-btn {
 
 @media (max-width: 600px) {
   main {
-    padding: 0.3em;
+    padding: 15px;
+    margin: 10px;
   }
   h1.subtitle {
-    font-size: 1em;
+    font-size: 1.2em;
   }
   .settings {
-    gap: 0.3em;
+    gap: 0.75em;
   }
   .game-stats {
     flex-direction: column;
-    gap: 0.3em;
+    gap: 0.75em;
+    padding: 0.75em;
   }
   .big-btn, button {
     width: 100%;
   }
   .numpad {
     max-width: 100%;
-    min-width: 0;
+    padding: 0.75em;
   }
   .numpad-row {
-    gap: 0.1em;
+    gap: 0.25em;
   }
   .numpad-btn, .numpad-submit-btn {
+    font-size: 1.1em;
+  }
+}
+
+@media (max-width: 400px) {
+  h1.subtitle {
     font-size: 1em;
-    max-height: 2.8em;
+  }
+  .question-text {
+    font-size: 1.4em;
+  }
+  .numpad-btn, .numpad-submit-btn {
+    font-size: 0.9em;
+    min-width: 36px;
+    min-height: 36px;
+    padding: 0.5em;
+  }
+  .numpad-row {
+    gap: 0.2em;
+  }
+  .numpad {
+    padding: 0.5em;
+    margin-top: 0.5em;
+  }
+  .question-container {
+    padding: 1em;
+    margin-bottom: 0.5em;
   }
 }
