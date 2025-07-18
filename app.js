@@ -478,6 +478,10 @@ const numpadContainer = document.getElementById("numpad-container");
 // --- KATEGÓRIÁK BETÖLTÉSE ---
 function loadCategories() {
   categorySelect.innerHTML = taskTypes.map(task => `<option value="${task.value}">${task.name}</option>`).join('');
+  // Ensure the first option is selected by default
+  if (categorySelect.options.length > 0) {
+    categorySelect.selectedIndex = 0;
+  }
 }
 
 // --- ÁLLAPOTVÁLTOZÓK ---
@@ -495,7 +499,7 @@ function saveLastSelection() {
 function loadLastSelection() {
   const lastCat = localStorage.getItem("vilma-last-category");
   const lastDiff = localStorage.getItem("vilma-last-difficulty");
-  if (lastCat) categorySelect.value = lastCat;
+  if (lastCat && taskTypes.some(t => t.value === lastCat)) categorySelect.value = lastCat;
   if (lastDiff) difficultySelect.value = lastDiff;
 }
 
@@ -663,7 +667,8 @@ function generateQuestions() {
   questions = [];
   const taskType = taskTypes.find(t => t.value === category);
   if (!taskType) {
-    questions.push({ display: "Hiba: kategória nincs implementálva", answer: null, answerType: "number" });
+    console.error(`Error: Category "${category}" not found in taskTypes. Available categories:`, taskTypes.map(t => t.value));
+    questions.push({ display: "Hiba: kategória nincs implementálva. Kérlek, válassz egy másik kategóriát.", answer: null, answerType: "number" });
     return;
   }
   for (let i = 0; i < QUESTIONS; i++) {
