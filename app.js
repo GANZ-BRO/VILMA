@@ -269,7 +269,7 @@ const taskTypes = [
       let percentArrHard = [2, 3, 7, 15, 33, 66, 125, 150, 200];
       let percentArr = difficulty === "easy" ? percentArrEasy : difficulty === "medium" ? percentArrMedium : percentArrHard;
       let baseCandidates = [];
-      if (difficult === "easy") {
+      if (difficulty === "easy") {
         for (let i = 10; i <= 100; i += 10) baseCandidates.push(i);
       } else if (difficulty === "medium") {
         for (let i = 10; i <= 200; i += 5) baseCandidates.push(i);
@@ -797,7 +797,15 @@ function renderNumpad(answerState, onChange) {
             answerState.value = "";
             onChange(answerState.value);
             numpadContainer.querySelector('.answer-view').classList.add('error');
-            setTimeout(() => numpadContainer.querySelector('.answer-view').classList.remove('error'), 500);
+            // Kedves hibaüzenet megjelenítése
+            const errorMessage = document.createElement("div");
+            errorMessage.className = "error-message";
+            errorMessage.textContent = "Ne csüggedj, próbáld újra, te tudod ezt! 😊";
+            quizContainer.appendChild(errorMessage);
+            setTimeout(() => {
+              errorMessage.remove();
+              numpadContainer.querySelector('.answer-view').classList.remove('error');
+            }, 1500); // 1.5 másodpercig látható
           }
         };
         rowDiv.appendChild(submitBtn);
