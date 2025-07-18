@@ -18,6 +18,13 @@ const motivationalMessages = [
   "Remekül teljesítesz, folytasd ebben a szellemben!"
 ];
 
+// --- HIBAÜZENETEK (szintek szerint) ---
+const errorMessages = {
+  level1: ["Ne csüggedj, próbáld újra, te tudod ezt! 😊", "Hoppá, majdnem jó volt, próbáljuk még egyszer! 😉", "Semmi baj, egy kis gyakorlás, és meglesz! 🌟"],
+  level2: ["Ó, ez még nem az, de te vagy a legjobb próbálkozó! 😂", "Ezúttal elszalasztottad, de a következő biztos siker! 😄", "Nem baj, a matek néha tréfál velünk! 😜"],
+  level3: ["Jaj, ez már viccesen rossz, de te még mindig szuper vagy! 🤪", "Úgy tűnik, a számok eljátszottak veled, próbáld meg újra! 😂🎉", "Hoppá, ez már szinte művészet, próbáljuk újra nevetve! 😆"]
+};
+
 // --- SEGÉDFÜGGVÉNYEK ---
 // Véletlenszám generátor egész számokhoz
 function getRandomInt(min, max) {
@@ -494,6 +501,7 @@ let best = { score: 0, time: null };
 let gameActive = false;
 let answerState = { value: "" }; // Válasz állapota a numpadhoz
 let numpadRendered = false; // Numpad egyszeri generálásához
+let errorCount = 0; // Hibák számolása
 
 // --- UTOLSÓ VÁLASZTÁS MENTÉSE/BETÖLTÉSE ---
 function saveLastSelection() {
@@ -783,6 +791,7 @@ function renderNumpad(answerState, onChange) {
           }
 
           if (correct) {
+            errorCount = 0; // Hibaszámláló visszaállítása helyes válasz esetén
             score++; // Csak helyes válasz esetén nő a pontszám
             // Motiváló üzenetek
             if (difficultySelect.value === "hard") {
@@ -794,13 +803,19 @@ function renderNumpad(answerState, onChange) {
             currentQuestion++;
             showQuestion(currentQuestion);
           } else {
+            errorCount++; // Hibaszámláló növelése
             answerState.value = "";
             onChange(answerState.value);
             numpadContainer.querySelector('.answer-view').classList.add('error');
-            // Kedves hibaüzenet megjelenítése
+            // Változatos hibaüzenet megjelenítése a hibaszint alapján
+            let messageLevel;
+            if (errorCount <= 2) messageLevel = "level1";
+            else if (errorCount <= 4) messageLevel = "level2";
+            else messageLevel = "level3";
+            const errorMsg = errorMessages[messageLevel][getRandomInt(0, errorMessages[messageLevel].length - 1)];
             const errorMessage = document.createElement("div");
             errorMessage.className = "error-message";
-            errorMessage.textContent = "Ne csüggedj, próbáld újra, te tudod ezt! 😊";
+            errorMessage.textContent = errorMsg;
             quizContainer.appendChild(errorMessage);
             setTimeout(() => {
               errorMessage.remove();
@@ -897,6 +912,7 @@ function startGame() {
   gameActive = true;
   score = 0;
   currentQuestion = 0;
+  errorCount = 0; // Hibaszámláló visszaállítása játék elején
   generateQuestions();
   showQuestion(0);
   startTime = Date.now();
