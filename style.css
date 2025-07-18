@@ -1,20 +1,20 @@
 :root {
-  --bg-dark: #1C2526; /* Deep charcoal for dark mode */
-  --text-dark: #F1F1F1; /* Light gray for text */
-  --input-bg-dark: #2D383A; /* Darker input background */
-  --input-text-dark: #F1F1F1; /* Light text in inputs */
-  --input-border-dark: #4A5F62; /* Subtle border color */
-  --bg-light: #F9F9F9; /* Off-white for light mode */
-  --text-light: #1C2526; /* Dark text for contrast */
-  --input-bg-light: #FFFFFF; /* White input background */
-  --input-text-light: #1C2526; /* Dark text in inputs */
-  --input-border-light: #D3D8DA; /* Light border color */
-  --primary: #B22222; /* Red from the icon */
-  --primary-dark: #8B1A1A; /* Darker red for hover */
-  --success: #4BB543; /* Green for success feedback */
-  --submit-btn-bg: #B22222; /* Red for submit button */
-  --submit-btn-bg-hover: #8B1A1A; /* Darker red on hover */
-  --flash-color: #90EE90; /* Light green flash */
+  --bg-dark: #1C2526;
+  --text-dark: #F1F1F1;
+  --input-bg-dark: #2D383A;
+  --input-text-dark: #F1F1F1;
+  --input-border-dark: #4A5F62;
+  --bg-light: #F9F9F9;
+  --text-light: #1C2526;
+  --input-bg-light: #FFFFFF;
+  --input-text-light: #1C2526;
+  --input-border-light: #D3D8DA;
+  --primary: #B22222;
+  --primary-dark: #8B1A1A;
+  --success: #4BB543;
+  --submit-btn-bg: #B22222;
+  --submit-btn-bg-hover: #8B1A1A;
+  --flash-color: #90EE90;
 }
 
 body {
