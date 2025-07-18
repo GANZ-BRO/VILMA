@@ -18,13 +18,6 @@ const motivationalMessages = [
   "Remekül teljesítesz, folytasd ebben a szellemben!"
 ];
 
-// --- HIBAÜZENETEK (szintek szerint) ---
-const errorMessages = {
-  level1: ["Ne csüggedj, próbáld újra, te tudod ezt! 😊", "Hoppá, majdnem jó volt, próbáljuk még egyszer! 😉", "Semmi baj, egy kis gyakorlás, és meglesz! 🌟"],
-  level2: ["Ó, ez még nem az, de te vagy a legjobb próbálkozó! 😂", "Ezúttal elszalasztottad, de a következő biztos siker! 😄", "Nem baj, a matek néha tréfál velünk! 😜"],
-  level3: ["Jaj, ez már viccesen rossz, de te még mindig szuper vagy! 🤪", "Úgy tűnik, a számok eljátszottak veled, próbáld meg újra! 😂🎉", "Hoppá, ez már szinte művészet, próbáljuk újra nevetve! 😆"]
-};
-
 // --- SEGÉDFÜGGVÉNYEK ---
 // Véletlenszám generátor egész számokhoz
 function getRandomInt(min, max) {
@@ -464,10 +457,9 @@ const taskTypes = [
       }
       return {
         display: `Mennyi a teljesítmény, ha <b>U = ${U} V</b> és <b>I = ${I} A</b>?`,
-          answer: P.toString(),
-          answerType: "number"
-        };
-      }
+        answer: P.toString(),
+        answerType: "number"
+      };
     }
   }
 ];
@@ -485,15 +477,7 @@ const numpadContainer = document.getElementById("numpad-container");
 
 // --- KATEGÓRIÁK BETÖLTÉSE ---
 function loadCategories() {
-  if (!categorySelect) {
-    console.error("Hiba: A categorySelect elem nem található!");
-    return;
-  }
-  try {
-    categorySelect.innerHTML = taskTypes.map(task => `<option value="${task.value}">${task.name}</option>`).join('');
-  } catch (error) {
-    console.error("Hiba a kategóriák betöltésekor:", error);
-  }
+  categorySelect.innerHTML = taskTypes.map(task => `<option value="${task.value}">${task.name}</option>`).join('');
 }
 
 // --- ÁLLAPOTVÁLTOZÓK ---
@@ -501,8 +485,6 @@ let score = 0, startTime = 0, timerInterval = null, currentQuestion = 0, questio
 let best = { score: 0, time: null };
 let gameActive = false;
 let answerState = { value: "" }; // Válasz állapota a numpadhoz
-let numpadRendered = false; // Numpad egyszeri generálásához
-let errorCount = 0; // Hibák számolása
 
 // --- UTOLSÓ VÁLASZTÁS MENTÉSE/BETÖLTÉSE ---
 function saveLastSelection() {
@@ -696,8 +678,6 @@ function generateQuestions() {
 
 // --- SZÁMBILLENTYŰZET ---
 function renderNumpad(answerState, onChange) {
-  if (numpadRendered) return numpadContainer.firstChild; // Ha már létezik, visszaadja
-  numpadRendered = true;
   const rows = [
     ['1', '2', '3', '/', '←'],
     ['4', '5', '6', '.', 'submit'],
@@ -719,24 +699,16 @@ function renderNumpad(answerState, onChange) {
         submitBtn.setAttribute("aria-label", "Küldés (Enter)");
         submitBtn.innerHTML = `<span>${enterIcon}</span>`;
         submitBtn.onclick = () => {
-          if (!gameActive || submitBtn.disabled) return;
-          submitBtn.disabled = true;
-          setTimeout(() => submitBtn.disabled = false, 200);
+          if (!gameActive) return;
           let val = answerState.value.trim();
           if (val === "" || val === "-") {
-            answerState.value = "";
-            onChange(answerState.value);
-            numpadContainer.querySelector('.answer-view').classList.add('error');
-            setTimeout(() => numpadContainer.querySelector('.answer-view').classList.remove('error'), 500);
+            alert("Írj be egy választ!");
             return;
           }
           let correct = false;
           const currentTask = questions[currentQuestion] || {};
           if (!currentTask.answer) {
-            answerState.value = "";
-            onChange(answerState.value);
-            numpadContainer.querySelector('.answer-view').classList.add('error');
-            setTimeout(() => numpadContainer.querySelector('.answer-view').classList.remove('error'), 500);
+            alert("Hiba: nincs válasz definiálva!");
             return;
           }
 
@@ -747,10 +719,7 @@ function renderNumpad(answerState, onChange) {
             const [ansNum, ansDen] = currentTask.answer.split('/').map(Number);
             const [userNum, userDen] = val.split('/').map(Number);
             if (isNaN(userNum) || isNaN(userDen) || userDen === 0) {
-              answerState.value = "";
-              onChange(answerState.value);
-              numpadContainer.querySelector('.answer-view').classList.add('error');
-              setTimeout(() => numpadContainer.querySelector('.answer-view').classList.remove('error'), 500);
+              alert("Érvénytelen tört formátum! Írj be egy törtet, pl. '3/4'.");
               return;
             }
             const [simpUserNum, simpUserDen] = simplifyFraction(userNum, userDen);
@@ -761,10 +730,7 @@ function renderNumpad(answerState, onChange) {
             const correctAnswer = parseFloat(currentTask.answer);
             const userAnswer = parseFloat(val);
             if (isNaN(userAnswer)) {
-              answerState.value = "";
-              onChange(answerState.value);
-              numpadContainer.querySelector('.answer-view').classList.add('error');
-              setTimeout(() => numpadContainer.querySelector('.answer-view').classList.remove('error'), 500);
+              alert("Érvénytelen szám! Írj be egy tizedes törtet, pl. '3.14'.");
               return;
             }
             if (Math.abs(userAnswer - correctAnswer) < 0.0001) {
@@ -774,10 +740,7 @@ function renderNumpad(answerState, onChange) {
             const correctAnswer = parseInt(currentTask.answer);
             const userAnswer = parseFloat(val);
             if (isNaN(userAnswer)) {
-              answerState.value = "";
-              onChange(answerState.value);
-              numpadContainer.querySelector('.answer-view').classList.add('error');
-              setTimeout(() => numpadContainer.querySelector('.answer-view').classList.remove('error'), 500);
+              alert("Érvénytelen szám! Írj be egy egész számot.");
               return;
             }
             if (categorySelect.value === "szazalekszamitas") {
@@ -792,7 +755,6 @@ function renderNumpad(answerState, onChange) {
           }
 
           if (correct) {
-            errorCount = 0; // Hibaszámláló visszaállítása helyes válasz esetén
             score++; // Csak helyes válasz esetén nő a pontszám
             // Motiváló üzenetek
             if (difficultySelect.value === "hard") {
@@ -801,31 +763,10 @@ function renderNumpad(answerState, onChange) {
             } else if (difficultySelect.value === "medium" && currentQuestion === QUESTIONS - 2) {
               alert("Gratulálok, csak így tovább, mindjárt a végére érsz!");
             }
-            currentQuestion++; // Következő kérdés
-            if (currentQuestion < QUESTIONS) {
-              showQuestion(currentQuestion); // Új kérdés megjelenítése
-            } else {
-              finishGame(); // Játék vége, ha minden kérdés megválaszolva
-            }
+            currentQuestion++;
+            showQuestion(currentQuestion);
           } else {
-            errorCount++; // Hibaszámláló növelése
-            answerState.value = "";
-            onChange(answerState.value);
-            numpadContainer.querySelector('.answer-view').classList.add('error');
-            // Változatos hibaüzenet megjelenítése a hibaszint alapján
-            let messageLevel;
-            if (errorCount <= 2) messageLevel = "level1";
-            else if (errorCount <= 4) messageLevel = "level2";
-            else messageLevel = "level3";
-            const errorMsg = errorMessages[messageLevel][getRandomInt(0, errorMessages[messageLevel].length - 1)];
-            const errorMessage = document.createElement("div");
-            errorMessage.className = "error-message";
-            errorMessage.textContent = errorMsg;
-            quizContainer.appendChild(errorMessage);
-            setTimeout(() => {
-              errorMessage.remove();
-              numpadContainer.querySelector('.answer-view').classList.remove('error');
-            }, 1500); // 1.5 másodpercig látható
+            alert("Nem jó válasz, próbáld újra!"); // Rossz válasz esetén nem nő a pontszám
           }
         };
         rowDiv.appendChild(submitBtn);
@@ -837,11 +778,8 @@ function renderNumpad(answerState, onChange) {
         btn.textContent = key;
         btn.tabIndex = -1;
         btn.onclick = () => {
-          if (btn.disabled) return;
-          btn.disabled = true;
-          setTimeout(() => btn.disabled = false, 200);
-          btn.classList.add('flash');
-          setTimeout(() => btn.classList.remove('flash'), 200);
+          btn.classList.add('flash'); // Világoszöld felvillanás hozzáadása
+          setTimeout(() => btn.classList.remove('flash'), 200); // 200ms után eltávolítás
           if (key === '←') {
             answerState.value = answerState.value.slice(0, -1); // Backspace
           } else if (key === '-') {
@@ -889,26 +827,16 @@ function showQuestion(index) {
   const answerView = document.createElement("div");
   answerView.className = "answer-view";
   answerView.textContent = "";
-  answerView.addEventListener('touchstart', (e) => e.preventDefault()); // Virtuális billentyűzet megakadályozása
   div.appendChild(answerView);
 
-  numpadContainer.innerHTML = "";
-  numpadContainer.appendChild(renderNumpad(answerState, function (val) {
+  const numpad = renderNumpad(answerState, function (val) {
     answerView.textContent = val;
-  }));
+  });
+
+  numpadContainer.innerHTML = "";
+  numpadContainer.appendChild(numpad);
   numpadContainer.classList.add("active");
   quizContainer.appendChild(div);
-
-  // Progress bar frissítése
-  const progress = document.querySelector('.progress');
-  if (progress) {
-    progress.style.width = `${((index + 1) / QUESTIONS) * 100}%`;
-  }
-
-  // Automatikus fókusz az answer-view-re és az első numpad gombra
-  answerView.focus();
-  const firstNumpadBtn = numpadContainer.querySelector('.numpad-btn');
-  if (firstNumpadBtn) firstNumpadBtn.focus();
 
   div.scrollIntoView({ behavior: "smooth", block: "start" });
 }
@@ -917,7 +845,6 @@ function startGame() {
   gameActive = true;
   score = 0;
   currentQuestion = 0;
-  errorCount = 0; // Hibaszámláló visszaállítása játék elején
   generateQuestions();
   showQuestion(0);
   startTime = Date.now();
@@ -941,7 +868,6 @@ function finishGame() {
   quizContainer.innerHTML = `<p style="font-size:1.2em;"><b>Gratulálok!</b> ${elapsed} másodperc alatt végeztél.</p>`;
   numpadContainer.innerHTML = "";
   numpadContainer.classList.remove("active");
-  numpadRendered = false; // Új játékhoz újragenerálható
   saveBest(score, elapsed);
 
   restartBtn.style.display = "";
@@ -955,12 +881,7 @@ restartBtn.onclick = startGame;
 startBtn.onclick = startGame;
 
 // --- INDÍTÁS ---
-document.addEventListener('DOMContentLoaded', () => {
-  // Késleltetett kategóriák betöltése iOS kompatibilitás miatt
-  setTimeout(() => {
-    loadCategories();
-    loadLastSelection();
-    loadBest();
-    applyTheme();
-  }, 100); // 100ms késleltetés
-});
+loadCategories();
+loadLastSelection();
+loadBest();
+applyTheme();
