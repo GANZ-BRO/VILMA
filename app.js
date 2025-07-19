@@ -554,16 +554,33 @@ function categoryLabel() {
 
 // --- TÉMA VÁLTÁS ---
 function applyTheme() {
-  const theme = localStorage.getItem("vilma-theme") || "dark";
+  const theme = localStorage.getItem("vilma-theme") || "light"; // Alapértelmezett: világos téma
   const isLight = theme === "light";
-  document.body.classList.toggle("light", isLight);
+  document.body.classList.toggle("dark", !isLight); // .dark osztály használata
 }
 
-themeToggle.addEventListener("click", function () {
-  const isLight = document.body.classList.contains("light");
-  localStorage.setItem("vilma-theme", isLight ? "dark" : "light");
-  applyTheme();
+document.addEventListener("DOMContentLoaded", () => {
+  const themeToggle = document.getElementById("theme-toggle");
+  if (themeToggle) {
+    themeToggle.addEventListener("click", toggleTheme);
+    themeToggle.addEventListener("touchstart", toggleTheme); // iPhone-kompatibilitás
+  } else {
+    console.error("A #theme-toggle elem nem található.");
+  }
+  applyTheme(); // Téma alkalmazása betöltéskor
 });
+
+function toggleTheme(event) {
+  event.preventDefault(); // Megakadályozza az iOS dupla érintési problémákat
+  const body = document.body;
+  if (body.classList.contains("dark")) {
+    body.classList.remove("dark");
+    localStorage.setItem("vilma-theme", "light");
+  } else {
+    body.classList.add("dark");
+    localStorage.setItem("vilma-theme", "dark");
+  }
+}
 
 // --- NEHÉZSÉG ÉS KATEGÓRIA KEZELÉSE ---
 difficultySelect.addEventListener("change", loadBest);
@@ -848,7 +865,7 @@ function startGame() {
   gameActive = true;
   score = 0;
   currentQuestion = 0;
-  wrongAnswers = 0; // Helytelen válaszok inicializálása
+  wrongAnswers = jakab = 0; // Helytelen válaszok inicializálása
   generateQuestions();
   showQuestion(0);
   startTime = Date.now();
@@ -888,4 +905,3 @@ startBtn.onclick = startGame;
 loadCategories();
 loadLastSelection();
 loadBest();
-applyTheme();
