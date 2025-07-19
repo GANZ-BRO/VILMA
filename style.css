@@ -12,7 +12,7 @@
   --primary: #D32F2F; /* Piros a feliratokhoz */
   --primary-dark: #B71C1C; /* Sötét piros hoverhez */
   --imperial: #3A4F54; /* Visszafogott szürke-kék sötét módban */
-  --success: #00CC00; /* Élénk zöld a legjobb eredményhez */
+  --success: #00CC00; /* Élénk zöld a legjobb eredményhez sötét módban */
   --submit-btn-bg: #D32F2F; /* Piros az Enter gombhoz világos módban */
   --submit-btn-bg-hover: #B71C1C; /* Sötét piros hover az Enterhez */
   --flash-color: #90EE90; /* Zöld a flash effektushoz */
@@ -156,7 +156,11 @@ body.dark .stat {
 .best {
   font-size: 0.9em;
   margin-top: 0.2em;
-  color: var(--success); /* #00CC00 */
+  color: var(--success); /* #00CC00 sötét módban */
+}
+
+body:not(.dark) .best {
+  color: #008000; /* Sötétebb zöld világos módban */
 }
 
 .progress-bar {
@@ -364,7 +368,14 @@ body.dark .numpad {
   font-weight: 600;
   min-width: 44px;
   min-height: 44px;
+}
+
+body:not(.dark) .numpad-btn, body:not(.dark) .numpad-submit-btn {
   -webkit-tap-highlight-color: rgba(178, 34, 34, 0.3);
+}
+
+body.dark .numpad-btn, body.dark .numpad-submit-btn {
+  -webkit-tap-highlight-color: rgba(44, 208, 208, 0.3);
 }
 
 body.dark .numpad-btn {
@@ -392,7 +403,7 @@ body.dark .numpad-btn {
 body.dark .numpad-submit-btn {
   background: var(--primary-inverse);
   color: #FFFFFF;
-  border: 2px solid #1A8C8C;
+  border: 2px solid var(--input-border-dark);
 }
 
 .numpad-submit-btn:hover, .numpad-submit-btn:focus {
@@ -404,7 +415,7 @@ body.dark .numpad-submit-btn {
 body.dark .numpad-submit-btn:hover, body.dark .numpad-submit-btn:focus {
   background: #1A8C8C;
   transform: scale(1.05);
-  outline: 2px solid #1A8C8C;
+  outline: 2px solid var(--input-border-dark);
 }
 
 .numpad-submit-btn > span {
