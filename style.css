@@ -12,8 +12,8 @@
   --primary: #D32F2F; /* Piros a feliratokhoz */
   --primary-dark: #B71C1C; /* Sötét piros hoverhez */
   --imperial: #3A4F54; /* Visszafogott szürke-kék sötét módban */
-  --success: #4BB543;
-  --submit-btn-bg: #D32F2F; /* Piros az Enter gombhoz */
+  --success: #00CC00; /* Élénk zöld a legjobb eredményhez */
+  --submit-btn-bg: #D32F2F; /* Piros az Enter gombhoz világos módban */
   --submit-btn-bg-hover: #B71C1C; /* Sötét piros hover az Enterhez */
   --flash-color: #90EE90; /* Zöld a flash effektushoz */
   --primary-inverse: #2CD0D0; /* Inverz szín a sötét módban */
@@ -23,16 +23,16 @@ body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   margin: 0;
   padding: 0;
-  background: var(--bg-dark);
-  color: var(--text-dark);
+  background: var(--bg-light);
+  color: var(--text-light);
   min-height: 100vh;
   transition: background 0.3s, color 0.3s;
   touch-action: auto;
 }
 
-body.light {
-  background: var(--bg-light);
-  color: var(--text-light);
+body.dark {
+  background: var(--bg-dark);
+  color: var(--text-dark);
 }
 
 main {
@@ -41,13 +41,13 @@ main {
   padding: 20px;
   position: relative;
   border-radius: 12px;
-  background: rgba(255, 255, 255, 0.05);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-body.light main {
   background: rgba(0, 0, 0, 0.03);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+body.dark main {
+  background: rgba(255, 255, 255, 0.05);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 header {
@@ -56,11 +56,11 @@ header {
   justify-content: space-between;
   gap: 1em;
   padding: 1em 0;
-  border-bottom: 1px solid var(--input-border-dark);
+  border-bottom: 1px solid var(--input-border-light);
 }
 
-body.light header {
-  border-bottom: 1px solid var(--input-border-light);
+body.dark header {
+  border-bottom: 1px solid var(--input-border-dark);
 }
 
 h1.subtitle {
@@ -72,7 +72,7 @@ h1.subtitle {
   letter-spacing: 1px;
 }
 
-body:not(.light) h1.subtitle {
+body.dark h1.subtitle {
   color: var(--primary-inverse);
 }
 
@@ -92,28 +92,28 @@ body:not(.light) h1.subtitle {
 .settings label {
   font-size: 1em;
   font-weight: 600;
-  color: var(--text-dark);
+  color: var(--text-light);
 }
 
-body.light .settings label {
-  color: var(--text-light);
+body.dark .settings label {
+  color: var(--text-dark);
 }
 
 select {
   font-size: 1em;
   padding: 0.75em;
   border-radius: 8px;
-  border: 2px solid var(--input-border-dark);
-  background: var(--input-bg-dark);
-  color: var(--input-text-dark);
+  border: 2px solid var(--input-border-light);
+  background: var(--input-bg-light);
+  color: var(--input-text-light);
   width: 100%;
   transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
-body.light select {
-  background: var(--input-bg-light);
-  color: var(--input-text-light);
-  border: 2px solid var(--input-border-light);
+body.dark select {
+  background: var(--input-bg-dark);
+  color: var(--input-text-dark);
+  border: 2px solid var(--input-border-dark);
 }
 
 select:focus {
@@ -122,7 +122,7 @@ select:focus {
   box-shadow: 0 0 0 3px rgba(178, 34, 34, 0.2);
 }
 
-body:not(.light) select:focus {
+body.dark select:focus {
   border-color: var(--primary-inverse);
   box-shadow: 0 0 0 3px rgba(44, 208, 208, 0.2);
 }
@@ -135,12 +135,12 @@ body:not(.light) select:focus {
   justify-content: space-between;
   margin-bottom: 1em;
   padding: 1em;
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(0, 0, 0, 0.05);
   border-radius: 8px;
 }
 
-body.light .game-stats {
-  background: rgba(0, 0, 0, 0.05);
+body.dark .game-stats {
+  background: rgba(255, 255, 255, 0.1);
 }
 
 .stat {
@@ -149,35 +149,27 @@ body.light .game-stats {
   color: var(--primary);
 }
 
-body:not(.light) .stat {
+body.dark .stat {
   color: var(--primary-inverse);
 }
 
 .best {
   font-size: 0.9em;
   margin-top: 0.2em;
-  color: var(--success);
-}
-
-@media (prefers-color-scheme: dark) {
-  .best { color: #32CD32; }
-}
-
-@media (prefers-color-scheme: light) {
-  .best { color: #006400; }
+  color: var(--success); /* #00CC00 */
 }
 
 .progress-bar {
   width: 100%;
   height: 8px;
-  background: var(--input-bg-dark);
+  background: var(--input-bg-light);
   border-radius: 4px;
   overflow: hidden;
   margin-bottom: 1em;
 }
 
-body.light .progress-bar {
-  background: var(--input-bg-light);
+body.dark .progress-bar {
+  background: var(--input-bg-dark);
 }
 
 .progress {
@@ -186,7 +178,7 @@ body.light .progress-bar {
   transition: width 0.3s ease;
 }
 
-body:not(.light) .progress {
+body.dark .progress {
   background: var(--primary-inverse);
 }
 
@@ -194,13 +186,13 @@ body:not(.light) .progress {
   margin-bottom: 1.5em;
   border-radius: 12px;
   padding: 1.5em;
-  background: rgba(255, 255, 255, 0.08);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-body.light #quiz > div {
   background: rgba(0, 0, 0, 0.03);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+body.dark #quiz > div {
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .question-container {
@@ -223,20 +215,20 @@ body.light #quiz > div {
   font-weight: 700;
   font-size: 1.8em;
   margin-bottom: 0.75em;
-  color: var(--text-dark);
+  color: var(--text-light);
 }
 
-body.light .question-text {
-  color: var(--text-light);
+body.dark .question-text {
+  color: var(--text-dark);
 }
 
 .answer-view {
   font-size: 1.5em;
   padding: 1em;
   margin: 1em 0;
-  border: 2px solid var(--input-border-dark);
-  background: var(--input-bg-dark);
-  color: var(--input-text-dark);
+  border: 2px solid var(--input-border-light);
+  background: var(--input-bg-light);
+  color: var(--input-text-light);
   border-radius: 10px;
   min-width: 150px;
   height: 50px;
@@ -252,10 +244,10 @@ body.light .question-text {
   text-overflow: ellipsis;
 }
 
-body.light .answer-view {
-  background: var(--input-bg-light);
-  color: var(--input-text-light);
-  border: 2px solid var(--input-border-light);
+body.dark .answer-view {
+  background: var(--input-bg-dark);
+  color: var(--input-text-dark);
+  border: 2px solid var(--input-border-dark);
 }
 
 .answer-view.error {
@@ -268,7 +260,7 @@ body.light .answer-view {
   font-weight: 700;
 }
 
-body:not(.light) .blue-percent {
+body.dark .blue-percent {
   color: var(--primary-inverse);
 }
 
@@ -294,11 +286,11 @@ button:hover, .big-btn:hover, button:focus, .big-btn:focus {
   outline: none;
 }
 
-body:not(.light) .big-btn, body:not(.light) button {
+body.dark .big-btn, body.dark button {
   background: var(--primary-inverse);
 }
 
-body:not(.light) .big-btn:hover, body:not(.light) .big-btn:focus {
+body.dark .big-btn:hover, body.dark .big-btn:focus {
   background: #1A8C8C;
 }
 
@@ -307,7 +299,7 @@ body:not(.light) .big-btn:hover, body:not(.light) .big-btn:focus {
   width: 2em;
   height: 2em;
   background: none;
-  color: var(--text-dark);
+  color: var(--text-light);
   box-shadow: none;
   border: none;
   margin: 0;
@@ -318,8 +310,8 @@ body:not(.light) .big-btn:hover, body:not(.light) .big-btn:focus {
   transition: color 0.3s ease;
 }
 
-body.light #theme-toggle {
-  color: var(--text-light);
+body.dark #theme-toggle {
+  color: var(--text-dark);
 }
 
 .numpad {
@@ -336,12 +328,12 @@ body.light #theme-toggle {
   margin-right: auto;
   padding: 1em;
   border-radius: 12px 12px 0 0;
-  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
   touch-action: none;
 }
 
-body.light .numpad {
-  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
+body.dark .numpad {
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
 }
 
 .numpad.active {
@@ -359,9 +351,9 @@ body.light .numpad {
   aspect-ratio: 1/1;
   font-size: 1.3em;
   border-radius: 8px;
-  border: 2px solid var(--input-border-dark);
-  background: var(--input-bg-dark);
-  color: var(--input-text-dark);
+  border: 2px solid var(--input-border-light);
+  background: var(--input-bg-light);
+  color: var(--input-text-light);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -375,13 +367,7 @@ body.light .numpad {
   -webkit-tap-highlight-color: rgba(178, 34, 34, 0.3);
 }
 
-body.light .numpad-btn {
-  background: var(--input-bg-light);
-  color: var(--input-text-light);
-  border: 2px solid var(--input-border-light);
-}
-
-body:not(.light) .numpad-btn {
+body.dark .numpad-btn {
   background: var(--imperial);
   color: var(--input-text-dark);
   border: 2px solid var(--input-border-dark);
@@ -403,16 +389,22 @@ body:not(.light) .numpad-btn {
   border: 2px solid var(--primary-dark);
 }
 
-body.light .numpad-submit-btn {
-  background: var(--submit-btn-bg);
+body.dark .numpad-submit-btn {
+  background: var(--primary-inverse);
   color: #FFFFFF;
-  border: 2px solid var(--input-border-light);
+  border: 2px solid #1A8C8C;
 }
 
 .numpad-submit-btn:hover, .numpad-submit-btn:focus {
   background: var(--submit-btn-bg-hover);
   transform: scale(1.05);
   outline: 2px solid var(--primary-dark);
+}
+
+body.dark .numpad-submit-btn:hover, body.dark .numpad-submit-btn:focus {
+  background: #1A8C8C;
+  transform: scale(1.05);
+  outline: 2px solid #1A8C8C;
 }
 
 .numpad-submit-btn > span {
