@@ -20,7 +20,7 @@
 }
 
 body {
-  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   margin: 0;
   padding: 0;
   background: var(--bg-dark);
@@ -382,8 +382,8 @@ body.light .numpad-btn, body.light .numpad-submit-btn {
 }
 
 .numpad-btn.flash {
-  background: var(--flash-color);
-  transition: background 0.2s;
+  background: var(--flash-color) !important;
+  transition: background 0.2s ease;
 }
 
 .numpad-btn:active, .numpad-btn:focus {

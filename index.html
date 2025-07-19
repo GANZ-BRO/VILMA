@@ -4,21 +4,15 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>VILMA gyakorlás</title>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
-  <link rel="icon" type="image/png" href="icon-192.png"> <!-- Favicon az 192x192-es ikonra állítva -->
-  <link rel="manifest" href="manifest.json"> <!-- Manifest fájl hivatkozása -->
-  <!-- Service Worker regisztráció -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#D32F2F">
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/service-worker.js')
-          .then((registration) => {
-            console.log('Service Worker regisztrálva:', registration);
-          })
-          .catch((error) => {
-            console.error('Service Worker regisztrációs hiba:', error);
-          });
+        navigator.serviceWorker.register('sw.js')
+          .then(reg => console.log('Service Worker registered'))
+          .catch(err => console.log('Service Worker registration failed:', err));
       });
     }
   </script>
@@ -27,14 +21,16 @@
   <main>
     <header>
       <h1 class="subtitle">VILMA gyakorlás</h1>
-      <button id="theme-toggle" aria-label="Téma váltás">
+      <button id="theme-toggle" aria-label="Téma váltása">
         🌗
       </button>
     </header>
-    <div class="game-stats">
-      <div class="stat" id="time">⏱️ Idő: 0 mp</div>
-      <div class="best" id="best-stats"></div>
-    </div>
+
+    <section class="game-stats">
+      <div class="stat">⏱️ Idő: <span id="time">0</span> mp</div>
+      <div id="best-stats" class="best" style="display:none;"></div>
+    </section>
+
     <div class="settings">
       <div>
         <label for="category">Kategória:</label>
@@ -42,17 +38,21 @@
       </div>
       <div>
         <label for="difficulty">Nehézségi szint:</label>
-        <select id="difficulty">
-          <option value="easy">Könnyű</option>
-          <option value="medium">Közepes</option>
-          <option value="hard">Kihívás</option>
-        </select>
+        <div>
+          <select id="difficulty">
+            <option value="easy">Könnyű</option>
+            <option value="medium">Közepes</option>
+            <option value="hard">Kihívás</option>
+          </select>
+        </div>
       </div>
     </div>
+
     <div id="quiz"></div>
     <div id="numpad-container"></div>
+
     <button class="big-btn" onclick="startGame()">Játék indítása</button>
-    <button id="restart-btn" class="big-btn" style="display: none;">Újraindítás</button>
+    <button id="restart-btn" class="big-btn" style="display:none;">Újraindítás</button>
   </main>
   <script src="app.js"></script>
 </body>

@@ -1,19 +1,14 @@
 {
-  "name": "VILMA gyakorlás",
+  "name": "VILMA Gyakorlás",
   "short_name": "VILMA",
   "start_url": "index.html",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#d32f2f",
+  "background_color": "#1C2526",
+  "theme_color": "#D32F2F",
   "icons": [
     {
-      "src": "icon-192.png",
+      "src": "icon.png",
       "sizes": "192x192",
-      "type": "image/png"
-    },
-    {
-      "src": "icon-512.png",
-      "sizes": "512x512",
       "type": "image/png"
     }
   ]
