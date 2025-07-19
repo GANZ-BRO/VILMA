@@ -15,7 +15,7 @@
   --success: #4BB543;
   --submit-btn-bg: #D32F2F; /* Piros az Enter gombhoz */
   --submit-btn-bg-hover: #B71C1C; /* Sötét piros hover az Enterhez */
-  --flash-color: #90EE90;
+  --flash-color: #90EE90; /* Zöld a flash effektushoz */
   --primary-inverse: #2CD0D0; /* Inverz szín a sötét módban */
 }
 
@@ -368,39 +368,45 @@ body.light .numpad {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  transition: background 0.2s ease, transform 0.2s ease, border-color 0.2s ease;
+  transition: transform 0.2s ease;
   font-weight: 600;
   min-width: 44px;
   min-height: 44px;
   -webkit-tap-highlight-color: rgba(178, 34, 34, 0.3);
 }
 
-body.light .numpad-btn, body.light .numpad-submit-btn {
+body.light .numpad-btn {
   background: var(--input-bg-light);
   color: var(--input-text-light);
   border: 2px solid var(--input-border-light);
 }
 
 body:not(.light) .numpad-btn {
-  background: var(--imperial) !important;
+  background: var(--imperial);
   color: var(--input-text-dark);
   border: 2px solid var(--input-border-dark);
 }
 
 .numpad-btn.flash {
-  background: var(--flash-color) !important;
-  transition: background 0.2s ease !important;
+  background: var(--flash-color);
+  transition: background 0.2s ease;
 }
 
 .numpad-btn:active, .numpad-btn:focus {
   outline: none;
-  border-color: var(--primary-inverse);
+  transform: scale(0.95);
 }
 
 .numpad-submit-btn {
   background: var(--submit-btn-bg);
   color: #FFFFFF;
   border: 2px solid var(--primary-dark);
+}
+
+body.light .numpad-submit-btn {
+  background: var(--submit-btn-bg);
+  color: #FFFFFF;
+  border: 2px solid var(--input-border-light);
 }
 
 .numpad-submit-btn:hover, .numpad-submit-btn:focus {
