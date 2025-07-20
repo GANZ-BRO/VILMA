@@ -791,7 +791,7 @@ function renderAnswerButtons(options, correctAnswer, answerType) {
     btn.onclick = () => {
       buttonsDiv.querySelectorAll('.answer-btn').forEach(b => b.classList.remove('flash'));
       btn.classList.add('flash');
-      setTimeout(() => btn.classList.remove('flash'), 200);
+      setTimeout(() => btn.classList.remove('flash'), 100);
 
       if (!gameActive) return;
       const currentTask = questions[currentQuestion] || {};
@@ -854,6 +854,7 @@ function showQuestion(index) {
   quizContainer.innerHTML = "";
   numpadContainer.innerHTML = "";
   numpadContainer.classList.remove("active");
+  document.querySelectorAll('.answer-btn').forEach(btn => btn.classList.remove('flash'));
 
   if (index >= QUESTIONS) {
     finishGame();
@@ -908,6 +909,7 @@ function finishGame() {
   quizContainer.innerHTML = `<p style="font-size:1.2em;"><b>Gratulálok!</b> ${elapsed} másodperc alatt végeztél.<br>Helytelen válaszok száma: ${wrongAnswers}</p>`;
   numpadContainer.innerHTML = "";
   numpadContainer.classList.remove("active");
+  document.querySelectorAll('.answer-btn').forEach(btn => btn.classList.remove('flash'));
   saveBest(score, elapsed);
 
   restartBtn.style.display = "";
