@@ -373,7 +373,7 @@ body.dark .numpad {
   border-radius: 8px;
   border: 2px solid var(--input-border-light);
   background: var(--input-bg-light);
-  color: var(--input-text-light);
+  color: var(--primary); /* Módosítva: szövegszín igazítva a h1.subtitle-hoz */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -396,7 +396,7 @@ body.dark .numpad-btn, body.dark .numpad-submit-btn {
 
 body.dark .numpad-btn {
   background: var(--imperial);
-  color: var(--input-text-dark);
+  color: var(--primary-inverse); /* Módosítva: szövegszín igazítva a h1.subtitle-hoz */
   border: 2px solid var(--input-border-dark);
 }
 
