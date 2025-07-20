@@ -789,6 +789,7 @@ function renderAnswerButtons(options, correctAnswer, answerType) {
     btn.textContent = option;
     btn.tabIndex = 0;
     btn.onclick = () => {
+      buttonsDiv.querySelectorAll('.answer-btn').forEach(b => b.classList.remove('flash'));
       btn.classList.add('flash');
       setTimeout(() => btn.classList.remove('flash'), 200);
 
@@ -851,6 +852,9 @@ function renderAnswerButtons(options, correctAnswer, answerType) {
 // --- JÁTÉK LOGIKA ---
 function showQuestion(index) {
   quizContainer.innerHTML = "";
+  numpadContainer.innerHTML = "";
+  numpadContainer.classList.remove("active");
+
   if (index >= QUESTIONS) {
     finishGame();
     return;
@@ -866,7 +870,6 @@ function showQuestion(index) {
     <div class="question-text">${q.display} = </div>`;
 
   const answerButtons = renderAnswerButtons(q.options, q.answer, q.answerType);
-  numpadContainer.innerHTML = "";
   numpadContainer.appendChild(answerButtons);
   numpadContainer.classList.add("active");
   quizContainer.appendChild(div);
