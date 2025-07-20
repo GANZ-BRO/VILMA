@@ -6,30 +6,19 @@
   <title>VILMA gyakorlás</title>
   <link rel="stylesheet" href="style.css">
   <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#D32F2F">
-  <script>
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('sw.js')
-          .then(reg => console.log('Service Worker registered'))
-          .catch(err => console.log('Service Worker registration failed:', err));
-      });
-    }
-  </script>
+  <link rel="icon" href="icon.png">
 </head>
 <body>
   <main>
     <header>
       <h1 class="subtitle">VILMA gyakorlás</h1>
-      <button id="theme-toggle" aria-label="Téma váltása">
-        🌗
-      </button>
+      <button id="theme-toggle" aria-label="Téma váltása">🌗</button>
     </header>
 
-    <section class="game-stats">
-      <div class="stat">⏱️ Idő: <span id="time">0</span> mp</div>
-      <div id="best-stats" class="best" style="display:none;"></div>
-    </section>
+    <div class="game-stats">
+      <div class="stat">⏱️ Idő: <span id="time">0 mp</span></div>
+      <div class="best" id="best-stats" style="display: none;"></div>
+    </div>
 
     <div class="settings">
       <div>
@@ -38,13 +27,11 @@
       </div>
       <div>
         <label for="difficulty">Nehézségi szint:</label>
-        <div>
-          <select id="difficulty">
-            <option value="easy">Könnyű</option>
-            <option value="medium">Közepes</option>
-            <option value="hard">Kihívás</option>
-          </select>
-        </div>
+        <select id="difficulty">
+          <option value="easy">Könnyű</option>
+          <option value="medium">Közepes</option>
+          <option value="hard">Kihívás</option>
+        </select>
       </div>
     </div>
 
@@ -52,7 +39,7 @@
     <div id="numpad-container"></div>
 
     <button class="big-btn" onclick="startGame()">Játék indítása</button>
-    <button id="restart-btn" class="big-btn" style="display:none;">Újraindítás</button>
+    <button class="big-btn" id="restart-btn" style="display: none;">Újraindítás</button>
   </main>
   <script src="app.js"></script>
 </body>
