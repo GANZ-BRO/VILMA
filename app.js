@@ -567,7 +567,6 @@ function loadCategories() {
 let score = 0, startTime = 0, timerInterval = null, currentQuestion = 0, questions = [];
 let best = { score: 0, time: null };
 let gameActive = false;
-let answerState = { value: "" };
 let wrongAnswers = 0;
 
 // --- UTOLSÓ VÁLASZTÁS MENTÉSE/BETÖLTÉSE ---
@@ -779,7 +778,7 @@ function generateQuestions() {
 }
 
 // --- VÁLASZGOMBOK MEGJELENÍTÉSE ---
-function renderAnswerButtons(options, correctAnswer, answerState, onSelect) {
+function renderAnswerButtons(options, correctAnswer, answerType) {
   const buttonsDiv = document.createElement('div');
   buttonsDiv.className = 'answer-buttons active';
 
@@ -792,8 +791,6 @@ function renderAnswerButtons(options, correctAnswer, answerState, onSelect) {
     btn.onclick = () => {
       btn.classList.add('flash');
       setTimeout(() => btn.classList.remove('flash'), 200);
-      answerState.value = option;
-      onSelect(option);
 
       if (!gameActive) return;
       const currentTask = questions[currentQuestion] || {};
@@ -803,14 +800,14 @@ function renderAnswerButtons(options, correctAnswer, answerState, onSelect) {
       }
 
       let correct = false;
-      if (currentTask.answerType === "fraction") {
+      if (answerType === "fraction") {
         const [ansNum, ansDen] = currentTask.answer.split('/').map(Number);
         const [userNum, userDen] = option.split('/').map(Number);
         const [simpUserNum, simpUserDen] = simplifyFraction(userNum, userDen);
         if (simpUserNum === ansNum && simpUserDen === ansDen) {
           correct = true;
         }
-      } else if (currentTask.answerType === "decimal") {
+      } else if (answerType === "decimal") {
         const correctAnswerNum = parseFloat(currentTask.answer);
         const userAnswer = parseFloat(option);
         if (Math.abs(userAnswer - correctAnswerNum) < 0.0001) {
@@ -867,16 +864,8 @@ function showQuestion(index) {
       <div class="progress"></div>
     </div>
     <div class="question-text">${q.display} = </div>`;
-  let answerState = { value: "" };
-  const answerView = document.createElement("div");
-  answerView.className = "answer-view";
-  answerView.textContent = "";
-  div.appendChild(answerView);
 
-  const answerButtons = renderAnswerButtons(q.options, q.answer, answerState, function (val) {
-    answerView.textContent = val;
-  });
-
+  const answerButtons = renderAnswerButtons(q.options, q.answer, q.answerType);
   numpadContainer.innerHTML = "";
   numpadContainer.appendChild(answerButtons);
   numpadContainer.classList.add("active");

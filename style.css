@@ -9,14 +9,12 @@
   --input-bg-light: #FFFFFF;
   --input-text-light: #1C2526;
   --input-border-light: #D3D8DA;
-  --primary: #D32F2F; /* Piros a feliratokhoz */
-  --primary-dark: #B71C1C; /* Sötét piros hoverhez */
-  --imperial: #3A4F54; /* Visszafogott szürke-kék sötét módban */
-  --success: #00CC00; /* Élénk zöld a legjobb eredményhez sötét módban */
-  --submit-btn-bg: #D32F2F; /* Piros az Enter gombhoz világos módban */
-  --submit-btn-bg-hover: #B71C1C; /* Sötét piros hover az Enterhez */
-  --flash-color: #90EE90; /* Zöld a flash effektushoz */
-  --primary-inverse: #2CD0D0; /* Inverz szín a sötét módban */
+  --primary: #D32F2F;
+  --primary-dark: #B71C1C;
+  --imperial: #3A4F54;
+  --success: #00CC00;
+  --flash-color: #90EE90;
+  --primary-inverse: #2CD0D0;
 }
 
 body {
@@ -26,13 +24,14 @@ body {
   background: var(--bg-light);
   color: var(--text-light);
   min-height: 100vh;
-  transition: background 0.3s, color 0.3s;
+  transition: all 0.3s ease;
   touch-action: auto;
 }
 
 body.dark {
   background: var(--bg-dark);
   color: var(--text-dark);
+  transition: all 0.3s ease;
 }
 
 main {
@@ -156,11 +155,11 @@ body.dark .stat {
 .best {
   font-size: 0.9em;
   margin-top: 0.2em;
-  color: var(--success); /* #00CC00 sötét módban */
+  color: var(--success);
 }
 
 body:not(.dark) .best {
-  color: #008000; /* Sötétebb zöld világos módban */
+  color: #008000;
 }
 
 .progress-bar {
@@ -226,39 +225,6 @@ body.dark .question-text {
   color: var(--text-dark);
 }
 
-.answer-view {
-  font-size: 1.5em;
-  padding: 1em;
-  margin: 1em 0;
-  border: 2px solid var(--input-border-light);
-  background: var(--input-bg-light);
-  color: var(--input-text-light);
-  border-radius: 10px;
-  min-width: 150px;
-  height: 50px;
-  box-sizing: border-box;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  max-width: 300px;
-  transition: background 0.2s ease, border-color 0.2s ease;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-body.dark .answer-view {
-  background: var(--input-bg-dark);
-  color: var(--input-text-dark);
-  border: 2px solid var(--input-border-dark);
-}
-
-.answer-view.error {
-  background: rgba(178, 34, 34, 0.3);
-  transition: background 0.2s ease;
-}
-
 .blue-percent {
   color: var(--primary);
   font-weight: 700;
@@ -311,14 +277,29 @@ body.dark .big-btn:hover, body.dark .big-btn:focus {
   top: 1em;
   right: 1em;
   cursor: pointer;
-  transition: color 0.3s ease;
+  padding: 0.5em;
+  transition: color 0.3s ease, transform 0.2s ease;
+}
+
+body:not(.dark) #theme-toggle {
+  -webkit-tap-highlight-color: rgba(178, 34, 34, 0.3);
 }
 
 body.dark #theme-toggle {
   color: var(--text-dark);
+  -webkit-tap-highlight-color: rgba(44, 208, 208, 0.3);
 }
 
-.numpad {
+#theme-toggle:hover, #theme-toggle:focus {
+  transform: scale(1.1);
+  outline: none;
+}
+
+#theme-toggle:active {
+  transform: scale(0.95);
+}
+
+.answer-buttons {
   display: none;
   flex-direction: column;
   gap: 0.5em;
@@ -336,95 +317,56 @@ body.dark #theme-toggle {
   touch-action: none;
 }
 
-body.dark .numpad {
+body.dark .answer-buttons {
   box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
 }
 
-.numpad.active {
+.answer-buttons.active {
   display: flex;
 }
 
-.numpad-row {
-  display: flex;
-  gap: 0.5em;
-  width: 100%;
-}
-
-.numpad-btn, .numpad-submit-btn {
+.answer-btn {
   flex: 1;
-  aspect-ratio: 1/1;
   font-size: 1.3em;
   border-radius: 8px;
   border: 2px solid var(--input-border-light);
   background: var(--input-bg-light);
   color: var(--input-text-light);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  padding: 0.75em;
   margin: 0;
-  padding: 0;
   box-sizing: border-box;
-  transition: transform 0.2s ease;
-  font-weight: 600;
-  min-width: 44px;
-  min-height: 44px;
+  transition: transform 0.2s ease, background 0.2s ease;
+  font-weight: 700; /* Vastagabb betűtípus */
+  cursor: pointer;
+  text-align: center;
 }
 
-body:not(.dark) .numpad-btn, body:not(.dark) .numpad-submit-btn {
-  -webkit-tap-highlight-color: rgba(178, 34, 34, 0.3);
-}
-
-body.dark .numpad-btn, body.dark .numpad-submit-btn {
-  -webkit-tap-highlight-color: rgba(44, 208, 208, 0.3);
-}
-
-body.dark .numpad-btn {
+body.dark .answer-btn {
   background: var(--imperial);
   color: var(--input-text-dark);
   border: 2px solid var(--input-border-dark);
+  font-weight: 700; /* Vastagabb betűtípus sötét módban is */
 }
 
-.numpad-btn.flash {
+.answer-btn:hover, .answer-btn:focus {
+  background: var(--primary);
+  color: #FFFFFF;
+  transform: scale(1.05);
+  outline: none;
+}
+
+body.dark .answer-btn:hover, body.dark .answer-btn:focus {
+  background: var(--primary-inverse);
+  color: #FFFFFF;
+}
+
+.answer-btn.flash {
   background: var(--flash-color);
   transition: background 0.2s ease;
 }
 
-.numpad-btn:active, .numpad-btn:focus {
-  outline: none;
+.answer-btn:active {
   transform: scale(0.95);
-}
-
-.numpad-submit-btn {
-  background: var(--submit-btn-bg);
-  color: #FFFFFF;
-  border: 2px solid var(--primary-dark);
-}
-
-body.dark .numpad-submit-btn {
-  background: var(--primary-inverse);
-  color: #FFFFFF;
-  border: 2px solid var(--input-border-dark);
-}
-
-.numpad-submit-btn:hover, .numpad-submit-btn:focus {
-  background: var(--submit-btn-bg-hover);
-  transform: scale(1.05);
-  outline: 2px solid var(--primary-dark);
-}
-
-body.dark .numpad-submit-btn:hover, body.dark .numpad-submit-btn:focus {
-  background: #1A8C8C;
-  transform: scale(1.05);
-  outline: 2px solid var(--input-border-dark);
-}
-
-.numpad-submit-btn > span {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  height: 100%;
-  font-size: inherit;
 }
 
 @media (max-width: 600px) {
@@ -446,15 +388,13 @@ body.dark .numpad-submit-btn:hover, body.dark .numpad-submit-btn:focus {
   .big-btn, button {
     width: 100%;
   }
-  .numpad {
+  .answer-buttons {
     max-width: 100%;
     padding: 0.75em;
   }
-  .numpad-row {
-    gap: 0.25em;
-  }
-  .numpad-btn, .numpad-submit-btn {
+  .answer-btn {
     font-size: 1.1em;
+    padding: 0.5em;
   }
 }
 
@@ -465,16 +405,11 @@ body.dark .numpad-submit-btn:hover, body.dark .numpad-submit-btn:focus {
   .question-text {
     font-size: 1.4em;
   }
-  .numpad-btn, .numpad-submit-btn {
+  .answer-btn {
     font-size: 0.9em;
-    min-width: 36px;
-    min-height: 36px;
     padding: 0.5em;
   }
-  .numpad-row {
-    gap: 0.2em;
-  }
-  .numpad {
+  .answer-buttons {
     padding: 0.5em;
     margin-top: 0.5em;
   }
