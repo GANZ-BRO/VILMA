@@ -420,7 +420,7 @@ body.dark .numpad-btn.flash {
 
 .numpad-btn:active, .numpad-btn:focus {
   outline: none;
-  transform: scale(0.95);
+  /* transform: scale(0.95); eltávolítva, hogy a gomb mérete ne változzon */
 }
 
 .numpad-submit-btn {
