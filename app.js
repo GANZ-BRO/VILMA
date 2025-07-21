@@ -32,8 +32,36 @@ function simplifyFraction(num, denom) {
   return [num / d, denom / d];
 }
 
+// --- FORMÁZÓ FÜGGVÉNY ---
+function formatNumber(value, unit, difficulty) {
+  const absValue = Math.abs(value);
+  if (unit === 'A' || unit === 'V' || unit === 'W' || unit === 'Ω') {
+    if (absValue < 0.001) {
+      // Próbáljuk milliegységekben
+      const milliValue = value * 1000;
+      if (Math.abs(milliValue) >= 0.001) {
+        return { value: milliValue.toFixed(3).replace(/\.?0+$/, ''), unit: 'm' + unit };
+      } else {
+        // Hatványos alak
+        return { value: value.toExponential(1).replace(/e(-?\d+)/, ' × 10⁻$1'), unit };
+      }
+    } else if (absValue > 1000) {
+      // Próbáljuk kilóegységekben
+      const kiloValue = value / 1000;
+      if (Math.abs(kiloValue) <= 1000) {
+        return { value: kiloValue.toFixed(3).replace(/\.?0+$/, ''), unit: 'k' + unit };
+      } else {
+        // Hatványos alak
+        return { value: value.toExponential(1).replace(/e(-?\d+)/, ' × 10⁻$1'), unit };
+      }
+    }
+  }
+  // Normál alak
+  return { value: Number.isInteger(value) ? value.toString() : value.toFixed(3).replace(/\.?0+$/, ''), unit };
+}
+
 // --- VÁLASZLEHETŐSÉGEK GENERÁLÁSA ---
-function generateOptions(correctAnswer, answerType, difficulty) {
+function generateOptions(correctAnswer, answerType, difficulty, unit) {
   let options = [correctAnswer];
   const { min, max } = DIFFICULTY_SETTINGS[difficulty];
   const range = max - min;
@@ -54,7 +82,9 @@ function generateOptions(correctAnswer, answerType, difficulty) {
     const correct = parseFloat(correctAnswer);
     while (options.length < 4) {
       const offset = getRandomInt(-range / 5, range / 5) / 10;
-      const option = (correct + offset).toFixed(2);
+      const optionValue = correct + offset;
+      const formatted = formatNumber(optionValue, unit, difficulty);
+      const option = formatted.value;
       if (!options.includes(option) && option !== correctAnswer) {
         options.push(option);
       }
@@ -63,7 +93,9 @@ function generateOptions(correctAnswer, answerType, difficulty) {
     const correct = parseInt(correctAnswer);
     while (options.length < 4) {
       const offset = getRandomInt(-range / 5, range / 5);
-      const option = (correct + offset).toString();
+      const optionValue = correct + offset;
+      const formatted = formatNumber(optionValue, unit, difficulty);
+      const option = formatted.value;
       if (!options.includes(option) && option !== correctAnswer) {
         options.push(option);
       }
@@ -144,7 +176,7 @@ function generateBracketedExpression(opCount, min, max) {
     displayExpr = displayExpr.trim();
     let evalExpr = displayExpr.replace(/×/g, '*').replace(/÷/g, '/').replace(/\s/g, '');
     try {
-      answer = eval(evalExpr);
+      answer = eval(evalExpr); // TODO: Cserélje le biztonságos kiértékelőre
     } catch {
       answer = null;
     }
@@ -647,231 +679,280 @@ const taskTypes = [
     }
   }
  },
-{
-  name: "Ohm-törvény",
-  value: "ohm_torveny",
-  generate: (difficulty) => {
-    const { min, max } = DIFFICULTY_SETTINGS[difficulty];
-    let maxI = difficulty === "easy" ? 10 : difficulty === "medium" ? 20 : 50;
-    let maxR = difficulty === "easy" ? 10 : difficulty === "medium" ? 50 : 200;
-    let type = getRandomInt(0, 2);
-    let display, answer, answerType;
-
-    if (difficulty === "medium") {
-      const types = [
-        () => {
-          let I = getRandomInt(100, maxI * 1000); // mA
-          let R = getRandomInt(1, maxR); // Ω
-          let U = (I / 1000) * R; // V
-          answer = U.toString();
-          display = `Mennyi a feszültség, ha <b>I = ${I} mA</b> és <b>R = ${R} Ω</b>?`;
-          answerType = Number.isInteger(U) ? "number" : "decimal";
-          return { display, answer, answerType, options: generateOptions(answer, answerType, difficulty) };
-        },
-        () => {
-          let U = getRandomInt(1, maxR); // V
-          let R = getRandomInt(1, maxR); // kΩ
-          let I = U / (R * 1000); // A
-          answer = I.toFixed(3).toString();
-          display = `Mennyi az áram, ha <b>U = ${U} V</b> és <b>R = ${R} kΩ</b>?`;
-          answerType = "decimal";
-          return { display, answer, answerType, options: generateOptions(answer, answerType, difficulty) };
-        },
-        () => {
-          let U = getRandomInt(100, maxR * 1000); // mV
-          let I = getRandomInt(1, maxI); // A
-          let R = (U / 1000) / I; // Ω
-          answer = R.toFixed(2).toString();
-          display = `Mennyi az ellenállás, ha <b>U = ${U} mV</b> és <b>I = ${I} A</b>?`;
-          answerType = Number.isInteger(R) ? "number" : "decimal";
-          return { display, answer, answerType, options: generateOptions(answer, answerType, difficulty) };
-        }
-      ];
-      return types[type]();
-    } else if (difficulty === "hard") {
-      const types = [
-        () => {
-          let I = getRandomInt(100, maxI * 1000); // mA
-          let R1 = getRandomInt(1, maxR / 2); // kΩ
-          let R2 = getRandomInt(100, maxR * 1000); // Ω
-          let R = R1 * 1000 + R2; // Ω
-          let U = (I / 1000) * R; // V
-          answer = U.toString();
-          display = `Mennyi a feszültség, ha <b>I = ${I} mA</b> és <b>R = ${R1} kΩ + ${R2} Ω</b>?`;
-          answerType = Number.isInteger(U) ? "number" : "decimal";
-          return { display, answer, answerType, options: generateOptions(answer, answerType, difficulty) };
-        },
-        () => {
-          let U = getRandomInt(1000, maxR * 1000); // mV
-          let R1 = getRandomInt(1, maxR / 2); // kΩ
-          let R2 = getRandomInt(100, maxR * 1000); // Ω
-          let R = R1 * 1000 + R2; // Ω
-          let I = (U / 1000) / R; // A
-          answer = I.toFixed(3).toString();
-          display = `Mennyi az áram, ha <b>U = ${U} mV</b> és <b>R = ${R1} kΩ + ${R2} Ω</b>?`;
-          answerType = "decimal";
-          return { display, answer, answerType, options: generateOptions(answer, answerType, difficulty) };
-        },
-        () => {
-          let U = getRandomInt(1000, maxR * 1000); // mV
-          let I = getRandomInt(100, maxI * 1000); // mA
-          let R = (U / 1000) / (I / 1000); // Ω
-          answer = R.toString();
-          display = `Mennyi az ellenállás, ha <b>U = ${U} mV</b> és <b>I = ${I} mA</b>?`;
-          answerType = Number.isInteger(R) ? "number" : "decimal";
-          return { display, answer, answerType, options: generateOptions(answer, answerType, difficulty) };
-        }
-      ];
-      return types[type]();
-    } else {
-      // Könnyű szint: eredeti logika
-      let I = getRandomInt(1, maxI);
-      let R = getRandomInt(1, maxR);
-      let U = I * R;
-      if (type === 0) {
-        display = `Mennyi a feszültség, ha <b>I = ${I} A</b> és <b>R = ${R} Ω</b>?`;
-        answer = U.toString();
-        answerType = "number";
-      } else if (type === 1) {
-        display = `Mennyi az áram, ha <b>U = ${U} V</b> és <b>R = ${R} Ω</b>?`;
-        answer = I.toString();
-        answerType = "decimal";
-      } else {
-        display = `Mennyi az ellenállás, ha <b>U = ${U} V</b> és <b>I = ${I} A</b>?`;
-        answer = R.toString();
-        answerType = "number";
-      }
-      return {
-        display: display,
-        answer: answer,
-        answerType: answerType,
-        options: generateOptions(answer, answerType, difficulty)
-      };
-    }
-  }
-},
-{
-  name: "Teljesítmény",
-  value: "teljesitmeny",
-  generate: (difficulty) => {
-    const ranges = {
-      easy: { maxU: 20, maxI: 10 },
-      medium: { maxU: 50, maxI: 20 },
-      hard: { maxU: 200, maxI: 50 }
-    };
-    const { maxU, maxI } = ranges[difficulty];
-
-    if (difficulty === "medium") {
-      const types = [
-        () => {
-          let U = getRandomInt(10, maxU); // V
-          let I = getRandomInt(100, maxI * 1000); // mA
-          let P = U * (I / 1000);
-          const answer = Math.round(P).toString();
-          return {
-            display: `Mennyi a teljesítmény, ha <b>U = ${U} V</b> és <b>I = ${I} mA</b>?`,
-            answer: answer,
-            answerType: "number",
-            options: generateOptions(answer, "number", difficulty)
-          };
-        },
-        () => {
-          let P = getRandomInt(10, maxU * maxI);
-          let I = getRandomInt(100, maxI * 1000); // mA
-          let U = Math.round((P / (I / 1000)));
-          const answer = U.toString();
-          return {
-            display: `Mennyi a feszültség, ha <b>P = ${P} W</b> és <b>I = ${I} mA</b>?`,
-            answer: answer,
-            answerType: "number",
-            options: generateOptions(answer, "number", difficulty)
-          };
-        },
-        () => {
-          let P = getRandomInt(10, maxU * maxI);
-          let U = getRandomInt(1000, maxU * 1000); // mV
-          let I = Math.round((P / (U / 1000)));
-          const answer = I.toString();
-          return {
-            display: `Mennyi az áram, ha <b>P = ${P} W</b> és <b>U = ${U} mV</b>?`,
-            answer: answer,
-            answerType: "number",
-            options: generateOptions(answer, "number", difficulty)
-          };
-        }
-      ];
-      return types[getRandomInt(0, types.length - 1)]();
-    } else if (difficulty === "hard") {
-      const types = [
-        () => {
-          let U = getRandomInt(1000, maxU * 1000); // mV
-          let I1 = getRandomInt(100, maxI * 1000); // mA
-          let I2 = (getRandomInt(1, maxI * 100) / 100).toFixed(2); // A
-          let I = (I1 / 1000) + parseFloat(I2); // A
-          let P = Math.round((U / 1000) * I);
-          const answer = P.toString();
-          return {
-            display: `Mennyi a teljesítmény, ha <b>U = ${U} mV</b>, <b>I₁ = ${I1} mA</b> és <b>I₂ = ${I2} A</b>?`,
-            answer: answer,
-            answerType: "number",
-            options: generateOptions(answer, "number", difficulty)
-          };
-        },
-        () => {
-          let P = getRandomInt(10, maxU * maxI);
-          let I = getRandomInt(100, maxI * 1000); // mA
-          let U = Math.round((P / (I / 1000)) * 1000); // mV
-          const answer = U.toString();
-          return {
-            display: `Mennyi a feszültség, ha <b>P = ${P} W</b> és <b>I = ${I} mA</b>?`,
-            answer: answer,
-            answerType: "number",
-            options: generateOptions(answer, "number", difficulty)
-          };
-        },
-        () => {
-          let P = getRandomInt(10, maxU * maxI);
-          let U = getRandomInt(1000, maxU * 1000); // mV
-          let I = Math.round((P / (U / 1000)) * 1000); // mA
-          const answer = I.toString();
-          return {
-            display: `Mennyi az áram, ha <b>P = ${P} W</b> és <b>U = ${U} mV</b>?`,
-            answer: answer,
-            answerType: "number",
-            options: generateOptions(answer, "number", difficulty)
-          };
-        }
-      ];
-      return types[getRandomInt(0, types.length - 1)]();
-    } else {
-      // Könnyű szint: marad az eredeti logika
-      let U = getRandomInt(10, maxU);
-      let I = getRandomInt(1, maxI);
-      let P = U * I;
-      let display, answer, answerType;
+  {
+    name: "Ohm-törvény",
+    value: "ohm_torveny",
+    generate: (difficulty) => {
+      const { min, max } = DIFFICULTY_SETTINGS[difficulty];
+      let maxI = difficulty === "easy" ? 10 : difficulty === "medium" ? 20 : 50;
+      let maxR = difficulty === "easy" ? 10 : difficulty === "medium" ? 50 : 200;
       let type = getRandomInt(0, 2);
-      if (type === 0) {
-        display = `Mennyi a teljesítmény, ha <b>U = ${U} V</b> és <b>I = ${I} A</b>?`;
-        answer = P.toString();
-        answerType = "number";
-      } else if (type === 1) {
-        display = `Mennyi a feszültség, ha <b>P = ${P} W</b> és <b>I = ${I} A</b>?`;
-        answer = U.toString();
-        answerType = "number";
+      let display, answer, answerType, unit;
+
+      if (difficulty === "medium") {
+        const types = [
+          () => {
+            let I = getRandomInt(100, maxI * 1000); // mA
+            let R = getRandomInt(1, maxR); // Ω
+            let U = (I / 1000) * R; // V
+            const formatted = formatNumber(U, 'V', difficulty);
+            answer = formatted.value;
+            unit = formatted.unit;
+            display = `Mennyi a feszültség (${unit}-ban), ha <b>I = ${I} mA</b> és <b>R = ${R} Ω</b>?`;
+            answerType = Number.isInteger(U) && unit === 'V' ? "number" : "decimal";
+            return { display, answer, answerType, options: generateOptions(answer, answerType, difficulty, unit) };
+          },
+          () => {
+            let U = getRandomInt(1, maxR); // V
+            let R = getRandomInt(1, maxR); // kΩ
+            let I = U / (R * 1000); // A
+            const formatted = formatNumber(I * 1000, 'mA', difficulty);
+            answer = formatted.value;
+            unit = formatted.unit;
+            display = `Mennyi az áram (${unit}-ban), ha <b>U = ${U} V</b> és <b>R = ${R} kΩ</b>?`;
+            answerType = "decimal";
+            return { display, answer, answerType, options: generateOptions(answer, answerType, difficulty, unit) };
+          },
+          () => {
+            let U = getRandomInt(100, maxR * 1000); // mV
+            let I = getRandomInt(1, maxI); // A
+            let R = (U / 1000) / I; // Ω
+            const formatted = formatNumber(R, 'Ω', difficulty);
+            answer = formatted.value;
+            unit = formatted.unit;
+            display = `Mennyi az ellenállás (${unit}-ban), ha <b>U = ${U} mV</b> és <b>I = ${I} A</b>?`;
+            answerType = Number.isInteger(R) && unit === 'Ω' ? "number" : "decimal";
+            return { display, answer, answerType, options: generateOptions(answer, answerType, difficulty, unit) };
+          }
+        ];
+        return types[type]();
+      } else if (difficulty === "hard") {
+        const types = [
+          () => {
+            let I = getRandomInt(100, maxI * 1000); // mA
+            let R1 = getRandomInt(1, maxR / 2); // kΩ
+            let R2 = getRandomInt(100, maxR * 1000); // Ω
+            let R = R1 * 1000 + R2; // Ω
+            let U = (I / 1000) * R; // V
+            const formatted = formatNumber(U, 'V', difficulty);
+            answer = formatted.value;
+            unit = formatted.unit;
+            display = `Mennyi a feszültség (${unit}-ban), ha <b>I = ${I} mA</b> és <b>R = ${R1} kΩ + ${R2} Ω</b>?`;
+            answerType = Number.isInteger(U) && unit === 'V' ? "number" : "decimal";
+            return { display, answer, answerType, options: generateOptions(answer, answerType, difficulty, unit) };
+          },
+          () => {
+            let U = getRandomInt(1000, maxR * 1000); // mV
+            let R1 = getRandomInt(1, maxR / 2); // kΩ
+            let R2 = getRandomInt(100, maxR * 1000); // Ω
+            let R = R1 * 1000 + R2; // Ω
+            let I = (U / 1000) / R; // A
+            const formatted = formatNumber(I * 1000, 'mA', difficulty);
+            answer = formatted.value;
+            unit = formatted.unit;
+            display = `Mennyi az áram (${unit}-ban), ha <b>U = ${U} mV</b> és <b>R = ${R1} kΩ + ${R2} Ω</b>?`;
+            answerType = "decimal";
+            return { display, answer, answerType, options: generateOptions(answer, answerType, difficulty, unit) };
+          },
+          () => {
+            let U = getRandomInt(1000, maxR * 1000); // mV
+            let I = getRandomInt(100, maxI * 1000); // mA
+            let R = (U / 1000) / (I / 1000); // Ω
+            const formatted = formatNumber(R, 'Ω', difficulty);
+            answer = formatted.value;
+            unit = formatted.unit;
+            display = `Mennyi az ellenállás (${unit}-ban), ha <b>U = ${U} mV</b> és <b>I = ${I} mA</b>?`;
+            answerType = Number.isInteger(R) && unit === 'Ω' ? "number" : "decimal";
+            return { display, answer, answerType, options: generateOptions(answer, answerType, difficulty, unit) };
+          }
+        ];
+        return types[type]();
       } else {
-        display = `Mennyi az áram, ha <b>P = ${P} W</b> és <b>U = ${U} V</b>?`;
-        answer = I.toString();
-        answerType = "number";
+        // Könnyű szint
+        let I = getRandomInt(1, maxI);
+        let R = getRandomInt(1, maxR);
+        let U = I * R;
+        if (type === 0) {
+          const formatted = formatNumber(U, 'V', difficulty);
+          answer = formatted.value;
+          unit = formatted.unit;
+          display = `Mennyi a feszültség (${unit}-ban), ha <b>I = ${I} A</b> és <b>R = ${R} Ω</b>?`;
+          answerType = Number.isInteger(U) && unit === 'V' ? "number" : "decimal";
+        } else if (type === 1) {
+          const formatted = formatNumber(I, 'A', difficulty);
+          answer = formatted.value;
+          unit = formatted.unit;
+          display = `Mennyi az áram (${unit}-ban), ha <b>U = ${U} V</b> és <b>R = ${R} Ω</b>?`;
+          answerType = "decimal";
+        } else {
+          const formatted = formatNumber(R, 'Ω', difficulty);
+          answer = formatted.value;
+          unit = formatted.unit;
+          display = `Mennyi az ellenállás (${unit}-ban), ha <b>U = ${U} V</b> és <b>I = ${I} A</b>?`;
+          answerType = Number.isInteger(R) && unit === 'Ω' ? "number" : "decimal";
+        }
+        return {
+          display: display,
+          answer: answer,
+          answerType: answerType,
+          options: generateOptions(answer, answerType, difficulty, unit)
+        };
       }
-      return {
-        display: display,
-        answer: answer,
-        answerType: answerType,
-        options: generateOptions(answer, answerType, difficulty)
+    }
+  },
+  {
+    name: "Teljesítmény",
+    value: "teljesitmeny",
+    generate: (difficulty) => {
+      const ranges = {
+        easy: { maxU: 20, maxI: 10 },
+        medium: { maxU: 50, maxI: 20 },
+        hard: { maxU: 200, maxI: 50 }
       };
+      const { maxU, maxI } = ranges[difficulty];
+
+      if (difficulty === "medium") {
+        const types = [
+          () => {
+            let U = getRandomInt(10, maxU); // V
+            let I = getRandomInt(100, maxI * 1000); // mA
+            let P = U * (I / 1000); // W
+            const formatted = formatNumber(P, 'W', difficulty);
+            answer = formatted.value;
+            unit = formatted.unit;
+            display = `Mennyi a teljesítmény (${unit}-ban), ha <b>U = ${U} V</b> és <b>I = ${I} mA</b>?`;
+            answerType = Number.isInteger(P) && unit === 'W' ? "number" : "decimal";
+            return {
+              display: display,
+              answer: answer,
+              answerType: answerType,
+              options: generateOptions(answer, answerType, difficulty, unit)
+            };
+          },
+          () => {
+            let P = getRandomInt(10, maxU * maxI); // W
+            let I = getRandomInt(100, maxI * 1000); // mA
+            let U = Math.round((P / (I / 1000))); // V
+            const formatted = formatNumber(U, 'V', difficulty);
+            answer = formatted.value;
+            unit = formatted.unit;
+            display = `Mennyi a feszültség (${unit}-ban), ha <b>P = ${P} W</b> és <b>I = ${I} mA</b>?`;
+            answerType = Number.isInteger(U) && unit === 'V' ? "number" : "decimal";
+            return {
+              display: display,
+              answer: answer,
+              answerType: answerType,
+              options: generateOptions(answer, answerType, difficulty, unit)
+            };
+          },
+          () => {
+            let P = getRandomInt(10, maxU * maxI); // W
+            let U = getRandomInt(1000, maxU * 1000); // mV
+            let I = Math.round((P / (U / 1000)) * 1000); // mA
+            const formatted = formatNumber(I, 'mA', difficulty);
+            answer = formatted.value;
+            unit = formatted.unit;
+            display = `Mennyi az áram (${unit}-ban), ha <b>P = ${P} W</b> és <b>U = ${U} mV</b>?`;
+            answerType = Number.isInteger(I) && unit === 'mA' ? "number" : "decimal";
+            return {
+              display: display,
+              answer: answer,
+              answerType: answerType,
+              options: generateOptions(answer, answerType, difficulty, unit)
+            };
+          }
+        ];
+        return types[getRandomInt(0, types.length - 1)]();
+      } else if (difficulty === "hard") {
+        const types = [
+          () => {
+            let U = getRandomInt(1000, maxU * 1000); // mV
+            let I1 = getRandomInt(100, maxI * 1000); // mA
+            let I2 = (getRandomInt(1, maxI * 100) / 100).toFixed(2); // A
+            let I = (I1 / 1000) + parseFloat(I2); // A
+            let P = Math.round((U / 1000) * I); // W
+            const formatted = formatNumber(P, 'W', difficulty);
+            answer = formatted.value;
+            unit = formatted.unit;
+            display = `Mennyi a teljesítmény (${unit}-ban), ha <b>U = ${U} mV</b>, <b>I₁ = ${I1} mA</b> és <b>I₂ = ${I2} A</b>?`;
+            answerType = Number.isInteger(P) && unit === 'W' ? "number" : "decimal";
+            return {
+              display: display,
+              answer: answer,
+              answerType: answerType,
+              options: generateOptions(answer, answerType, difficulty, unit)
+            };
+          },
+          () => {
+            let P = getRandomInt(10, maxU * maxI); // W
+            let I = getRandomInt(100, maxI * 1000); // mA
+            let U = Math.round((P / (I / 1000)) * 1000); // mV
+            const formatted = formatNumber(U, 'V', difficulty);
+            answer = formatted.value;
+            unit = formatted.unit;
+            display = `Mennyi a feszültség (${unit}-ban), ha <b>P = ${P} W</b> és <b>I = ${I} mA</b>?`;
+            answerType = Number.isInteger(U) && unit === 'V' ? "number" : "decimal";
+            return {
+              display: display,
+              answer: answer,
+              answerType: answerType,
+              options: generateOptions(answer, answerType, difficulty, unit)
+            };
+          },
+          () => {
+            let P = getRandomInt(10, maxU * maxI); // W
+            let U = getRandomInt(1000, maxU * 1000); // mV
+            let I = Math.round((P / (U / 1000)) * 1000); // mA
+            const formatted = formatNumber(I, 'mA', difficulty);
+            answer = formatted.value;
+            unit = formatted.unit;
+            display = `Mennyi az áram (${unit}-ban), ha <b>P = ${P} W</b> és <b>U = ${U} mV</b>?`;
+            answerType = Number.isInteger(I) && unit === 'mA' ? "number" : "decimal";
+            return {
+              display: display,
+              answer: answer,
+              answerType: answerType,
+              options: generateOptions(answer, answerType, difficulty, unit)
+            };
+          }
+        ];
+        return types[getRandomInt(0, types.length - 1)]();
+      } else {
+        // Könnyű szint
+        let U = getRandomInt(10, maxU);
+        let I = getRandomInt(1, maxI);
+        let P = U * I;
+        let display, answer, answerType, unit;
+        let type = getRandomInt(0, 2);
+        if (type === 0) {
+          const formatted = formatNumber(P, 'W', difficulty);
+          answer = formatted.value;
+          unit = formatted.unit;
+          display = `Mennyi a teljesítmény (${unit}-ban), ha <b>U = ${U} V</b> és <b>I = ${I} A</b>?`;
+          answerType = Number.isInteger(P) && unit === 'W' ? "number" : "decimal";
+        } else if (type === 1) {
+          const formatted = formatNumber(U, 'V', difficulty);
+          answer = formatted.value;
+          unit = formatted.unit;
+          display = `Mennyi a feszültség (${unit}-ban), ha <b>P = ${P} W</b> és <b>I = ${I} A</b>?`;
+          answerType = Number.isInteger(U) && unit === 'V' ? "number" : "decimal";
+        } else {
+          const formatted = formatNumber(I, 'A', difficulty);
+          answer = formatted.value;
+          unit = formatted.unit;
+          display = `Mennyi az áram (${unit}-ban), ha <b>P = ${P} W</b> és <b>U = ${U} V</b>?`;
+          answerType = Number.isInteger(I) && unit === 'A' ? "number" : "decimal";
+        }
+        return {
+          display: display,
+          answer: answer,
+          answerType: answerType,
+          options: generateOptions(answer, answerType, difficulty, unit)
+        };
+      }
     }
   }
-}
+  // ... (Más kategóriák változatlanok) ...
 ];
 
 // --- HTML ELEMEK ---
@@ -971,7 +1052,6 @@ function applyTheme() {
 document.addEventListener("DOMContentLoaded", () => {
   if (themeToggle) {
     themeToggle.addEventListener("click", toggleTheme);
-    themeToggle.addEventListener("touchstart", toggleTheme);
   } else {
     console.error("A #theme-toggle elem nem található.");
   }
@@ -1030,7 +1110,7 @@ function renderAnswerButtons(options, correctAnswer, answerType) {
     const btn = document.createElement('button');
     btn.type = 'button';
     btn.className = 'answer-btn';
-    btn.style.fontSize = '1.5em'; // Nagyobb betűméret
+    btn.style.fontSize = '1.5em';
     btn.textContent = option;
     btn.setAttribute("aria-label", `Válasz: ${option}`);
     btn.tabIndex = 0;
@@ -1051,22 +1131,16 @@ function renderAnswerButtons(options, correctAnswer, answerType) {
           correct = true;
         }
       } else if (answerType === "decimal") {
-        const correctAnswerNum = parseFloat(currentTask.answer);
-        const userAnswer = parseFloat(option);
+        const correctAnswerNum = parseFloat(currentTask.answer.replace(/ × 10⁻\d+/, (match) => `e${match.slice(6)}`));
+        const userAnswer = parseFloat(option.replace(/ × 10⁻\d+/, (match) => `e${match.slice(6)}`));
         if (Math.abs(userAnswer - correctAnswerNum) < 0.0001) {
           correct = true;
         }
       } else {
         const correctAnswerNum = parseInt(currentTask.answer);
         const userAnswer = parseFloat(option);
-        if (categorySelect.value === "szazalekszamitas") {
-          if (Math.round(userAnswer) === correctAnswerNum) {
-            correct = true;
-          }
-        } else {
-          if (userAnswer === correctAnswerNum) {
-            correct = true;
-          }
+        if (userAnswer === correctAnswerNum) {
+          correct = true;
         }
       }
 
@@ -1085,10 +1159,6 @@ function renderAnswerButtons(options, correctAnswer, answerType) {
         alert("Nem jó válasz, próbáld újra!");
       }
     };
-    btn.addEventListener("touchstart", (e) => {
-      e.preventDefault();
-      btn.click();
-    });
     buttonsDiv.appendChild(btn);
   });
 
