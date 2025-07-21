@@ -1,23 +1,60 @@
-<!DOCTYPE html>
+<script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+        </script><!DOCTYPE html>
 <html lang="hu">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>VILMA gyakorlás</title>
   <link rel="stylesheet" href="style.css">
-  <link rel="manifest" href="manifest.json">
-  <link rel="icon" href="icon.png">
 </head>
 <body>
   <main>
     <header>
       <h1 class="subtitle">VILMA gyakorlás</h1>
-      <button id="theme-toggle" aria-label="Téma váltása">🌗</button>
+      <button id="theme-toggle">🌗</button>
     </header>
 
     <div class="game-stats">
-      <div class="stat">⏱️ Idő: <span id="time">0 mp</span></div>
-      <div class="best" id="best-stats" style="display: none;"></div>
+      <div class="stat">⏱️ Idő: <span id="time">0</span> mp</div>
+      <div class="best" id="best-stats" style="display:none;"></div>
     </div>
 
     <div class="settings">
@@ -36,10 +73,10 @@
     </div>
 
     <div id="quiz"></div>
-    <div id="numpad-container"></div>
+    <div id="answer-container"></div>
 
-    <button class="big-btn" onclick="startGame()">Játék indítása</button>
-    <button class="big-btn" id="restart-btn" style="display: none;">Újraindítás</button>
+    <button onclick="startGame()">Játék indítása</button>
+    <button id="restart-btn" style="display:none;">Újraindítás</button>
   </main>
   <script src="app.js"></script>
 </body>

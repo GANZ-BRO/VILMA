@@ -78,6 +78,88 @@ function generateOptions(correctAnswer, answerType, difficulty) {
   return options;
 }
 
+// --- ZÁRÓJELES KIFEJEZÉSEK GENERÁLÁSA ---
+function generateBracketedExpression(opCount, min, max) {
+  const opList = ["+", "-", "×", "÷"];
+  let elements, exprParts, displayExpr, answer;
+  let maxTries = 100;
+  let tryCount = 0;
+  let minDivisor = opCount === 2 ? 1 : opCount === 4 ? 2 : 5;
+  let maxDivisor = opCount === 2 ? 10 : opCount === 4 ? 20 : 100;
+  do {
+    elements = [];
+    for (let i = 0; i < opCount + opCount + 1; i++) {
+      if (i % 2 === 0) {
+        elements.push(getRandomInt(min, max));
+      } else {
+        let op = opList[getRandomInt(0, opList.length - 1)];
+        if (op === "÷") {
+          elements.push(op);
+          elements[i - 1] = elements[i - 1] * getRandomInt(minDivisor, maxDivisor);
+        } else {
+          elements.push(op);
+        }
+      }
+    }
+    let possibleParenRanges = [];
+    for (let i = 0; i < elements.length - 2; i += 2) {
+      possibleParenRanges.push([i, i + 2]);
+    }
+    let parenRanges = [];
+    let used = Array(elements.length).fill(false);
+    let numParens = getRandomInt(1, Math.max(1, Math.floor(opCount / 2)));
+    let tries = 0;
+    while (parenRanges.length < numParens && tries < 50) {
+      let idx = getRandomInt(0, possibleParenRanges.length - 1);
+      let [start, end] = possibleParenRanges[idx];
+      let overlap = false;
+      for (let j = start; j <= end; j++) {
+        if (used[j]) { overlap = true; break; }
+      }
+      if (!overlap) {
+        parenRanges.push([start, end]);
+        for (let j = start; j <= end; j++) used[j] = true;
+      }
+      tries++;
+    }
+    parenRanges.sort((a, b) => a[0] - b[0]);
+    exprParts = elements.slice();
+    let offset = 0;
+    for (let [start, end] of parenRanges) {
+      exprParts.splice(start + offset, 0, "(");
+      offset++;
+      exprParts.splice(end + 1 + offset, 0, ")");
+      offset++;
+    }
+    displayExpr = "";
+    for (let i = 0; i < exprParts.length; i++) {
+      if (exprParts[i] === "(" || exprParts[i] === ")") {
+        displayExpr += exprParts[i] + " ";
+      } else if (["+", "-", "×", "÷"].includes(exprParts[i])) {
+        displayExpr += " " + exprParts[i] + " ";
+      } else {
+        displayExpr += exprParts[i];
+      }
+    }
+    displayExpr = displayExpr.trim();
+    let evalExpr = displayExpr.replace(/×/g, '*').replace(/÷/g, '/').replace(/\s/g, '');
+    try {
+      answer = eval(evalExpr);
+    } catch {
+      answer = null;
+    }
+    tryCount++;
+  } while (
+    (typeof answer !== "number" || !isFinite(answer) || isNaN(answer) || answer !== Math.round(answer)) 
+    && tryCount < maxTries
+  );
+  return {
+    display: displayExpr,
+    answer: Math.round(answer).toString(),
+    answerType: "number"
+  };
+}
+
 // --- FELADATTÍPUSOK ---
 const taskTypes = [
   {
@@ -190,60 +272,12 @@ const taskTypes = [
     generate: (difficulty) => {
       const { min, max } = DIFFICULTY_SETTINGS[difficulty];
       let opCount = difficulty === "easy" ? 2 : difficulty === "medium" ? 3 : 5;
-      const opList = ["+", "-", "×", "÷"];
-      let nums = [];
-      let ops = [];
-      let lastVal = getRandomInt(min, max);
-      nums.push(lastVal);
-      let minDivisor = difficulty === "easy" ? 1 : difficulty === "medium" ? 2 : 5;
-      let maxDivisor = difficulty === "easy" ? 10 : difficulty === "medium" ? 20 : 100;
-      let tryCount = 0;
-      let displayExpr, answer;
-      while (tryCount < 1000) {
-        nums = [getRandomInt(min, max)];
-        ops = [];
-        lastVal = nums[0];
-        for (let j = 0; j < opCount; j++) {
-          let op = opList[getRandomInt(0, 3)];
-          if (op === "÷") {
-            let divisor = getRandomInt(minDivisor, maxDivisor);
-            lastVal = lastVal * divisor;
-            nums[j] = lastVal;
-            nums[j + 1] = divisor;
-          } else {
-            nums[j + 1] = getRandomInt(min, max);
-          }
-          ops[j] = op;
-          lastVal = nums[j + 1];
-        }
-        displayExpr = "" + nums[0];
-        for (let j = 0; j < opCount; j++) {
-          displayExpr += " " + ops[j] + " " + nums[j + 1];
-        }
-        let evalExpr = displayExpr.replace(/×/g, '*').replace(/÷/g, '/').replace(/\s/g, '');
-        try {
-          answer = eval(evalExpr);
-          answer = Math.round(answer);
-          if (typeof answer === "number" && isFinite(answer) && !isNaN(answer) && answer === Math.round(answer)) {
-            break;
-          }
-        } catch {
-          answer = "?";
-        }
-        tryCount++;
-      }
-      if (tryCount >= 1000) {
-        nums = [getRandomInt(min, max), getRandomInt(min, max)];
-        ops = ["+"];
-        displayExpr = `${nums[0]} + ${nums[1]}`;
-        answer = nums[0] + nums[1];
-      }
-      const answerStr = answer.toString();
+      const result = generateBracketedExpression(opCount, min, max);
       return {
-        display: displayExpr,
-        answer: answerStr,
+        display: result.display,
+        answer: result.answer,
         answerType: "number",
-        options: generateOptions(answerStr, "number", difficulty)
+        options: generateOptions(result.answer, "number", difficulty)
       };
     }
   },
@@ -556,7 +590,7 @@ const categorySelect = document.getElementById("category");
 const startBtn = document.querySelector("button[onclick='startGame()']");
 const restartBtn = document.getElementById("restart-btn");
 const themeToggle = document.getElementById("theme-toggle");
-const numpadContainer = document.getElementById("numpad-container");
+const answerContainer = document.getElementById("answer-container");
 
 // --- KATEGÓRIÁK BETÖLTÉSE ---
 function loadCategories() {
@@ -642,7 +676,6 @@ function applyTheme() {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-  const themeToggle = document.getElementById("theme-toggle");
   if (themeToggle) {
     themeToggle.addEventListener("click", toggleTheme);
     themeToggle.addEventListener("touchstart", toggleTheme);
@@ -672,88 +705,6 @@ categorySelect.addEventListener("change", loadBest);
 function updateTimer() {
   const elapsed = Math.floor((Date.now() - startTime) / 1000);
   timerDisplay.textContent = `${elapsed}`;
-}
-
-// --- ZÁRÓJELES KIFEJEZÉSEK GENERÁLÁSA ---
-function generateBracketedExpression(opCount, min, max) {
-  const opList = ["+", "-", "×", "÷"];
-  let elements, exprParts, displayExpr, answer;
-  let maxTries = 100;
-  let tryCount = 0;
-  let minDivisor = opCount === 2 ? 1 : opCount === 4 ? 2 : 5;
-  let maxDivisor = opCount === 2 ? 10 : opCount === 4 ? 20 : 100;
-  do {
-    elements = [];
-    for (let i = 0; i < opCount + opCount + 1; i++) {
-      if (i % 2 === 0) {
-        elements.push(getRandomInt(min, max));
-      } else {
-        let op = opList[getRandomInt(0, opList.length - 1)];
-        if (op === "÷") {
-          elements.push(op);
-          elements[i - 1] = elements[i - 1] * getRandomInt(minDivisor, maxDivisor);
-        } else {
-          elements.push(op);
-        }
-      }
-    }
-    let possibleParenRanges = [];
-    for (let i = 0; i < elements.length - 2; i += 2) {
-      possibleParenRanges.push([i, i + 2]);
-    }
-    let parenRanges = [];
-    let used = Array(elements.length).fill(false);
-    let numParens = getRandomInt(1, Math.max(1, Math.floor(opCount / 2)));
-    let tries = 0;
-    while (parenRanges.length < numParens && tries < 50) {
-      let idx = getRandomInt(0, possibleParenRanges.length - 1);
-      let [start, end] = possibleParenRanges[idx];
-      let overlap = false;
-      for (let j = start; j <= end; j++) {
-        if (used[j]) { overlap = true; break; }
-      }
-      if (!overlap) {
-        parenRanges.push([start, end]);
-        for (let j = start; j <= end; j++) used[j] = true;
-      }
-      tries++;
-    }
-    parenRanges.sort((a, b) => a[0] - b[0]);
-    exprParts = elements.slice();
-    let offset = 0;
-    for (let [start, end] of parenRanges) {
-      exprParts.splice(start + offset, 0, "(");
-      offset++;
-      exprParts.splice(end + 1 + offset, 0, ")");
-      offset++;
-    }
-    displayExpr = "";
-    for (let i = 0; i < exprParts.length; i++) {
-      if (exprParts[i] === "(" || exprParts[i] === ")") {
-        displayExpr += exprParts[i] + " ";
-      } else if (["+", "-", "×", "÷"].includes(exprParts[i])) {
-        displayExpr += " " + exprParts[i] + " ";
-      } else {
-        displayExpr += exprParts[i];
-      }
-    }
-    displayExpr = displayExpr.trim();
-    let evalExpr = displayExpr.replace(/×/g, '*').replace(/÷/g, '/').replace(/\s/g, '');
-    try {
-      answer = eval(evalExpr);
-    } catch {
-      answer = null;
-    }
-    tryCount++;
-  } while (
-    (typeof answer !== "number" || !isFinite(answer) || isNaN(answer) || answer !== Math.round(answer)) 
-    && tryCount < maxTries
-  );
-  return {
-    display: displayExpr,
-    answer: Math.round(answer).toString(),
-    answerType: "number"
-  };
 }
 
 // --- FELADATSOR GENERÁLÁSA ---
@@ -787,6 +738,7 @@ function renderAnswerButtons(options, correctAnswer, answerType) {
     btn.type = 'button';
     btn.className = 'answer-btn';
     btn.textContent = option;
+    btn.setAttribute("aria-label", `Válasz: ${option}`);
     btn.tabIndex = 0;
     btn.onclick = () => {
       buttonsDiv.querySelectorAll('.answer-btn').forEach(b => b.classList.remove('flash'));
@@ -843,6 +795,10 @@ function renderAnswerButtons(options, correctAnswer, answerType) {
         alert("Nem jó válasz, próbáld újra!");
       }
     };
+    btn.addEventListener("touchstart", (e) => {
+      e.preventDefault();
+      btn.click();
+    });
     buttonsDiv.appendChild(btn);
   });
 
@@ -852,8 +808,8 @@ function renderAnswerButtons(options, correctAnswer, answerType) {
 // --- JÁTÉK LOGIKA ---
 function showQuestion(index) {
   quizContainer.innerHTML = "";
-  numpadContainer.innerHTML = "";
-  numpadContainer.classList.remove("active");
+  answerContainer.innerHTML = "";
+  answerContainer.classList.remove("active");
   document.querySelectorAll('.answer-btn').forEach(btn => btn.classList.remove('flash'));
 
   if (index >= QUESTIONS) {
@@ -866,17 +822,14 @@ function showQuestion(index) {
   div.className = "question-container";
   div.innerHTML = `
     <div class="progress-bar">
-      <div class="progress"></div>
+      <div class="progress" style="width: ${(score / QUESTIONS) * 100}%"></div>
     </div>
     <div class="question-text">${q.display} = </div>`;
 
   const answerButtons = renderAnswerButtons(q.options, q.answer, q.answerType);
-  numpadContainer.appendChild(answerButtons);
-  numpadContainer.classList.add("active");
+  answerContainer.appendChild(answerButtons);
+  answerContainer.classList.add("active");
   quizContainer.appendChild(div);
-
-  const progress = div.querySelector('.progress');
-  if (progress) progress.style.width = `${((index + 1) / QUESTIONS) * 100}%`;
 
   div.scrollIntoView({ behavior: "smooth", block: "start" });
 }
@@ -906,9 +859,15 @@ function finishGame() {
   clearInterval(timerInterval);
   const elapsed = Math.floor((Date.now() - startTime) / 1000);
   timerDisplay.textContent = `${elapsed} (Vége)`;
-  quizContainer.innerHTML = `<p style="font-size:1.2em;"><b>Gratulálok!</b> ${elapsed} másodperc alatt végeztél.<br>Helytelen válaszok száma: ${wrongAnswers}</p>`;
-  numpadContainer.innerHTML = "";
-  numpadContainer.classList.remove("active");
+  quizContainer.innerHTML = `
+    <div class="question-container">
+      <div class="progress-bar">
+        <div class="progress" style="width: ${(score / QUESTIONS) * 100}%"></div>
+      </div>
+      <p style="font-size:1.2em;"><b>Gratulálok!</b> ${elapsed} másodperc alatt végeztél.<br>Helytelen válaszok száma: ${wrongAnswers}</p>
+    </div>`;
+  answerContainer.innerHTML = "";
+  answerContainer.classList.remove("active");
   document.querySelectorAll('.answer-btn').forEach(btn => btn.classList.remove('flash'));
   saveBest(score, elapsed);
 

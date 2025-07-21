@@ -3,9 +3,7 @@
   --bg-dark: #1C2526; /* Sötét háttérszín sötét módban */
   --text-dark: #F1F1F1; /* Szövegszín sötét módban */
   --input-bg-dark: #2D383A; /* Bemeneti mezők háttérszíne sötét módban */
-  --
-
-input-text-dark: #F1F1F1; /* Bemeneti mezők szövegszíne sötét módban */
+  --input-text-dark: #F1F1F1; /* Bemeneti mezők szövegszíne sötét módban */
   --input-border-dark: #4A5F62; /* Bemeneti mezők keretszíne sötét módban */
   --bg-light: #F9F9F9; /* Világos háttérszín világos módban */
   --text-light: #1C2526; /* Szövegszín világos módban */
@@ -383,8 +381,8 @@ body.dark #theme-toggle {
   transform: scale(0.95); /* Enyhe összenyomódás érintéskor */
 }
 
-/* Számbillentyűzet konténer stílusai */
-.numpad {
+/* Válaszkonténer stílusai */
+.answer-container {
   display: none;
   flex-direction: column;
   gap: 0.5em;
@@ -402,127 +400,17 @@ body.dark #theme-toggle {
   touch-action: none; /* Érintési interakció tiltása a görgetéshez */
 }
 
-/* Sötét téma a számbillentyűzethez */
-body.dark .numpad {
+/* Sötét téma a válaszkonténerhez */
+body.dark .answer-container {
   box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1); /* Finom árnyék sötét módban */
 }
 
-/* Aktív számbillentyűzet stílus */
-.numpad.active {
+/* Aktív válaszkonténer stílus */
+.answer-container.active {
   display: flex;
 }
 
-/* Számbillentyűzet sorok stílusai */
-.numpad-row {
-  display: flex;
-  gap: 0.5em;
-  width: 100%;
-}
-
-/* Számbillentyűzet gombok és küldés gomb stílusai */
-.numpad-btn, .numpad-submit-btn {
-  flex: 1;
-  aspect-ratio: 1/1; /* Négyzet alakú gombok */
-  font-size: 1.3em;
-  border-radius: 8px;
-  border: 2px solid var(--input-border-light); /* Keret világos módban */
-  background: var(--input-bg-light); /* Háttér világos módban */
-  color: var(--primary); /* Piros szövegszín világos módban */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  transition: transform 0.2s ease; /* Sima tranzíció */
-  font-weight: 600;
-  min-width: 44px;
-  min-height: 44px;
-}
-
-/* Érintési kiemelés világos módban */
-body:not(.dark) .numpad-btn, body:not(.dark) .numpad-submit-btn {
-  -webkit-tap-highlight-color: rgba(178, 34, 34, 0.3); /* Pirosas érintési kiemelés */
-}
-
-/* Érintési kiemelés sötét módban */
-body.dark .numpad-btn, body.dark .numpad-submit-btn {
-  -webkit-tap-highlight-color: rgba(44, 208, 208, 0.3); /* Cian érintési kiemelés */
-}
-
-/* Sötét téma a számbillentyűzet gombokhoz */
-body.dark .numpad-btn {
-  background: var(--imperial); /* Szürke-kék háttér sötét módban */
-  color: var(--primary-inverse); /* Cian szövegszín sötét módban */
-  border: 2px solid var(--input-border-dark); /* Keret sötét módban */
-}
-
-/* Flash animáció a számbillentyűzet gombokhoz */
-.numpad-btn.flash {
-  animation: flash 0.1s ease; /* 100ms-os CSS animáció */
-}
-
-/* Sötét téma flash animáció */
-body.dark .numpad-btn.flash {
-  animation: flash-dark 0.1s ease; /* 100ms-os CSS animáció sötét módban */
-}
-
-/* Flash animáció világos módban */
-@keyframes flash {
-  0% { background: var(--flash-color); } /* Zöld háttér */
-  100% { background: var(--input-bg-light); } /* Vissza az eredeti háttérre */
-}
-
-/* Flash animáció sötét módban */
-@keyframes flash-dark {
-  0% { background: var(--flash-color); } /* Zöld háttér */
-  100% { background: var(--imperial); } /* Vissza az eredeti sötét háttérre */
-}
-
-/* Számbillentyűzet gombok aktív és fókusz állapota */
-.numpad-btn:active, .numpad-btn:focus {
-  outline: none;
-}
-
-/* Küldés gomb stílusai */
-.numpad-submit-btn {
-  background: var(--submit-btn-bg); /* Piros háttér világos módban */
-  color: #FFFFFF; /* Fehér szövegszín */
-  border: 2px solid var(--primary-dark); /* Sötét piros keret */
-}
-
-/* Sötét téma a küldés gombhoz */
-body.dark .numpad-submit-btn {
-  background: var(--primary-inverse); /* Cian háttér sötét módban */
-  color: #FFFFFF;
-  border: 2px solid var(--input-border-dark); /* Keret sötét módban */
-}
-
-/* Küldés gomb hover és fókusz állapota */
-.numpad-submit-btn:hover, .numpad-submit-btn:focus {
-  background: var(--submit-btn-bg-hover); /* Sötét piros hover/fókusz esetén */
-  transform: scale(1.05); /* Enyhe nagyítás */
-  outline: 2px solid var(--primary-dark); /* Keret kiemelése */
-}
-
-/* Sötét téma a küldés gomb hover/fókusz állapotához */
-body.dark .numpad-submit-btn:hover, body.dark .numpad-submit-btn:focus {
-  background: #1A8C8C; /* Sötétebb cian hover/fókusz esetén */
-  transform: scale(1.05);
-  outline: 2px solid var(--input-border-dark); /* Keret kiemelése */
-}
-
-/* Küldés gomb belső span elem */
-.numpad-submit-btn > span {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  height: 100%;
-  font-size: inherit;
-}
-
-/* Válaszgombok stílusai (hozzáadva az app.js kompatibilitáshoz) */
+/* Válaszgombok stílusai */
 .answer-btn {
   flex: 1;
   font-size: 1.3em;
@@ -574,6 +462,18 @@ body.dark .answer-btn.flash {
   animation: flash-dark 0.1s ease; /* 100ms-os CSS animáció sötét módban */
 }
 
+/* Flash animáció világos módban */
+@keyframes flash {
+  0% { background: var(--flash-color); } /* Zöld háttér */
+  100% { background: var(--input-bg-light); } /* Vissza az eredeti háttérre */
+}
+
+/* Flash animáció sötét módban */
+@keyframes flash-dark {
+  0% { background: var(--flash-color); } /* Zöld háttér */
+  100% { background: var(--imperial); } /* Vissza az eredeti sötét háttérre */
+}
+
 /* Reszponzív dizájn 600px alatt */
 @media (max-width: 600px) {
   main {
@@ -594,15 +494,9 @@ body.dark .answer-btn.flash {
   .big-btn, button {
     width: 100%;
   }
-  .numpad {
+  .answer-container {
     max-width: 100%;
     padding: 0.75em;
-  }
-  .numpad-row {
-    gap: 0.25em;
-  }
-  .numpad-btn, .numpad-submit-btn {
-    font-size: 1.1em;
   }
   .answer-btn {
     font-size: 1.1em;
@@ -619,22 +513,9 @@ body.dark .answer-btn.flash {
   .question-text {
     font-size: 1.4em;
   }
-  .numpad-btn, .numpad-submit-btn {
-    font-size: 0.9em;
-    min-width: 36px;
-    min-height: 36px;
-    padding: 0.5em;
-  }
-  .numpad-row {
-    gap: 0.2em;
-  }
-  .numpad {
+  .answer-container {
     padding: 0.5em;
     margin-top: 0.5em;
-  }
-  .question-container {
-    padding: 1em;
-    margin-bottom: 0.5em;
   }
   .answer-btn {
     font-size: 0.9em;
