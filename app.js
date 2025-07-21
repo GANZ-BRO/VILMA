@@ -436,15 +436,161 @@ const taskTypes = [
     }
   },
   {
-    name: "Villamos mértékegységek",
-    value: "villamos_mertekegysegek",
-    generate: (difficulty) => {
-      const ranges = {
-        easy: { mAMin: 100, mAMax: 1000, kOhmMin: 1, kOhmMax: 10, ohmMin: 100, ohmMax: 1000, ampMin: 1, ampMax: 10, mVMin: 100, mVMax: 1000 },
-        medium: { mAMin: 100, mAMax: 3000, kOhmMin: 1, kOhmMax: 15, ohmMin: 100, ohmMax: 3000, ampMin: 1, ampMax: 15, mVMin: 100, mVMax: 3000 },
-        hard: { mAMin: 100, mAMax: 10000, kOhmMin: 1, kOhmMax: 50, ohmMin: 100, ohmMax: 10000, ampMin: 1, ampMax: 50, mVMin: 100, mVMax: 10000 }
-      };
-      const { mAMin, mAMax, kOhmMin, kOhmMax, ohmMin, ohmMax, ampMin, ampMax, mVMin, mVMax } = ranges[difficulty];
+  name: "Villamos mértékegységek",
+  value: "villamos_mertekegysegek",
+  generate: (difficulty) => {
+    const ranges = {
+      easy: { mAMin: 100, mAMax: 1000, kOhmMin: 1, kOhmMax: 10, ohmMin: 100, ohmMax: 1000, ampMin: 1, ampMax: 10, mVMin: 100, mVMax: 1000 },
+      medium: { mAMin: 100, mAMax: 3000, kOhmMin: 1, kOhmMax: 15, ohmMin: 100, ohmMax: 3000, ampMin: 1, ampMax: 15, mVMin: 100, mVMax: 3000 },
+      hard: { mAMin: 100, mAMax: 10000, kOhmMin: 1, kOhmMax: 50, ohmMin: 100, ohmMax: 10000, ampMin: 1, ampMax: 50, mVMin: 100, mVMax: 10000 }
+    };
+    const { mAMin, mAMax, kOhmMin, kOhmMax, ohmMin, ohmMax, ampMin, ampMax, mVMin, mVMax } = ranges[difficulty];
+
+    if (difficulty === "medium") {
+      const types = [
+        () => {
+          let mA = getRandomInt(mAMin, mAMax);
+          let A = (getRandomInt(ampMin * 100, ampMax * 100) / 100).toFixed(2);
+          let isAddition = getRandomInt(0, 1) === 0;
+          let result = isAddition ? (mA / 1000 + parseFloat(A)) : (parseFloat(A) - mA / 1000);
+          if (result < 0) {
+            isAddition = true;
+            result = parseFloat(A) + mA / 1000;
+          }
+          const answer = result.toFixed(2).toString();
+          return {
+            display: `<b>${mA} mA</b> ${isAddition ? "+" : "-"} <b>${A} A</b> = ? A`,
+            answer: answer,
+            answerType: "decimal",
+            options: generateOptions(answer, "decimal", difficulty)
+          };
+        },
+        () => {
+          let kOhm = (getRandomInt(kOhmMin * 10, kOhmMax * 10) / 10).toFixed(1);
+          let ohm = getRandomInt(ohmMin, ohmMax);
+          let isAddition = getRandomInt(0, 1) === 0;
+          let result = isAddition ? (parseFloat(kOhm) * 1000 + ohm) : (parseFloat(kOhm) * 1000 - ohm);
+          if (result < 0) {
+            isAddition = true;
+            result = parseFloat(kOhm) * 1000 + ohm;
+          }
+          const answer = result.toString();
+          return {
+            display: `<b>${kOhm} kΩ</b> ${isAddition ? "+" : "-"} <b>${ohm} Ω</b> = ? Ω`,
+            answer: answer,
+            answerType: "number",
+            options: generateOptions(answer, "number", difficulty)
+          };
+        },
+        () => {
+          let mV = getRandomInt(mVMin, mVMax);
+          let V = (getRandomInt(ampMin * 100, ampMax * 100) / 100).toFixed(2);
+          let isAddition = getRandomInt(0, 1) === 0;
+          let result = isAddition ? (mV / 1000 + parseFloat(V)) : (parseFloat(V) - mV / 1000);
+          if (result < 0) {
+            isAddition = true;
+            result = parseFloat(V) + mV / 1000;
+          }
+          const answer = result.toFixed(2).toString();
+          return {
+            display: `<b>${mV} mV</b> ${isAddition ? "+" : "-"} <b>${V} V</b> = ? V`,
+            answer: answer,
+            answerType: "decimal",
+            options: generateOptions(answer, "decimal", difficulty)
+          };
+        }
+      ];
+      return types[getRandomInt(0, types.length - 1)]();
+    } else if (difficulty === "hard") {
+      const types = [
+        () => {
+          let mA1 = getRandomInt(mAMin, mAMax);
+          let A = (getRandomInt(ampMin * 100, ampMax * 100) / 100).toFixed(2);
+          let mA2 = getRandomInt(mAMin, mAMax);
+          let op1 = getRandomInt(0, 1) === 0 ? "+" : "-";
+          let op2 = getRandomInt(0, 1) === 0 ? "+" : "-";
+          let result;
+          if (op1 === "+" && op2 === "+") {
+            result = mA1 / 1000 + parseFloat(A) + mA2 / 1000;
+          } else if (op1 === "+" && op2 === "-") {
+            result = mA1 / 1000 + parseFloat(A) - mA2 / 1000;
+          } else if (op1 === "-" && op2 === "+") {
+            result = mA1 / 1000 - parseFloat(A) + mA2 / 1000;
+          } else {
+            result = mA1 / 1000 - parseFloat(A) - mA2 / 1000;
+          }
+          if (result < 0) {
+            op1 = "+"; op2 = "+";
+            result = mA1 / 1000 + parseFloat(A) + mA2 / 1000;
+          }
+          const answer = result.toFixed(2).toString();
+          return {
+            display: `<b>${mA1} mA</b> ${op1} <b>${A} A</b> ${op2} <b>${mA2} mA</b> = ? A`,
+            answer: answer,
+            answerType: "decimal",
+            options: generateOptions(answer, "decimal", difficulty)
+          };
+        },
+        () => {
+          let kOhm1 = (getRandomInt(kOhmMin * 10, kOhmMax * 10) / 10).toFixed(1);
+          let ohm = getRandomInt(ohmMin, ohmMax);
+          let kOhm2 = (getRandomInt(kOhmMin * 10, kOhmMax * 10) / 10).toFixed(1);
+          let op1 = getRandomInt(0, 1) === 0 ? "+" : "-";
+          let op2 = getRandomInt(0, 1) === 0 ? "+" : "-";
+          let result;
+          if (op1 === "+" && op2 === "+") {
+            result = parseFloat(kOhm1) * 1000 + ohm + parseFloat(kOhm2) * 1000;
+          } else if (op1 === "+" && op2 === "-") {
+            result = parseFloat(kOhm1) * 1000 + ohm - parseFloat(kOhm2) * 1000;
+          } else if (op1 === "-" && op2 === "+") {
+            result = parseFloat(kOhm1) * 1000 - ohm + parseFloat(kOhm2) * 1000;
+          } else {
+            result = parseFloat(kOhm1) * 1000 - ohm - parseFloat(kOhm2) * 1000;
+          }
+          if (result < 0) {
+            op1 = "+"; op2 = "+";
+            result = parseFloat(kOhm1) * 1000 + ohm + parseFloat(kOhm2) * 1000;
+          }
+          const answer = result.toString();
+          return {
+            display: `<b>${kOhm1} kΩ</b> ${op1} <b>${ohm} Ω</b> ${op2} <b>${kOhm2} kΩ</b> = ? Ω`,
+            answer: answer,
+            answerType: "number",
+            options: generateOptions(answer, "number", difficulty)
+          };
+        },
+        () => {
+          let mV1 = getRandomInt(mVMin, mVMax);
+          let V = (getRandomInt(ampMin * 100, ampMax * 100) / 100).toFixed(2);
+          let mV2 = getRandomInt(mVMin, mVMax);
+          let op1 = getRandomInt(0, 1) === 0 ? "+" : "-";
+          let op2 = getRandomInt(0, 1) === 0 ? "+" : "-";
+          let result;
+          if (op1 === "+" && op2 === "+") {
+            result = mV1 / 1000 + parseFloat(V) + mV2 / 1000;
+          } else if (op1 === "+" && op2 === "-") {
+            result = mV1 / 1000 + parseFloat(V) - mV2 / 1000;
+          } else if (op1 === "-" && op2 === "+") {
+            result = mV1 / 1000 - parseFloat(V) + mV2 / 1000;
+          } else {
+            result = mV1 / 1000 - parseFloat(V) - mV2 / 1000;
+          }
+          if (result < 0) {
+            op1 = "+"; op2 = "+";
+            result = mV1 / 1000 + parseFloat(V) + mV2 / 1000;
+          }
+          const answer = result.toFixed(2).toString();
+          return {
+            display: `<b>${mV1} mV</b> ${op1} <b>${V} V</b> ${op2} <b>${mV2} mV</b> = ? V`,
+            answer: answer,
+            answerType: "decimal",
+            options: generateOptions(answer, "decimal", difficulty)
+          };
+        }
+      ];
+      return types[getRandomInt(0, types.length - 1)]();
+    } else {
+      // Könnyű szint: marad az eredeti logika
       const types = [
         () => {
           let mA = getRandomInt(mAMin, mAMax);
@@ -499,49 +645,101 @@ const taskTypes = [
       ];
       return types[getRandomInt(0, types.length - 1)]();
     }
-  },
-  {
-    name: "Ohm-törvény",
-    value: "ohm_torveny",
-    generate: (difficulty) => {
-      const { min, max } = DIFFICULTY_SETTINGS[difficulty];
-      let maxI = difficulty === "easy" ? 10 : difficulty === "medium" ? 20 : 50;
-      let maxR = difficulty === "easy" ? 10 : difficulty === "medium" ? 50 : 200;
+  }
+ },
+{
+  name: "Ohm-törvény",
+  value: "ohm_torveny",
+  generate: (difficulty) => {
+    const { min, max } = DIFFICULTY_SETTINGS[difficulty];
+    let maxI = difficulty === "easy" ? 10 : difficulty === "medium" ? 20 : 50;
+    let maxR = difficulty === "easy" ? 10 : difficulty === "medium" ? 50 : 200;
+    let type = getRandomInt(0, 2);
+    let display, answer, answerType;
+
+    if (difficulty === "medium") {
+      const types = [
+        () => {
+          let I = getRandomInt(100, maxI * 1000); // mA
+          let R = getRandomInt(1, maxR); // Ω
+          let U = (I / 1000) * R; // V
+          answer = U.toString();
+          display = `Mennyi a feszültség, ha <b>I = ${I} mA</b> és <b>R = ${R} Ω</b>?`;
+          answerType = Number.isInteger(U) ? "number" : "decimal";
+          return { display, answer, answerType, options: generateOptions(answer, answerType, difficulty) };
+        },
+        () => {
+          let U = getRandomInt(1, maxR); // V
+          let R = getRandomInt(1, maxR); // kΩ
+          let I = U / (R * 1000); // A
+          answer = I.toFixed(3).toString();
+          display = `Mennyi az áram, ha <b>U = ${U} V</b> és <b>R = ${R} kΩ</b>?`;
+          answerType = "decimal";
+          return { display, answer, answerType, options: generateOptions(answer, answerType, difficulty) };
+        },
+        () => {
+          let U = getRandomInt(100, maxR * 1000); // mV
+          let I = getRandomInt(1, maxI); // A
+          let R = (U / 1000) / I; // Ω
+          answer = R.toFixed(2).toString();
+          display = `Mennyi az ellenállás, ha <b>U = ${U} mV</b> és <b>I = ${I} A</b>?`;
+          answerType = Number.isInteger(R) ? "number" : "decimal";
+          return { display, answer, answerType, options: generateOptions(answer, answerType, difficulty) };
+        }
+      ];
+      return types[type]();
+    } else if (difficulty === "hard") {
+      const types = [
+        () => {
+          let I = getRandomInt(100, maxI * 1000); // mA
+          let R1 = getRandomInt(1, maxR / 2); // kΩ
+          let R2 = getRandomInt(100, maxR * 1000); // Ω
+          let R = R1 * 1000 + R2; // Ω
+          let U = (I / 1000) * R; // V
+          answer = U.toString();
+          display = `Mennyi a feszültség, ha <b>I = ${I} mA</b> és <b>R = ${R1} kΩ + ${R2} Ω</b>?`;
+          answerType = Number.isInteger(U) ? "number" : "decimal";
+          return { display, answer, answerType, options: generateOptions(answer, answerType, difficulty) };
+        },
+        () => {
+          let U = getRandomInt(1000, maxR * 1000); // mV
+          let R1 = getRandomInt(1, maxR / 2); // kΩ
+          let R2 = getRandomInt(100, maxR * 1000); // Ω
+          let R = R1 * 1000 + R2; // Ω
+          let I = (U / 1000) / R; // A
+          answer = I.toFixed(3).toString();
+          display = `Mennyi az áram, ha <b>U = ${U} mV</b> és <b>R = ${R1} kΩ + ${R2} Ω</b>?`;
+          answerType = "decimal";
+          return { display, answer, answerType, options: generateOptions(answer, answerType, difficulty) };
+        },
+        () => {
+          let U = getRandomInt(1000, maxR * 1000); // mV
+          let I = getRandomInt(100, maxI * 1000); // mA
+          let R = (U / 1000) / (I / 1000); // Ω
+          answer = R.toString();
+          display = `Mennyi az ellenállás, ha <b>U = ${U} mV</b> és <b>I = ${I} mA</b>?`;
+          answerType = Number.isInteger(R) ? "number" : "decimal";
+          return { display, answer, answerType, options: generateOptions(answer, answerType, difficulty) };
+        }
+      ];
+      return types[type]();
+    } else {
+      // Könnyű szint: eredeti logika
       let I = getRandomInt(1, maxI);
       let R = getRandomInt(1, maxR);
       let U = I * R;
-      let type = getRandomInt(0, 2);
-      let display, answer, answerType;
-      if (difficulty === "hard") {
-        let R2 = getRandomInt(1, maxR);
-        U = I * (R + R2);
-        if (type === 0) {
-          display = `Mennyi a feszültség, ha <b>I = ${I} A</b> és <b>R = ${R} Ω + ${R2} Ω</b>?`;
-          answer = U.toString();
-          answerType = "number";
-        } else if (type === 1) {
-          display = `Mennyi az áram, ha <b>U = ${U} V</b> és <b>R = ${R} Ω + ${R2} Ω</b>?`;
-          answer = I.toString();
-          answerType = "decimal";
-        } else {
-          display = `Mennyi az ellenállás, ha <b>U = ${U} V</b> és <b>I = ${I} A</b>?`;
-          answer = (R + R2).toString();
-          answerType = "number";
-        }
+      if (type === 0) {
+        display = `Mennyi a feszültség, ha <b>I = ${I} A</b> és <b>R = ${R} Ω</b>?`;
+        answer = U.toString();
+        answerType = "number";
+      } else if (type === 1) {
+        display = `Mennyi az áram, ha <b>U = ${U} V</b> és <b>R = ${R} Ω</b>?`;
+        answer = I.toString();
+        answerType = "decimal";
       } else {
-        if (type === 0) {
-          display = `Mennyi a feszültség, ha <b>I = ${I} A</b> és <b>R = ${R} Ω</b>?`;
-          answer = U.toString();
-          answerType = "number";
-        } else if (type === 1) {
-          display = `Mennyi az áram, ha <b>U = ${U} V</b> és <b>R = ${R} Ω</b>?`;
-          answer = I.toString();
-          answerType = "decimal";
-        } else {
-          display = `Mennyi az ellenállás, ha <b>U = ${U} V</b> és <b>I = ${I} A</b>?`;
-          answer = R.toString();
-          answerType = "number";
-        }
+        display = `Mennyi az ellenállás, ha <b>U = ${U} V</b> és <b>I = ${I} A</b>?`;
+        answer = R.toString();
+        answerType = "number";
       }
       return {
         display: display,
@@ -550,35 +748,130 @@ const taskTypes = [
         options: generateOptions(answer, answerType, difficulty)
       };
     }
-  },
-  {
-    name: "Teljesítmény",
-    value: "teljesitmeny",
-    generate: (difficulty) => {
-      const { min, max } = DIFFICULTY_SETTINGS[difficulty];
-      let maxU = difficulty === "easy" ? 20 : difficulty === "medium" ? 50 : 200;
-      let maxI = difficulty === "easy" ? 10 : difficulty === "medium" ? 20 : 50;
+  }
+},
+{
+  name: "Teljesítmény",
+  value: "teljesitmeny",
+  generate: (difficulty) => {
+    const ranges = {
+      easy: { maxU: 20, maxI: 10 },
+      medium: { maxU: 50, maxI: 20 },
+      hard: { maxU: 200, maxI: 50 }
+    };
+    const { maxU, maxI } = ranges[difficulty];
+
+    if (difficulty === "medium") {
+      const types = [
+        () => {
+          let U = getRandomInt(10, maxU); // V
+          let I = getRandomInt(100, maxI * 1000); // mA
+          let P = U * (I / 1000);
+          const answer = Math.round(P).toString();
+          return {
+            display: `Mennyi a teljesítmény, ha <b>U = ${U} V</b> és <b>I = ${I} mA</b>?`,
+            answer: answer,
+            answerType: "number",
+            options: generateOptions(answer, "number", difficulty)
+          };
+        },
+        () => {
+          let P = getRandomInt(10, maxU * maxI);
+          let I = getRandomInt(100, maxI * 1000); // mA
+          let U = Math.round((P / (I / 1000)));
+          const answer = U.toString();
+          return {
+            display: `Mennyi a feszültség, ha <b>P = ${P} W</b> és <b>I = ${I} mA</b>?`,
+            answer: answer,
+            answerType: "number",
+            options: generateOptions(answer, "number", difficulty)
+          };
+        },
+        () => {
+          let P = getRandomInt(10, maxU * maxI);
+          let U = getRandomInt(1000, maxU * 1000); // mV
+          let I = Math.round((P / (U / 1000)));
+          const answer = I.toString();
+          return {
+            display: `Mennyi az áram, ha <b>P = ${P} W</b> és <b>U = ${U} mV</b>?`,
+            answer: answer,
+            answerType: "number",
+            options: generateOptions(answer, "number", difficulty)
+          };
+        }
+      ];
+      return types[getRandomInt(0, types.length - 1)]();
+    } else if (difficulty === "hard") {
+      const types = [
+        () => {
+          let U = getRandomInt(1000, maxU * 1000); // mV
+          let I1 = getRandomInt(100, maxI * 1000); // mA
+          let I2 = (getRandomInt(1, maxI * 100) / 100).toFixed(2); // A
+          let I = (I1 / 1000) + parseFloat(I2); // A
+          let P = Math.round((U / 1000) * I);
+          const answer = P.toString();
+          return {
+            display: `Mennyi a teljesítmény, ha <b>U = ${U} mV</b>, <b>I₁ = ${I1} mA</b> és <b>I₂ = ${I2} A</b>?`,
+            answer: answer,
+            answerType: "number",
+            options: generateOptions(answer, "number", difficulty)
+          };
+        },
+        () => {
+          let P = getRandomInt(10, maxU * maxI);
+          let I = getRandomInt(100, maxI * 1000); // mA
+          let U = Math.round((P / (I / 1000)) * 1000); // mV
+          const answer = U.toString();
+          return {
+            display: `Mennyi a feszültség, ha <b>P = ${P} W</b> és <b>I = ${I} mA</b>?`,
+            answer: answer,
+            answerType: "number",
+            options: generateOptions(answer, "number", difficulty)
+          };
+        },
+        () => {
+          let P = getRandomInt(10, maxU * maxI);
+          let U = getRandomInt(1000, maxU * 1000); // mV
+          let I = Math.round((P / (U / 1000)) * 1000); // mA
+          const answer = I.toString();
+          return {
+            display: `Mennyi az áram, ha <b>P = ${P} W</b> és <b>U = ${U} mV</b>?`,
+            answer: answer,
+            answerType: "number",
+            options: generateOptions(answer, "number", difficulty)
+          };
+        }
+      ];
+      return types[getRandomInt(0, types.length - 1)]();
+    } else {
+      // Könnyű szint: marad az eredeti logika
       let U = getRandomInt(10, maxU);
       let I = getRandomInt(1, maxI);
       let P = U * I;
-      let display, answer;
-      if (difficulty === "hard") {
-        let I2 = getRandomInt(1, maxI);
-        P = U * (I + I2);
-        display = `Mennyi a teljesítmény, ha <b>U = ${U} V</b>, <b>I₁ = ${I} A</b> és <b>I₂ = ${I2} A</b>?`;
-        answer = P.toString();
-      } else {
+      let display, answer, answerType;
+      let type = getRandomInt(0, 2);
+      if (type === 0) {
         display = `Mennyi a teljesítmény, ha <b>U = ${U} V</b> és <b>I = ${I} A</b>?`;
         answer = P.toString();
+        answerType = "number";
+      } else if (type === 1) {
+        display = `Mennyi a feszültség, ha <b>P = ${P} W</b> és <b>I = ${I} A</b>?`;
+        answer = U.toString();
+        answerType = "number";
+      } else {
+        display = `Mennyi az áram, ha <b>P = ${P} W</b> és <b>U = ${U} V</b>?`;
+        answer = I.toString();
+        answerType = "number";
       }
       return {
         display: display,
         answer: answer,
-        answerType: "number",
-        options: generateOptions(answer, "number", difficulty)
+        answerType: answerType,
+        options: generateOptions(answer, answerType, difficulty)
       };
     }
   }
+}
 ];
 
 // --- HTML ELEMEK ---
