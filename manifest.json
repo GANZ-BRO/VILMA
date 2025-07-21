@@ -1,15 +1,28 @@
 {
   "name": "VILMA Gyakorlás",
   "short_name": "VILMA",
+  "description": "Matematikai gyakorlóalkalmazás diákok számára",
   "start_url": "index.html",
+  "scope": "/",
   "display": "standalone",
   "background_color": "#1C2526",
   "theme_color": "#D32F2F",
   "icons": [
     {
-      "src": "icon.png",
+      "src": "icon-192.png",
       "sizes": "192x192",
       "type": "image/png"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-maskable.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ]
 }

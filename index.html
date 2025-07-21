@@ -42,22 +42,25 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>VILMA gyakorlás</title>
-  <link rel="stylesheet" href="style.css">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="description" content="Matematikai gyakorlóalkalmazás diákok számára">
+  <title>VILMA Gyakorlás</title>
+  <link rel="manifest" href="./manifest.json">
+  <link rel="apple-touch-icon" href="./icon-192.png">
+  <link rel="stylesheet" href="./style.css">
 </head>
 <body>
+  <button type="button" id="theme-toggle" aria-label="Téma váltása">🌗</button>
   <main>
     <header>
-      <h1 class="subtitle">VILMA gyakorlás</h1>
-      <button id="theme-toggle">🌗</button>
+      <div class="game-stats">
+        <div class="stat">⏱️ Idő: <span id="time">0 mp</span></div>
+        <div id="best-stats" class="stat best"></div>
+      </div>
     </header>
 
-    <div class="game-stats">
-      <div class="stat">⏱️ Idő: <span id="time">0</span> mp</div>
-      <div class="best" id="best-stats" style="display:none;"></div>
-    </div>
-
-    <div class="settings">
+    <section class="settings">
       <div>
         <label for="category">Kategória:</label>
         <select id="category"></select>
@@ -70,14 +73,24 @@
           <option value="hard">Kihívás</option>
         </select>
       </div>
-    </div>
+    </section>
 
-    <div id="quiz"></div>
-    <div id="answer-container"></div>
+    <section id="quiz"></section>
+    <section id="answer-container"></section>
 
-    <button onclick="startGame()">Játék indítása</button>
-    <button id="restart-btn" style="display:none;">Újraindítás</button>
+    <button type="button" onclick="startGame()">Játék indítása</button>
+    <button type="button" id="restart-btn" onclick="startGame()" style="display: none;">Újraindítás</button>
   </main>
-  <script src="app.js"></script>
+
+  <script src="./app.js"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js')
+          .then(registration => console.log('Service Worker regisztrálva:', registration))
+          .catch(error => console.error('Service Worker regisztrációs hiba:', error));
+      });
+    }
+  </script>
 </body>
 </html>
