@@ -737,14 +737,11 @@ function renderAnswerButtons(options, correctAnswer, answerType) {
     const btn = document.createElement('button');
     btn.type = 'button';
     btn.className = 'answer-btn';
+    btn.style.fontSize = '1.5em'; // Nagyobb betűméret
     btn.textContent = option;
     btn.setAttribute("aria-label", `Válasz: ${option}`);
     btn.tabIndex = 0;
     btn.onclick = () => {
-      buttonsDiv.querySelectorAll('.answer-btn').forEach(b => b.classList.remove('flash'));
-      btn.classList.add('flash');
-      setTimeout(() => btn.classList.remove('flash'), 100);
-
       if (!gameActive) return;
       const currentTask = questions[currentQuestion] || {};
       if (!currentTask.answer) {
@@ -810,7 +807,6 @@ function showQuestion(index) {
   quizContainer.innerHTML = "";
   answerContainer.innerHTML = "";
   answerContainer.classList.remove("active");
-  document.querySelectorAll('.answer-btn').forEach(btn => btn.classList.remove('flash'));
 
   if (index >= QUESTIONS) {
     finishGame();
@@ -868,7 +864,6 @@ function finishGame() {
     </div>`;
   answerContainer.innerHTML = "";
   answerContainer.classList.remove("active");
-  document.querySelectorAll('.answer-btn').forEach(btn => btn.classList.remove('flash'));
   saveBest(score, elapsed);
 
   restartBtn.style.display = "";
