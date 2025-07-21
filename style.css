@@ -429,6 +429,7 @@ body.dark .answer-container {
   min-width: 80px; /* Minimum szélesség a használhatósághoz */
   min-height: 44px; /* Minimum magasság az érintéshez */
   cursor: pointer;
+  -webkit-tap-highlight-color: transparent; /* Érintési kiemelés kikapcsolása */
 }
 
 /* Sötét téma a válaszgombokhoz */
@@ -450,6 +451,20 @@ body.dark .answer-btn {
 body.dark .answer-btn:hover, body.dark .answer-btn:focus {
   background: var(--primary-inverse); /* Cian háttér sötét módban */
   color: #FFFFFF;
+}
+
+/* Érintőképernyős eszközökön a fókusz állapot kikapcsolása */
+@media (hover: none) and (pointer: coarse) {
+  .answer-btn:focus {
+    background: var(--input-bg-light); /* Visszaállítjuk az alapértelmezett hátteret */
+    color: var(--primary); /* Visszaállítjuk az alapértelmezett szövegszínt */
+    transform: none; /* Kikapcsoljuk a nagyítást */
+  }
+  body.dark .answer-btn:focus {
+    background: var(--imperial); /* Visszaállítjuk az alapértelmezett sötét hátteret */
+    color: var(--primary-inverse); /* Visszaállítjuk az alapértelmezett szövegszínt */
+    transform: none;
+  }
 }
 
 /* Flash animáció a válaszgombokhoz */

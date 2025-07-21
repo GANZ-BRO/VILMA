@@ -468,217 +468,217 @@ const taskTypes = [
     }
   },
   {
-  name: "Villamos mértékegységek",
-  value: "villamos_mertekegysegek",
-  generate: (difficulty) => {
-    const ranges = {
-      easy: { mAMin: 100, mAMax: 1000, kOhmMin: 1, kOhmMax: 10, ohmMin: 100, ohmMax: 1000, ampMin: 1, ampMax: 10, mVMin: 100, mVMax: 1000 },
-      medium: { mAMin: 100, mAMax: 3000, kOhmMin: 1, kOhmMax: 15, ohmMin: 100, ohmMax: 3000, ampMin: 1, ampMax: 15, mVMin: 100, mVMax: 3000 },
-      hard: { mAMin: 100, mAMax: 10000, kOhmMin: 1, kOhmMax: 50, ohmMin: 100, ohmMax: 10000, ampMin: 1, ampMax: 50, mVMin: 100, mVMax: 10000 }
-    };
-    const { mAMin, mAMax, kOhmMin, kOhmMax, ohmMin, ohmMax, ampMin, ampMax, mVMin, mVMax } = ranges[difficulty];
+    name: "Villamos mértékegységek",
+    value: "villamos_mertekegysegek",
+    generate: (difficulty) => {
+      const ranges = {
+        easy: { mAMin: 100, mAMax: 1000, kOhmMin: 1, kOhmMax: 10, ohmMin: 100, ohmMax: 1000, ampMin: 1, ampMax: 10, mVMin: 100, mVMax: 1000 },
+        medium: { mAMin: 100, mAMax: 3000, kOhmMin: 1, kOhmMax: 15, ohmMin: 100, ohmMax: 3000, ampMin: 1, ampMax: 15, mVMin: 100, mVMax: 3000 },
+        hard: { mAMin: 100, mAMax: 10000, kOhmMin: 1, kOhmMax: 50, ohmMin: 100, ohmMax: 10000, ampMin: 1, ampMax: 50, mVMin: 100, mVMax: 10000 }
+      };
+      const { mAMin, mAMax, kOhmMin, kOhmMax, ohmMin, ohmMax, ampMin, ampMax, mVMin, mVMax } = ranges[difficulty];
 
-    if (difficulty === "medium") {
-      const types = [
-        () => {
-          let mA = getRandomInt(mAMin, mAMax);
-          let A = (getRandomInt(ampMin * 100, ampMax * 100) / 100).toFixed(2);
-          let isAddition = getRandomInt(0, 1) === 0;
-          let result = isAddition ? (mA / 1000 + parseFloat(A)) : (parseFloat(A) - mA / 1000);
-          if (result < 0) {
-            isAddition = true;
-            result = parseFloat(A) + mA / 1000;
+      if (difficulty === "medium") {
+        const types = [
+          () => {
+            let mA = getRandomInt(mAMin, mAMax);
+            let A = (getRandomInt(ampMin * 100, ampMax * 100) / 100).toFixed(2);
+            let isAddition = getRandomInt(0, 1) === 0;
+            let result = isAddition ? (mA / 1000 + parseFloat(A)) : (parseFloat(A) - mA / 1000);
+            if (result < 0) {
+              isAddition = true;
+              result = parseFloat(A) + mA / 1000;
+            }
+            const answer = result.toFixed(2).toString();
+            return {
+              display: `<b>${mA} mA</b> ${isAddition ? "+" : "-"} <b>${A} A</b> = ? A`,
+              answer: answer,
+              answerType: "decimal",
+              options: generateOptions(answer, "decimal", difficulty)
+            };
+          },
+          () => {
+            let kOhm = (getRandomInt(kOhmMin * 10, kOhmMax * 10) / 10).toFixed(1);
+            let ohm = getRandomInt(ohmMin, ohmMax);
+            let isAddition = getRandomInt(0, 1) === 0;
+            let result = isAddition ? (parseFloat(kOhm) * 1000 + ohm) : (parseFloat(kOhm) * 1000 - ohm);
+            if (result < 0) {
+              isAddition = true;
+              result = parseFloat(kOhm) * 1000 + ohm;
+            }
+            const answer = result.toString();
+            return {
+              display: `<b>${kOhm} kΩ</b> ${isAddition ? "+" : "-"} <b>${ohm} Ω</b> = ? Ω`,
+              answer: answer,
+              answerType: "number",
+              options: generateOptions(answer, "number", difficulty)
+            };
+          },
+          () => {
+            let mV = getRandomInt(mVMin, mVMax);
+            let V = (getRandomInt(ampMin * 100, ampMax * 100) / 100).toFixed(2);
+            let isAddition = getRandomInt(0, 1) === 0;
+            let result = isAddition ? (mV / 1000 + parseFloat(V)) : (parseFloat(V) - mV / 1000);
+            if (result < 0) {
+              isAddition = true;
+              result = parseFloat(V) + mV / 1000;
+            }
+            const answer = result.toFixed(2).toString();
+            return {
+              display: `<b>${mV} mV</b> ${isAddition ? "+" : "-"} <b>${V} V</b> = ? V`,
+              answer: answer,
+              answerType: "decimal",
+              options: generateOptions(answer, "decimal", difficulty)
+            };
           }
-          const answer = result.toFixed(2).toString();
-          return {
-            display: `<b>${mA} mA</b> ${isAddition ? "+" : "-"} <b>${A} A</b> = ? A`,
-            answer: answer,
-            answerType: "decimal",
-            options: generateOptions(answer, "decimal", difficulty)
-          };
-        },
-        () => {
-          let kOhm = (getRandomInt(kOhmMin * 10, kOhmMax * 10) / 10).toFixed(1);
-          let ohm = getRandomInt(ohmMin, ohmMax);
-          let isAddition = getRandomInt(0, 1) === 0;
-          let result = isAddition ? (parseFloat(kOhm) * 1000 + ohm) : (parseFloat(kOhm) * 1000 - ohm);
-          if (result < 0) {
-            isAddition = true;
-            result = parseFloat(kOhm) * 1000 + ohm;
+        ];
+        return types[getRandomInt(0, types.length - 1)]();
+      } else if (difficulty === "hard") {
+        const types = [
+          () => {
+            let mA1 = getRandomInt(mAMin, mAMax);
+            let A = (getRandomInt(ampMin * 100, ampMax * 100) / 100).toFixed(2);
+            let mA2 = getRandomInt(mAMin, mAMax);
+            let op1 = getRandomInt(0, 1) === 0 ? "+" : "-";
+            let op2 = getRandomInt(0, 1) === 0 ? "+" : "-";
+            let result;
+            if (op1 === "+" && op2 === "+") {
+              result = mA1 / 1000 + parseFloat(A) + mA2 / 1000;
+            } else if (op1 === "+" && op2 === "-") {
+              result = mA1 / 1000 + parseFloat(A) - mA2 / 1000;
+            } else if (op1 === "-" && op2 === "+") {
+              result = mA1 / 1000 - parseFloat(A) + mA2 / 1000;
+            } else {
+              result = mA1 / 1000 - parseFloat(A) - mA2 / 1000;
+            }
+            if (result < 0) {
+              op1 = "+"; op2 = "+";
+              result = mA1 / 1000 + parseFloat(A) + mA2 / 1000;
+            }
+            const answer = result.toFixed(2).toString();
+            return {
+              display: `<b>${mA1} mA</b> ${op1} <b>${A} A</b> ${op2} <b>${mA2} mA</b> = ? A`,
+              answer: answer,
+              answerType: "decimal",
+              options: generateOptions(answer, "decimal", difficulty)
+            };
+          },
+          () => {
+            let kOhm1 = (getRandomInt(kOhmMin * 10, kOhmMax * 10) / 10).toFixed(1);
+            let ohm = getRandomInt(ohmMin, ohmMax);
+            let kOhm2 = (getRandomInt(kOhmMin * 10, kOhmMax * 10) / 10).toFixed(1);
+            let op1 = getRandomInt(0, 1) === 0 ? "+" : "-";
+            let op2 = getRandomInt(0, 1) === 0 ? "+" : "-";
+            let result;
+            if (op1 === "+" && op2 === "+") {
+              result = parseFloat(kOhm1) * 1000 + ohm + parseFloat(kOhm2) * 1000;
+            } else if (op1 === "+" && op2 === "-") {
+              result = parseFloat(kOhm1) * 1000 + ohm - parseFloat(kOhm2) * 1000;
+            } else if (op1 === "-" && op2 === "+") {
+              result = parseFloat(kOhm1) * 1000 - ohm + parseFloat(kOhm2) * 1000;
+            } else {
+              result = parseFloat(kOhm1) * 1000 - ohm - parseFloat(kOhm2) * 1000;
+            }
+            if (result < 0) {
+              op1 = "+"; op2 = "+";
+              result = parseFloat(kOhm1) * 1000 + ohm + parseFloat(kOhm2) * 1000;
+            }
+            const answer = result.toString();
+            return {
+              display: `<b>${kOhm1} kΩ</b> ${op1} <b>${ohm} Ω</b> ${op2} <b>${kOhm2} kΩ</b> = ? Ω`,
+              answer: answer,
+              answerType: "number",
+              options: generateOptions(answer, "number", difficulty)
+            };
+          },
+          () => {
+            let mV1 = getRandomInt(mVMin, mVMax);
+            let V = (getRandomInt(ampMin * 100, ampMax * 100) / 100).toFixed(2);
+            let mV2 = getRandomInt(mVMin, mVMax);
+            let op1 = getRandomInt(0, 1) === 0 ? "+" : "-";
+            let op2 = getRandomInt(0, 1) === 0 ? "+" : "-";
+            let result;
+            if (op1 === "+" && op2 === "+") {
+              result = mV1 / 1000 + parseFloat(V) + mV2 / 1000;
+            } else if (op1 === "+" && op2 === "-") {
+              result = mV1 / 1000 + parseFloat(V) - mV2 / 1000;
+            } else if (op1 === "-" && op2 === "+") {
+              result = mV1 / 1000 - parseFloat(V) + mV2 / 1000;
+            } else {
+              result = mV1 / 1000 - parseFloat(V) - mV2 / 1000;
+            }
+            if (result < 0) {
+              op1 = "+"; op2 = "+";
+              result = mV1 / 1000 + parseFloat(V) + mV2 / 1000;
+            }
+            const answer = result.toFixed(2).toString();
+            return {
+              display: `<b>${mV1} mV</b> ${op1} <b>${V} V</b> ${op2} <b>${mV2} mV</b> = ? V`,
+              answer: answer,
+              answerType: "decimal",
+              options: generateOptions(answer, "decimal", difficulty)
+            };
           }
-          const answer = result.toString();
-          return {
-            display: `<b>${kOhm} kΩ</b> ${isAddition ? "+" : "-"} <b>${ohm} Ω</b> = ? Ω`,
-            answer: answer,
-            answerType: "number",
-            options: generateOptions(answer, "number", difficulty)
-          };
-        },
-        () => {
-          let mV = getRandomInt(mVMin, mVMax);
-          let V = (getRandomInt(ampMin * 100, ampMax * 100) / 100).toFixed(2);
-          let isAddition = getRandomInt(0, 1) === 0;
-          let result = isAddition ? (mV / 1000 + parseFloat(V)) : (parseFloat(V) - mV / 1000);
-          if (result < 0) {
-            isAddition = true;
-            result = parseFloat(V) + mV / 1000;
+        ];
+        return types[getRandomInt(0, types.length - 1)]();
+      } else {
+        // Könnyű szint: marad az eredeti logika
+        const types = [
+          () => {
+            let mA = getRandomInt(mAMin, mAMax);
+            const answer = (mA / 1000).toString();
+            return {
+              display: `<b>${mA} mA</b> = ? A`,
+              answer: answer,
+              answerType: "decimal",
+              options: generateOptions(answer, "decimal", difficulty)
+            };
+          },
+          () => {
+            let kOhm = (getRandomInt(kOhmMin * 10, kOhmMax * 10) / 10).toFixed(1);
+            const answer = (parseFloat(kOhm) * 1000).toString();
+            return {
+              display: `<b>${kOhm} kΩ</b> = ? Ω`,
+              answer: answer,
+              answerType: "number",
+              options: generateOptions(answer, "number", difficulty)
+            };
+          },
+          () => {
+            let ohm = getRandomInt(ohmMin, ohmMax);
+            const answer = (ohm / 1000).toString();
+            return {
+              display: `<b>${ohm} Ω</b> = ? kΩ`,
+              answer: answer,
+              answerType: "decimal",
+              options: generateOptions(answer, "decimal", difficulty)
+            };
+          },
+          () => {
+            let amp = (getRandomInt(ampMin * 100, ampMax * 100) / 100).toFixed(2);
+            const answer = (parseFloat(amp) * 1000).toString();
+            return {
+              display: `<b>${amp} A</b> = ? mA`,
+              answer: answer,
+              answerType: "number",
+              options: generateOptions(answer, "number", difficulty)
+            };
+          },
+          () => {
+            let mV = getRandomInt(mVMin, mVMax);
+            const answer = (mV / 1000).toString();
+            return {
+              display: `<b>${mV} mV</b> = ? V`,
+              answer: answer,
+              answerType: "decimal",
+              options: generateOptions(answer, "decimal", difficulty)
+            };
           }
-          const answer = result.toFixed(2).toString();
-          return {
-            display: `<b>${mV} mV</b> ${isAddition ? "+" : "-"} <b>${V} V</b> = ? V`,
-            answer: answer,
-            answerType: "decimal",
-            options: generateOptions(answer, "decimal", difficulty)
-          };
-        }
-      ];
-      return types[getRandomInt(0, types.length - 1)]();
-    } else if (difficulty === "hard") {
-      const types = [
-        () => {
-          let mA1 = getRandomInt(mAMin, mAMax);
-          let A = (getRandomInt(ampMin * 100, ampMax * 100) / 100).toFixed(2);
-          let mA2 = getRandomInt(mAMin, mAMax);
-          let op1 = getRandomInt(0, 1) === 0 ? "+" : "-";
-          let op2 = getRandomInt(0, 1) === 0 ? "+" : "-";
-          let result;
-          if (op1 === "+" && op2 === "+") {
-            result = mA1 / 1000 + parseFloat(A) + mA2 / 1000;
-          } else if (op1 === "+" && op2 === "-") {
-            result = mA1 / 1000 + parseFloat(A) - mA2 / 1000;
-          } else if (op1 === "-" && op2 === "+") {
-            result = mA1 / 1000 - parseFloat(A) + mA2 / 1000;
-          } else {
-            result = mA1 / 1000 - parseFloat(A) - mA2 / 1000;
-          }
-          if (result < 0) {
-            op1 = "+"; op2 = "+";
-            result = mA1 / 1000 + parseFloat(A) + mA2 / 1000;
-          }
-          const answer = result.toFixed(2).toString();
-          return {
-            display: `<b>${mA1} mA</b> ${op1} <b>${A} A</b> ${op2} <b>${mA2} mA</b> = ? A`,
-            answer: answer,
-            answerType: "decimal",
-            options: generateOptions(answer, "decimal", difficulty)
-          };
-        },
-        () => {
-          let kOhm1 = (getRandomInt(kOhmMin * 10, kOhmMax * 10) / 10).toFixed(1);
-          let ohm = getRandomInt(ohmMin, ohmMax);
-          let kOhm2 = (getRandomInt(kOhmMin * 10, kOhmMax * 10) / 10).toFixed(1);
-          let op1 = getRandomInt(0, 1) === 0 ? "+" : "-";
-          let op2 = getRandomInt(0, 1) === 0 ? "+" : "-";
-          let result;
-          if (op1 === "+" && op2 === "+") {
-            result = parseFloat(kOhm1) * 1000 + ohm + parseFloat(kOhm2) * 1000;
-          } else if (op1 === "+" && op2 === "-") {
-            result = parseFloat(kOhm1) * 1000 + ohm - parseFloat(kOhm2) * 1000;
-          } else if (op1 === "-" && op2 === "+") {
-            result = parseFloat(kOhm1) * 1000 - ohm + parseFloat(kOhm2) * 1000;
-          } else {
-            result = parseFloat(kOhm1) * 1000 - ohm - parseFloat(kOhm2) * 1000;
-          }
-          if (result < 0) {
-            op1 = "+"; op2 = "+";
-            result = parseFloat(kOhm1) * 1000 + ohm + parseFloat(kOhm2) * 1000;
-          }
-          const answer = result.toString();
-          return {
-            display: `<b>${kOhm1} kΩ</b> ${op1} <b>${ohm} Ω</b> ${op2} <b>${kOhm2} kΩ</b> = ? Ω`,
-            answer: answer,
-            answerType: "number",
-            options: generateOptions(answer, "number", difficulty)
-          };
-        },
-        () => {
-          let mV1 = getRandomInt(mVMin, mVMax);
-          let V = (getRandomInt(ampMin * 100, ampMax * 100) / 100).toFixed(2);
-          let mV2 = getRandomInt(mVMin, mVMax);
-          let op1 = getRandomInt(0, 1) === 0 ? "+" : "-";
-          let op2 = getRandomInt(0, 1) === 0 ? "+" : "-";
-          let result;
-          if (op1 === "+" && op2 === "+") {
-            result = mV1 / 1000 + parseFloat(V) + mV2 / 1000;
-          } else if (op1 === "+" && op2 === "-") {
-            result = mV1 / 1000 + parseFloat(V) - mV2 / 1000;
-          } else if (op1 === "-" && op2 === "+") {
-            result = mV1 / 1000 - parseFloat(V) + mV2 / 1000;
-          } else {
-            result = mV1 / 1000 - parseFloat(V) - mV2 / 1000;
-          }
-          if (result < 0) {
-            op1 = "+"; op2 = "+";
-            result = mV1 / 1000 + parseFloat(V) + mV2 / 1000;
-          }
-          const answer = result.toFixed(2).toString();
-          return {
-            display: `<b>${mV1} mV</b> ${op1} <b>${V} V</b> ${op2} <b>${mV2} mV</b> = ? V`,
-            answer: answer,
-            answerType: "decimal",
-            options: generateOptions(answer, "decimal", difficulty)
-          };
-        }
-      ];
-      return types[getRandomInt(0, types.length - 1)]();
-    } else {
-      // Könnyű szint: marad az eredeti logika
-      const types = [
-        () => {
-          let mA = getRandomInt(mAMin, mAMax);
-          const answer = (mA / 1000).toString();
-          return {
-            display: `<b>${mA} mA</b> = ? A`,
-            answer: answer,
-            answerType: "decimal",
-            options: generateOptions(answer, "decimal", difficulty)
-          };
-        },
-        () => {
-          let kOhm = (getRandomInt(kOhmMin * 10, kOhmMax * 10) / 10).toFixed(1);
-          const answer = (parseFloat(kOhm) * 1000).toString();
-          return {
-            display: `<b>${kOhm} kΩ</b> = ? Ω`,
-            answer: answer,
-            answerType: "number",
-            options: generateOptions(answer, "number", difficulty)
-          };
-        },
-        () => {
-          let ohm = getRandomInt(ohmMin, ohmMax);
-          const answer = (ohm / 1000).toString();
-          return {
-            display: `<b>${ohm} Ω</b> = ? kΩ`,
-            answer: answer,
-            answerType: "decimal",
-            options: generateOptions(answer, "decimal", difficulty)
-          };
-        },
-        () => {
-          let amp = (getRandomInt(ampMin * 100, ampMax * 100) / 100).toFixed(2);
-          const answer = (parseFloat(amp) * 1000).toString();
-          return {
-            display: `<b>${amp} A</b> = ? mA`,
-            answer: answer,
-            answerType: "number",
-            options: generateOptions(answer, "number", difficulty)
-          };
-        },
-        () => {
-          let mV = getRandomInt(mVMin, mVMax);
-          const answer = (mV / 1000).toString();
-          return {
-            display: `<b>${mV} mV</b> = ? V`,
-            answer: answer,
-            answerType: "decimal",
-            options: generateOptions(answer, "decimal", difficulty)
-          };
-        }
-      ];
-      return types[getRandomInt(0, types.length - 1)]();
+        ];
+        return types[getRandomInt(0, types.length - 1)]();
+      }
     }
-  }
- },
+  },
   {
     name: "Ohm-törvény",
     value: "ohm_torveny",
@@ -952,7 +952,6 @@ const taskTypes = [
       }
     }
   }
-  // ... (Más kategóriák változatlanok) ...
 ];
 
 // --- HTML ELEMEK ---
@@ -1153,10 +1152,12 @@ function renderAnswerButtons(options, correctAnswer, answerType) {
           alert("Gratulálok, csak így tovább, mindjárt a végére érsz!");
         }
         currentQuestion++;
+        btn.blur(); // Fókusz eltávolítása
         showQuestion(currentQuestion);
       } else {
         wrongAnswers++;
         alert("Nem jó válasz, próbáld újra!");
+        btn.blur(); // Fókusz eltávolítása hibás válasznál is
       }
     };
     buttonsDiv.appendChild(btn);
@@ -1167,6 +1168,9 @@ function renderAnswerButtons(options, correctAnswer, answerType) {
 
 // --- JÁTÉK LOGIKA ---
 function showQuestion(index) {
+  // Eltávolítjuk a fókuszt az összes gombról
+  document.querySelectorAll('.answer-btn').forEach(btn => btn.blur());
+
   quizContainer.innerHTML = "";
   answerContainer.innerHTML = "";
   answerContainer.classList.remove("active");
