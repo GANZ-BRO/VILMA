@@ -955,8 +955,8 @@ const taskTypes = [
       };
     }
   }
-};
-
+}
+];
 // --- HTML ELEMEK ---
 const quizContainer = document.getElementById("quiz");
 const timerDisplay = document.getElementById("time");
