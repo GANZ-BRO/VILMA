@@ -804,7 +804,7 @@ const taskTypes = [
     }
   }
 },
-
+{
   name: "Teljesítmény",
   value: "teljesitmeny",
   generate: (difficulty) => {
