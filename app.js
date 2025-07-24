@@ -965,6 +965,68 @@ const taskTypes = [
       return { display, answer, answerType, options: generateOptions(answer, answerType, difficulty, unit) };
     }
   }
+{
+  name: "Előtét ellenállás méretezés",
+  value: "elotet_ellenallas",
+  generate: (difficulty) => {
+    const ranges = {
+      easy: { maxU_forrás: 24, minU_forrás: 3, maxU_fogyasztó: 5, minU_fogyasztó: 1, maxI: 100, minI: 1 }, // V, V, mA
+      medium: { maxU_forrás: 230, minU_forrás: 24, maxU_fogyasztó: 200, minU_fogyasztó: 12, maxI: 5, minI: 0.1 }, // V, V, A
+      hard: { maxU_forrás: 400, minU_forrás: 100, maxU_fogyasztó: 350, minU_fogyasztó: 50, maxI: 50, minI: 1 } // V, V, A
+    };
+    const { maxU_forrás, minU_forrás, maxU_fogyasztó, minU_fogyasztó, maxI, minI } = ranges[difficulty];
+
+    let display, answer, answerType, unit;
+
+    if (difficulty === "easy") {
+      let U_forrás = getRandomInt(minU_forrás, maxU_forrás); // V
+      let U_fogyasztó = getRandomInt(minU_fogyasztó, Math.min(U_forrás - 1, maxU_fogyasztó)); // V, biztosítjuk, hogy U_forrás > U_fogyasztó
+      let I = getRandomInt(minI, maxI); // mA
+      let R_s = (U_forrás - U_fogyasztó) / (I / 1000); // Ω
+      if (!Number.isInteger(R_s) && Math.abs(R_s - Math.round(R_s)) > 0.25) {
+        // Módosítjuk U_forrás vagy U_fogyasztó értékét, hogy R_s egész vagy egyszerű tört legyen
+        U_forrás = Math.round(R_s * (I / 1000)) + U_fogyasztó;
+        R_s = (U_forrás - U_fogyasztó) / (I / 1000);
+      }
+      const formatted = formatNumber(R_s, 'Ω', difficulty);
+      answer = formatted.value;
+      unit = formatted.unit;
+      display = `Mennyi az előtét ellenállás (${unit}-ban), ha a forrásfeszültség <b>${U_forrás} V</b>, a fogyasztó feszültsége <b>${U_fogyasztó} V</b> és az áram <b>${I} mA</b>?`;
+      answerType = Number.isInteger(R_s) ? "number" : "decimal";
+    } else if (difficulty === "medium") {
+      let U_forrás = getRandomInt(minU_forrás, maxU_forrás); // V
+      let U_fogyasztó = getRandomInt(minU_fogyasztó, Math.min(U_forrás - 10, maxU_fogyasztó)); // V
+      let I = getRandomInt(minI * 1000, maxI * 1000) / 1000; // A
+      let R_s = (U_forrás - U_fogyasztó) / I; // Ω
+      if (!Number.isInteger(R_s) && Math.abs(R_s - Math.round(R_s)) > 0.25) {
+        U_forrás = Math.round(R_s * I) + U_fogyasztó;
+        R_s = (U_forrás - U_fogyasztó) / I;
+      }
+      const formatted = formatNumber(R_s, 'Ω', difficulty);
+      answer = formatted.value;
+      unit = formatted.unit;
+      display = `Mennyi az előtét ellenállás (${unit}-ban), ha a forrásfeszültség <b>${U_forrás} V</b>, a fogyasztó feszültsége <b>${U_fogyasztó} V</b> és az áram <b>${I} A</b>?`;
+      answerType = Number.isInteger(R_s) ? "number" : "decimal";
+    } else { // Nehéz szint
+      let U_forrás = getRandomInt(minU_forrás, maxU_forrás); // V
+      let U_fogyasztó = getRandomInt(minU_fogyasztó, Math.min(U_forrás - 50, maxU_fogyasztó)); // V
+      let I = getRandomInt(minI * 1000, maxI * 1000) / 1000; // A
+      let R_s = (U_forrás - U_fogyasztó) / I; // Ω
+      if (!Number.isInteger(R_s) && Math.abs(R_s - Math.round(R_s)) > 0.25) {
+        U_forrás = Math.round(R_s * I) + U_fogyasztó;
+        R_s = (U_forrás - U_fogyasztó) / I;
+      }
+      const formatted = formatNumber(R_s, 'Ω', difficulty);
+      answer = formatted.value;
+      unit = formatted.unit;
+      display = `Mennyi az előtét ellenállás (${unit}-ban), ha a forrásfeszültség <b>${U_forrás} V</b>, a fogyasztó feszültsége <b>${U_fogyasztó} V</b> és az áram <b>${I} A</b>?`;
+      answerType = Number.isInteger(R_s) ? "number" : "decimal";
+    }
+
+    return { display, answer, answerType, options: generateOptions(answer, answerType, difficulty, unit) };
+  }
+}
+
 ];
 
 // --- HTML ELEMEK ---
