@@ -364,43 +364,156 @@ const taskTypes = [
   name: "Normál alakos számok",
   value: "normal_alak",
   generate: (difficulty) => {
-    const ranges = {
-      easy: { minValue: 1, maxValue: 9999, maxDecimals: 0, minExp: 0, maxExp: 5 },
-      medium: { minValue: 0.1, maxValue: 999999, maxDecimals: 1, minExp: -1, maxExp: 10 },
-      hard: { minValue: 0.00001, maxValue: 999999999, maxDecimals: 3, minExp: -5, maxExp: 15 }
-    };
-    const { minValue, maxValue, maxDecimals, minExp, maxExp } = ranges[difficulty];
-    const taskType = Math.random() < 0.5 ? 'writeAsPower' : 'convertToNumber';
-    let number, coefficient, exponent, display, answer;
-
-    if (taskType === 'writeAsPower') {
-      number = (Math.random() * (maxValue - minValue) + minValue).toFixed(maxDecimals);
-      number = parseFloat(number);
-      let logValue = Math.log10(Math.abs(number));
-      exponent = Math.floor(logValue);
-      exponent = Math.max(minExp, Math.min(maxExp, exponent));
-      coefficient = number / Math.pow(10, exponent);
-      coefficient = Number(coefficient.toFixed(maxDecimals));
-      while (coefficient >= 10 || coefficient < 1) {
-        exponent += (coefficient >= 10) ? 1 : -1;
-        coefficient = number / Math.pow(10, exponent);
-        coefficient = Number(coefficient.toFixed(maxDecimals));
-      }
-      display = `<b>${number}</b> normál alakban (pl. a × 10^b formában, ahol 1 ≤ |a| < 10) = ?`;
-      answer = `${coefficient}×10^${exponent}`; // Pl. "3.5×10^3"
-    } else {
-      coefficient = Number((Math.random() * 9 + 1).toFixed(maxDecimals));
-      exponent = getRandomInt(minExp, maxExp);
-      number = coefficient * Math.pow(10, exponent);
-      display = `<b>${coefficient} × 10^${exponent}</b> mennyi az értéke? = ?`;
-      answer = number.toString(); // Pl. "3500"
+    // A mantisszát mindig 1 ≤ m < 10 közé generáljuk mindenhol!
+    function getRandomMantissa(decimals = 2) {
+      let m = Math.random() * 9 + 1; // 1 - 9.999...
+      return Number(m.toFixed(decimals));
     }
 
-    return {
-      display: display,
-      answer: answer,
-      answerType: taskType === 'writeAsPower' ? "power" : "number"
-    };
+    // A direction-től függően (0: szám → normál alak kitevője, 1: normál alak → érték)
+    const direction = Math.random() < 0.5 ? 0 : 1;
+
+    // Könnyű szint
+    if (difficulty === "easy") {
+      if (direction === 0) {
+        // Szám → normál alak kitevője
+        // 60% kétjegyű, 35% háromjegyű, 5% négyjegyű
+        let rand = Math.random();
+        let number;
+        if (rand < 0.60) {
+          number = getRandomInt(10, 99); // kétjegyű
+        } else if (rand < 0.95) {
+          number = getRandomInt(100, 999); // háromjegyű
+        } else {
+          number = getRandomInt(1000, 9999); // négyjegyű
+        }
+        // néha generálhat tizedes törtet is (pl. 0.37, 2.1, 36.5)
+        if (Math.random() < 0.15) {
+          let base = getRandomInt(1, 99);
+          let d = Math.random() < 0.5 ? 1 : 2;
+          number = Number((base / Math.pow(10, d)).toFixed(d));
+        }
+        let absNumber = Math.abs(number);
+        let exponent = absNumber === 0 ? 0 : Math.floor(Math.log10(absNumber));
+        exponent = Math.max(1, Math.min(4, exponent));
+        return {
+          display: `Milyen kitevő szerepel a 10 hatványaként a következő szám normál alakjában:<br><span class="blue-percent">${number}</span> ?`,
+          answer: exponent.toString(),
+          answerType: "number"
+        };
+      } else {
+        // Normál alak → érték
+        // 80% pozitív kitevő, 20% negatív (legkisebb: -1)
+        let exp;
+        if (Math.random() < 0.8) {
+          exp = getRandomInt(1, 4);
+        } else {
+          exp = getRandomInt(-1, -1);
+        }
+        let mant = getRandomMantissa(2);
+        let value = mant * Math.pow(10, exp);
+        value = exp > 0 ? Math.round(value) : Number(value.toFixed(2));
+        let mantStr = ("" + mant).replace(".", ",");
+        return {
+          display: `Mennyi a következő normál alakú szám értéke:<br><span class="blue-percent">${mantStr}×10<sup>${exp}</sup></span> ?`,
+          answer: value.toString(),
+          answerType: exp > 0 ? "number" : "decimal"
+        };
+      }
+    }
+
+    // Közepes szint
+    if (difficulty === "medium") {
+      if (direction === 0) {
+        // Szám → normál alak kitevője
+        // 30% 0,xx - 0,999; 20% 1,xx - 9,99; 30% 10-999; 20% 1000-99999
+        let rand = Math.random();
+        let number;
+        if (rand < 0.3) {
+          number = Number((Math.random() * 0.9 + 0.1).toFixed(2)); // 0,10 - 0,99
+        } else if (rand < 0.5) {
+          number = Number((Math.random() * 9.89 + 1.01).toFixed(2)); // 1,01 - 10,9
+        } else if (rand < 0.8) {
+          number = getRandomInt(10, 999);
+        } else {
+          number = getRandomInt(1000, 99999);
+        }
+        // néha mínuszos számot generál
+        if (Math.random() < 0.12) number *= -1;
+        let absNumber = Math.abs(number);
+        let exponent = absNumber === 0 ? 0 : Math.floor(Math.log10(absNumber));
+        exponent = Math.max(-2, Math.min(6, exponent));
+        return {
+          display: `Milyen kitevő szerepel a 10 hatványaként a következő szám normál alakjában:<br><span class="blue-percent">${number}</span> ?`,
+          answer: exponent.toString(),
+          answerType: "number"
+        };
+      } else {
+        // Normál alak → érték
+        // 50% pozitív kitevő (0-6), 50% negatív (-2 - -1)
+        let exp = Math.random() < 0.5 ? getRandomInt(0, 6) : getRandomInt(-2, -1);
+        let mant = getRandomMantissa(2);
+        let value = mant * Math.pow(10, exp);
+        value = exp >= 0 ? Number(value.toFixed(2)) : Number(value.toFixed(4));
+        if (Math.random() < 0.2) value *= -1;
+        let mantStr = ("" + mant).replace(".", ",");
+        return {
+          display: `Mennyi a következő normál alakú szám értéke:<br><span class="blue-percent">${mantStr}×10<sup>${exp}</sup></span> ?`,
+          answer: value.toString(),
+          answerType: exp >= 0 ? "decimal" : "decimal"
+        };
+      }
+    }
+
+    // Kihívás szint
+    if (difficulty === "hard") {
+      if (direction === 0) {
+        // Szám → normál alak kitevője
+        // 20% 0,000xx - 0,0999; 20% 0,1 - 0,99; 20% 1-9,99; 20% 10-9999; 20% 1e5 - 1e9
+        let rand = Math.random();
+        let number;
+        if (rand < 0.2) {
+          number = Number((Math.random() * 0.0999 + 0.0001).toFixed(5));
+        } else if (rand < 0.4) {
+          number = Number((Math.random() * 0.89 + 0.1).toFixed(3));
+        } else if (rand < 0.6) {
+          number = Number((Math.random() * 8.99 + 1.01).toFixed(2));
+        } else if (rand < 0.8) {
+          number = getRandomInt(10, 9999);
+        } else {
+          number = getRandomInt(100000, 999999999);
+        }
+        // néha mínuszos számot generál
+        if (Math.random() < 0.18) number *= -1;
+        let absNumber = Math.abs(number);
+        let exponent = absNumber === 0 ? 0 : Math.floor(Math.log10(absNumber));
+        exponent = Math.max(-5, Math.min(10, exponent));
+        return {
+          display: `Milyen kitevő szerepel a 10 hatványaként a következő szám normál alakjában:<br><span class="blue-percent">${number}</span> ?`,
+          answer: exponent.toString(),
+          answerType: "number"
+        };
+      } else {
+        // Normál alak → érték
+        // 60% pozitív kitevő (0-10), 40% negatív (-5 - -1)
+        let exp = Math.random() < 0.6 ? getRandomInt(0, 10) : getRandomInt(-5, -1);
+        let mant = getRandomMantissa(3);
+        let value = mant * Math.pow(10, exp);
+        value = exp >= 0 ? Number(value.toFixed(3)) : Number(value.toFixed(8));
+        if (Math.random() < 0.25) value *= -1;
+        let mantStr = ("" + mant).replace(".", ",");
+        return {
+          display: `Mennyi a következő normál alakú szám értéke:<br><span class="blue-percent">${mantStr}×10<sup>${exp}</sup></span> ?`,
+          answer: value.toString(),
+          answerType: "decimal"
+        };
+      }
+    }
+
+    // Helper
+    function getRandomInt(min, max) {
+      return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
   }
 },
 
@@ -409,7 +522,7 @@ const taskTypes = [
   name: "Villamos mértékegységek",
   value: "villamos_mertekegysegek",
   generate: (difficulty) => {
-    // Villamos mennyiségek és adataik (név, jelölés, mértékegység név, mértékegység jele)
+    // Villamos mennyiségek és adataik
     const quantities = {
       easy: [
         { name: "Áramerősség", symbol: "I", unitName: "amper", unitSymbol: "A" },
@@ -440,12 +553,10 @@ const taskTypes = [
       ]
     };
 
-    // Véletlenszerűen kiválasztott mennyiség a nehézségi szint alapján
     const selectedQuantities = quantities[difficulty];
     const quantity = selectedQuantities[getRandomInt(0, selectedQuantities.length - 1)];
-    const taskType = getRandomInt(0, 3); // 0: Név, 1: Jelölés, 2: Mértékegység név, 3: Mértékegység jele
+    const taskType = getRandomInt(0, 4); // 0-4, hogy mind az 5 kérdéstípus előforduljon
 
-    // Válaszlehetőségek generálása a taskType alapján
     let options = [];
     let correctAnswer;
     const wrongOptions = {
@@ -455,67 +566,76 @@ const taskTypes = [
       unitSymbols: ["A", "V", "Ω", "C", "W", "Hz", "J", "F", "H", "Wb", "T", "rad"]
     };
 
-    if (taskType === 0) { // Név
+    if (taskType === 0) { // Mi a neve, ha a jele: ...
       options = [quantity.name];
       const wrongNames = wrongOptions.names.filter(name => name !== quantity.name && selectedQuantities.some(q => q.name === name));
       while (options.length < 3) {
         const wrongName = wrongNames[getRandomInt(0, wrongNames.length - 1)];
-        if (!options.includes(wrongName)) {
-          options.push(wrongName);
-        }
+        if (!options.includes(wrongName)) options.push(wrongName);
       }
+      options = shuffleArray(options);
       correctAnswer = (options.indexOf(quantity.name) + 1).toString();
-      options = shuffleArray(options); // Véletlenszerű sorrend
       return {
-        display: `Mi a neve (<span class="blue-percent">${quantity.name}</span>)?<br>1. ${options[0]}<br>2. ${options[1]}<br>3. ${options[2]}`,
+        display: `Mi a neve, ha a jele: <span class="blue-percent">${quantity.symbol}</span> ?<br>1. ${options[0]}<br>2. ${options[1]}<br>3. ${options[2]}`,
         answer: correctAnswer,
         answerType: "number"
       };
-    } else if (taskType === 1) { // Jelölés
+    } else if (taskType === 1) { // Mi a neve, ha a mértékegysége: ...
+      options = [quantity.name];
+      const wrongNames = wrongOptions.names.filter(name => name !== quantity.name && selectedQuantities.some(q => q.name === name));
+      while (options.length < 3) {
+        const wrongName = wrongNames[getRandomInt(0, wrongNames.length - 1)];
+        if (!options.includes(wrongName)) options.push(wrongName);
+      }
+      options = shuffleArray(options);
+      correctAnswer = (options.indexOf(quantity.name) + 1).toString();
+      // magyarosított unitName-et írj ki
+      let shownUnitName = quantity.unitName.charAt(0).toUpperCase() + quantity.unitName.slice(1);
+      return {
+        display: `Mi a neve, ha a mértékegysége: <span class="blue-percent">${shownUnitName}</span> ?<br>1. ${options[0]}<br>2. ${options[1]}<br>3. ${options[2]}`,
+        answer: correctAnswer,
+        answerType: "number"
+      };
+    } else if (taskType === 2) { // Mi a jele, ha neve: ...
       options = [quantity.symbol];
       const wrongSymbols = wrongOptions.symbols.filter(symbol => symbol !== quantity.symbol && selectedQuantities.some(q => q.symbol === symbol));
       while (options.length < 3) {
         const wrongSymbol = wrongSymbols[getRandomInt(0, wrongSymbols.length - 1)];
-        if (!options.includes(wrongSymbol)) {
-          options.push(wrongSymbol);
-        }
+        if (!options.includes(wrongSymbol)) options.push(wrongSymbol);
       }
+      options = shuffleArray(options);
       correctAnswer = (options.indexOf(quantity.symbol) + 1).toString();
-      options = shuffleArray(options); // Véletlenszerű sorrend
       return {
-        display: `Mi a jele (<span class="blue-percent">${quantity.name}</span>)?<br>1. ${options[0]}<br>2. ${options[1]}<br>3. ${options[2]}`,
+        display: `Mi a jele, ha a neve: <span class="blue-percent">${quantity.name}</span> ?<br>1. ${options[0]}<br>2. ${options[1]}<br>3. ${options[2]}`,
         answer: correctAnswer,
         answerType: "number"
       };
-    } else if (taskType === 2) { // Mértékegység név
-      options = [quantity.unitName];
-      const wrongUnitNames = wrongOptions.unitNames.filter(unitName => unitName !== quantity.unitName && selectedQuantities.some(q => q.unitName === unitName));
-      while (options.length < 3) {
-        const wrongUnitName = wrongUnitNames[getRandomInt(0, wrongUnitNames.length - 1)];
-        if (!options.includes(wrongUnitName)) {
-          options.push(wrongUnitName);
-        }
-      }
-      correctAnswer = (options.indexOf(quantity.unitName) + 1).toString();
-      options = shuffleArray(options); // Véletlenszerű sorrend
-      return {
-        display: `Mi a ${quantity.name.toLowerCase()} mértékegysége?<br>1. ${options[0]}<br>2. ${options[1]}<br>3. ${options[2]}`,
-        answer: correctAnswer,
-        answerType: "number"
-      };
-    } else { // Mértékegység jele
+    } else if (taskType === 3) { // Mi a mértékegysége, ha a neve: ...
       options = [quantity.unitSymbol];
       const wrongUnitSymbols = wrongOptions.unitSymbols.filter(unitSymbol => unitSymbol !== quantity.unitSymbol && selectedQuantities.some(q => q.unitSymbol === unitSymbol));
       while (options.length < 3) {
         const wrongUnitSymbol = wrongUnitSymbols[getRandomInt(0, wrongUnitSymbols.length - 1)];
-        if (!options.includes(wrongUnitSymbol)) {
-          options.push(wrongUnitSymbol);
-        }
+        if (!options.includes(wrongUnitSymbol)) options.push(wrongUnitSymbol);
       }
+      options = shuffleArray(options);
       correctAnswer = (options.indexOf(quantity.unitSymbol) + 1).toString();
-      options = shuffleArray(options); // Véletlenszerű sorrend
       return {
-        display: `Mi a ${quantity.name.toLowerCase()} mértékegységének jele?<br>1. ${options[0]}<br>2. ${options[1]}<br>3. ${options[2]}`,
+        display: `Mi a mértékegysége, ha a neve: <span class="blue-percent">${quantity.name}</span> ?<br>1. ${options[0]}<br>2. ${options[1]}<br>3. ${options[2]}`,
+        answer: correctAnswer,
+        answerType: "number"
+      };
+    } else { // Mi a mértékegység neve, ha a jele: ...
+      options = [quantity.unitName];
+      const wrongUnitNames = wrongOptions.unitNames.filter(unitName => unitName !== quantity.unitName && selectedQuantities.some(q => q.unitName === unitName));
+      while (options.length < 3) {
+        const wrongUnitName = wrongUnitNames[getRandomInt(0, wrongUnitNames.length - 1)];
+        if (!options.includes(wrongUnitName)) options.push(wrongUnitName);
+      }
+      options = shuffleArray(options);
+      correctAnswer = (options.indexOf(quantity.unitName) + 1).toString();
+      let shownUnitSymbol = quantity.unitSymbol;
+      return {
+        display: `Mi a mértékegység neve, ha a jele: <span class="blue-percent">${shownUnitSymbol}</span> ?<br>1. ${options[0]}<br>2. ${options[1]}<br>3. ${options[2]}`,
         answer: correctAnswer,
         answerType: "number"
       };
