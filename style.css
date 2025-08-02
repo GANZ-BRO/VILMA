@@ -37,7 +37,7 @@ body.dark {
 }
 
 main {
-  max-width: 480px;
+  max-width: 600px; /* Növelve 480px-ről 600px-re */
   margin: 20px auto;
   padding: 20px;
   position: relative;
@@ -215,9 +215,10 @@ body.dark #quiz > div {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 1em;
+  gap: 0.5em; /* Csökkentett távolság a kérdés és válasz között */
   text-align: center;
   position: relative;
+  padding: 0.5em; /* Tovább csökkentett padding */
 }
 
 .question-container .progress-bar {
@@ -229,11 +230,13 @@ body.dark #quiz > div {
 
 .question-text {
   font-weight: 700;
-  font-size: clamp(1.2em, 4vw, 1.8em); /* Responszív betűméret */
-  margin-bottom: 0.75em;
+  font-size: clamp(2.4em, 8vw, 3.6em); /* Növelt alapértelmezett méret */
+  margin-bottom: 0.5em;
   color: var(--text-light);
   line-height: 1.4; /* Jobb tördelés */
   word-break: break-word; /* Hosszú szavak tördelése */
+  width: 100%; /* Teljes szélesség a konténerben */
+  text-align: center;
 }
 
 body.dark .question-text {
@@ -242,22 +245,22 @@ body.dark .question-text {
 
 .answer-view {
   font-size: 1.5em;
-  padding: 1em;
-  margin: 1em 0;
+  padding: 0.75em; /* Csökkentett belső padding */
+  margin: 0.5em 0; /* Csökkentett felső és alsó margó */
   border: 2px solid var(--input-border-light);
   background: var(--input-bg-light);
   color: var(--input-text-light);
   border-radius: 10px;
   min-width: 150px;
-  min-height: 60px; /* Növelve a magasság */
+  min-height: 60px;
   box-sizing: border-box;
   display: flex;
   align-items: center;
   justify-content: center;
   text-align: center;
   max-width: 300px;
-  white-space: normal; /* Több sor engedélyezése */
-  overflow: auto; /* Görgetés, ha szükséges */
+  white-space: normal;
+  overflow: auto;
   transition: background 0.2s ease, border-color 0.2s ease;
 }
 
@@ -501,7 +504,7 @@ body.dark .numpad-submit-btn:hover, body.dark .numpad-submit-btn:focus {
     font-size: 1em;
   }
   .question-text {
-    font-size: clamp(1em, 3vw, 1.2em); /* További responszív csökkentés */
+    font-size: clamp(2em, 6vw, 2.4em); /* Növelt responszív méret */
   }
   .numpad-btn, .numpad-submit-btn {
     font-size: 0.9em;
