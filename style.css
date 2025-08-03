@@ -244,7 +244,7 @@ body.dark .question-text {
 }
 
 .answer-view {
-  font-size: 1.5em;
+  font-size: 3em;
   padding: 0.75em; /* Csökkentett belső padding */
   margin: 0.5em 0; /* Csökkentett felső és alsó margó */
   border: 2px solid var(--input-border-light);
@@ -504,10 +504,10 @@ body.dark .numpad-submit-btn:hover, body.dark .numpad-submit-btn:focus {
     font-size: 1em;
   }
   .question-text {
-    font-size: clamp(2em, 6vw, 2.4em); /* Növelt responszív méret */
+    font-size: clamp(1.5em, 6vw, 1.8em); /* Növelt responszív méret */
   }
   .numpad-btn, .numpad-submit-btn {
-    font-size: 0.9em;
+    font-size: 1.2em;
     min-width: 36px;
     min-height: 36px;
     padding: 0.5em;
@@ -526,8 +526,10 @@ body.dark .numpad-submit-btn:hover, body.dark .numpad-submit-btn:focus {
     min-width: 60px;
     padding: 0.4em 0.8em;
   }
-  .answer-view {
-    min-height: 50px;
-    font-size: 1.2em;
+    .answer-view {
+    font-size: 1.8em;
+    height: 1.5em;
+    min-height: unset;
+    padding: 0.1em 0.2em;
   }
 }
