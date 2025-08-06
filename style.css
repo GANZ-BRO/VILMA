@@ -1,23 +1,23 @@
 :root {
   --bg-dark: #1C2526;
-  --text-dark: #E0E0E0; /* Javított kontraszt sötét módban */
+  --text-dark: #E0E0E0;
   --input-bg-dark: #2D383A;
   --input-text-dark: #E0E0E0;
   --input-border-dark: #4A5F62;
-  --bg-light: #FFFFFF; /* Tisztább fehér világos módban */
-  --text-light: #1A1A1A; /* Sötétebb szürke jobb kontrasztért */
+  --bg-light: #FFFFFF;
+  --text-light: #1A1A1A;
   --input-bg-light: #FFFFFF;
   --input-text-light: #1A1A1A;
   --input-border-light: #D3D8DA;
-  --primary: #D32F2F; /* Piros a feliratokhoz */
+  --primary: #D32F2F; /* Piros világos módban */
   --primary-dark: #B71C1C; /* Sötét piros hoverhez */
-  --imperial: #3A4F54; /* Visszafogott szürke-kék sötét módban */
-  --success: #00CC00; /* Élénk zöld a legjobb eredményhez sötét módban */
-  --submit-btn-bg: #D32F2F; /* Piros az Enter gombhoz világos módban */
-  --submit-btn-bg-hover: #B71C1C; /* Sötét piros hover az Enterhez */
-  --flash-color: #90EE90; /* Zöld a flash effektushoz */
-  --primary-inverse: #00C4CC; /* Sötétebb türkiz jobb kontrasztért sötét módban */
-  --corrected-color: #f0ad4e; /* Narancssárga hibázás utáni helyes válaszhoz */
+  --imperial: #3A4F54;
+  --success: #00CC00;
+  --submit-btn-bg: #D32F2F; /* Submit gomb piros világos módban */
+  --submit-btn-bg-hover: #B71C1C;
+  --flash-color: #90EE90; /* Alap flash szín (nem használt közvetlenül) */
+  --primary-inverse: #00C4CC; /* Türkiz sötét módban */
+  --corrected-color: #f0ad4e;
 }
 
 body {
@@ -37,7 +37,7 @@ body.dark {
 }
 
 main {
-  max-width: 600px; /* Növelve 480px-ről 600px-re */
+  max-width: 600px;
   margin: 20px auto;
   padding: 20px;
   position: relative;
@@ -194,7 +194,7 @@ body.dark .progress {
 
 .progress-wrong {
   height: 100%;
-  background: #FF6347; /* Paradicsomvörös, jobban kiemeli a hibát */
+  background: #FF6347;
   transition: width 0.3s ease;
 }
 
@@ -215,10 +215,10 @@ body.dark #quiz > div {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.5em; /* Csökkentett távolság a kérdés és válasz között */
+  gap: 0.5em;
   text-align: center;
   position: relative;
-  padding: 0.5em; /* Tovább csökkentett padding */
+  padding: 0.5em;
 }
 
 .question-container .progress-bar {
@@ -230,12 +230,12 @@ body.dark #quiz > div {
 
 .question-text {
   font-weight: 700;
-  font-size: clamp(2.4em, 8vw, 3.6em); /* Növelt alapértelmezett méret */
+  font-size: clamp(2.4em, 8vw, 3.6em);
   margin-bottom: 0.5em;
   color: var(--text-light);
-  line-height: 1.4; /* Jobb tördelés */
-  word-break: break-word; /* Hosszú szavak tördelése */
-  width: 100%; /* Teljes szélesség a konténerben */
+  line-height: 1.4;
+  word-break: break-word;
+  width: 100%;
   text-align: center;
 }
 
@@ -245,8 +245,8 @@ body.dark .question-text {
 
 .answer-view {
   font-size: 3em;
-  padding: 0.75em; /* Csökkentett belső padding */
-  margin: 0.5em 0; /* Csökkentett felső és alsó margó */
+  padding: 0.75em;
+  margin: 0.5em 0;
   border: 2px solid var(--input-border-light);
   background: var(--input-bg-light);
   color: var(--input-text-light);
@@ -319,7 +319,7 @@ body.dark .big-btn, body.dark button {
 }
 
 body.dark .big-btn:hover, body.dark button:hover, body.dark .big-btn:focus, body.dark button:focus {
-  background: #1A8C8C;
+  background: #1A8C8C; /* Türkiz sötét mód hover */
 }
 
 #theme-toggle {
@@ -406,14 +406,24 @@ body.dark .numpad-btn {
   border: 2px solid var(--input-border-dark);
 }
 
-.numpad-btn.flash {
-  background: var(--flash-color);
-  transition: background 0.2s ease;
-}
-
 .numpad-btn:active, .numpad-btn:focus {
   outline: none;
-  transform: scale(0.95);
+  transform: scale(0.99);
+  background: var(--input-bg-light); /* Világos mód alap színe */
+}
+
+body.dark .numpad-btn:active, body.dark .numpad-btn:focus {
+  background: var(--imperial); /* Sötét mód alap színe */
+}
+
+.numpad-btn.flash {
+  background: var(--input-bg-light); /* Nincs színváltás, csak a méret marad */
+  transition: transform 0.2s ease; /* Csak a transform animálódjon */
+}
+
+body.dark .numpad-btn.flash {
+  background: var(--imperial);
+  transition: transform 0.2s ease;
 }
 
 .numpad-submit-btn {
@@ -435,7 +445,7 @@ body.dark .numpad-submit-btn {
 }
 
 body.dark .numpad-submit-btn:hover, body.dark .numpad-submit-btn:focus {
-  background: #1A8C8C;
+  background: #1A8C8C; /* Türkiz sötét mód hover */
   transform: scale(1.05);
   outline: 2px solid var(--input-border-dark);
 }
@@ -504,7 +514,7 @@ body.dark .numpad-submit-btn:hover, body.dark .numpad-submit-btn:focus {
     font-size: 1em;
   }
   .question-text {
-    font-size: clamp(1.5em, 6vw, 1.8em); /* Növelt responszív méret */
+    font-size: clamp(1.5em, 6vw, 1.8em);
   }
   .numpad-btn, .numpad-submit-btn {
     font-size: 1.2em;
@@ -526,7 +536,7 @@ body.dark .numpad-submit-btn:hover, body.dark .numpad-submit-btn:focus {
     min-width: 60px;
     padding: 0.4em 0.8em;
   }
-    .answer-view {
+  .answer-view {
     font-size: 1.8em;
     height: 1.5em;
     min-height: unset;
