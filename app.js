@@ -45,7 +45,7 @@ function simplifyFraction(num, denom) {
 }
 
 // Számformázás mértékegységekkel
-function formatNumber(value, unit, difficulty) {
+function formatNumber(value, unit, difficulty, forceBaseUnit = false) {
   if (isNaN(value)) {
     console.error("Hiba: formatNumber kapott NaN értéket", { value, unit, difficulty });
     return { value: 0, unit: unit };
@@ -55,36 +55,27 @@ function formatNumber(value, unit, difficulty) {
   let newUnit = unit;
   let precision = difficulty === "hard" ? 5 : 2;
 
-  if (difficulty === "easy") {
+  if (difficulty === "easy" || forceBaseUnit) {
     newValue = value;
     newUnit = unit;
   } else if (difficulty === "medium") {
     if (unit === 'Ω' && absValue >= 1000) {
       newValue = value / 1000;
       newUnit = 'kΩ';
-    } else if (unit === 'V' && absValue >= 1000) {
+    } else if (unit === 'Ω' && absValue > 100) {
       newValue = value / 1000;
-      newUnit = 'kV';
+      newUnit = 'kΩ';
     } else if (unit === 'A' && absValue < 0.1) {
       newValue = value * 1000;
       newUnit = 'mA';
     } else if (unit === 'A' && absValue < 1) {
       newValue = value * 1000;
       newUnit = 'mA';
-    } else if (unit === 'V' && absValue > 100) {
-      newValue = value / 1000;
-      newUnit = 'kV';
-    } else if (unit === 'Ω' && absValue > 100) {
-      newValue = value / 1000;
-      newUnit = 'kΩ';
     }
   } else { // Nehéz szint
     if (unit === 'Ω' && absValue >= 1000) {
       newValue = value / 1000;
       newUnit = 'kΩ';
-    } else if (unit === 'V' && absValue >= 1000) {
-      newValue = value / 1000;
-      newUnit = 'kV';
     } else if (unit === 'A' && absValue < 0.1) {
       newValue = value * 1000;
       newUnit = 'mA';
@@ -1136,246 +1127,250 @@ const taskTypes = [
     };
   }
 },
+  
   {
-  name: "Ohm-törvény",
-  value: "ohm_torveny",
-  generate: (difficulty) => {
-    console.log("Ohm-törvény generate called", { difficulty });
-    if (difficulty !== "easy") {
+    name: "Ohm-törvény",
+    value: "ohm_torveny",
+    generate: (difficulty) => {
+      console.log("Ohm-törvény generate called", { difficulty });
+
+      if (difficulty === "easy") {
+        const maxI = 10; // Max áram (A)
+        const maxR = 100; // Max ellenállás (Ω)
+        const maxU = 100; // Max feszültség (V)
+        let U, R, I, type, answer, display, answerType = "number";
+        type = getRandomInt(0, 2); // 0: U, 1: I, 2: R
+        const randomOrder = Math.random() < 0.5;
+
+        if (type === 0) { // Feszültség számítás (U = I * R)
+          I = getRandomInt(1, maxI); // Egész szám A-ban
+          R = getRandomInt(1, maxR); // Egész szám Ω-ban
+          U = I * R; // Egész szám V-ban
+          answer = U.toString();
+          display = randomOrder
+            ? `Mennyi a feszültség (V-ban), ha <b>I = ${I} <span class="blue-percent">A</span></b> és <b>R = ${R} <span class="blue-percent">Ω</span></b>?`
+            : `Mennyi a feszültség (V-ban), ha <b>R = ${R} <span class="blue-percent">Ω</span></b> és <b>I = ${I} <span class="blue-percent">A</span></b>?`;
+        } else if (type === 1) { // Áram számítás (I = U / R)
+          U = getRandomInt(1, maxU); // Egész szám V-ban
+          R = getRandomInt(1, maxR); // Egész szám Ω-ban
+          I = Math.round(U / R); // Egész számra kerekítés A-ban
+          if (I === 0) I = 1;
+          U = I * R; // Visszaszámolás a kerekített I-vel
+          answer = I.toString();
+          display = randomOrder
+            ? `Mennyi az áram (A-ban), ha <b>U = ${U} <span class="blue-percent">V</span></b> és <b>R = ${R} <span class="blue-percent">Ω</span></b>?`
+            : `Mennyi az áram (A-ban), ha <b>R = ${R} <span class="blue-percent">Ω</span></b> és <b>U = ${U} <span class="blue-percent">V</span></b>?`;
+        } else { // Ellenállás számítás (R = U / I)
+          I = getRandomInt(1, maxI); // Egész szám A-ban
+          U = getRandomInt(1, maxU); // Egész szám V-ban
+          R = Math.round(U / I); // Egész számra kerekítés Ω-ban
+          if (R === 0) R = 1;
+          U = I * R; // Visszaszámolás a kerekített R-rel
+          answer = R.toString();
+          display = randomOrder
+            ? `Mennyi az ellenállás (Ω-ban), ha <b>U = ${U} <span class="blue-percent">V</span></b> és <b>I = ${I} <span class="blue-percent">A</span></b>?`
+            : `Mennyi az ellenállás (Ω-ban), ha <b>I = ${I} <span class="blue-percent">A</span></b> és <b>U = ${U} <span class="blue-percent">V</span></b>?`;
+        }
+        return {
+          display,
+          answer,
+          answerType,
+          options: generateOptions(Number(answer), answerType, difficulty, type === 0 ? "V" : type === 1 ? "A" : "Ω"),
+          unit: type === 0 ? "V" : type === 1 ? "A" : "Ω",
+          U: type === 0 ? null : U,
+          R: type === 2 ? null : R,
+          I: type === 1 ? null : I
+        };
+      } else if (difficulty === "medium") {
+        const maxI = 20; // Max áram (A)
+        const maxR = 1000; // Max ellenállás (Ω)
+        const maxU = 1000; // Max feszültség (V)
+        const precision = 2; // Kerekítési pontosság
+        let U, R, I, type, answer, display, answerType = "decimal", unit;
+        type = getRandomInt(0, 2); // 0: U, 1: I, 2: R
+        const randomOrder = Math.random() < 0.5;
+
+        if (type === 0) { // Feszültség számítás (U = I * R)
+          I = Number((getRandomInt(1, maxI) + Math.random()).toFixed(1)); // 1 tizedesjegy A-ban
+          R_kOhm = Number((getRandomInt(10, maxR) / 1000).toFixed(2)); // kΩ-ban, 2 tizedesjegy
+          R = R_kOhm * 1000; // Ω-ban
+          U = I * R; // V-ban
+          answer = Number(U.toFixed(precision)).toString();
+          unit = "V";
+          display = randomOrder
+            ? `Mennyi a feszültség (V-ban), ha <b>I = ${I} <span class="blue-percent">A</span></b> és <b>R = ${R_kOhm} <span class="blue-percent">kΩ</span></b>?`
+            : `Mennyi a feszültség (V-ban), ha <b>R = ${R_kOhm} <span class="blue-percent">kΩ</span></b> és <b>I = ${I} <span class="blue-percent">A</span></b>?`;
+        } else if (type === 1) { // Áram számítás (I = U / R)
+          U = Number(getRandomInt(100, maxU).toFixed(0)); // Egész szám V-ban
+          R_kOhm = Number((getRandomInt(10, maxR) / 1000).toFixed(2)); // kΩ-ban, 2 tizedesjegy
+          R = R_kOhm * 1000; // Ω-ban
+          I = U / R; // A-ban
+          answer = Number(I.toFixed(precision)).toString(); // 2 tizedesjegy
+          unit = "A";
+          display = randomOrder
+            ? `Mennyi az áram (A-ban), ha <b>U = ${U} <span class="blue-percent">V</span></b> és <b>R = ${R_kOhm} <span class="blue-percent">kΩ</span></b>?`
+            : `Mennyi az áram (A-ban), ha <b>R = ${R_kOhm} <span class="blue-percent">kΩ</span></b> és <b>U = ${U} <span class="blue-percent">V</span></b>?`;
+        } else { // Ellenállás számítás (R = U / I)
+          U = Number(getRandomInt(100, maxU).toFixed(0)); // Egész szám V-ban
+          I = Number((getRandomInt(1, maxI) + Math.random()).toFixed(1)); // 1 tizedesjegy A-ban
+          R = U / I; // Ω-ban
+          R_kOhm = Number((R / 1000).toFixed(precision)); // kΩ-ban, 2 tizedesjegy
+          answer = R_kOhm.toString();
+          unit = "kΩ";
+          display = randomOrder
+            ? `Mennyi az ellenállás (kΩ-ban), ha <b>U = ${U} <span class="blue-percent">V</span></b> és <b>I = ${I} <span class="blue-percent">A</span></b>?`
+            : `Mennyi az ellenállás (kΩ-ban), ha <b>I = ${I} <span class="blue-percent">A</span></b> és <b>U = ${U} <span class="blue-percent">V</span></b>?`;
+        }
+        return {
+          display,
+          answer,
+          answerType,
+          options: [],
+          unit,
+          U: type === 0 ? null : U,
+          R: type === 2 ? null : R_kOhm,
+          I: type === 1 ? null : I
+        };
+      } else { // Nehéz
+        const maxI = 50; // Max áram (mA → A)
+        const maxR = 10000; // Max ellenállás (MΩ → Ω)
+        const maxU = 5000; // Max feszültség (V)
+        const precision = 2; // Kerekítési pontosság (most 2 tizedesjegy)
+        let U, R, I, type, answer, display, answerType = "decimal", unit;
+        type = getRandomInt(0, 2); // 0: U, 1: I, 2: R
+        const randomOrder = Math.random() < 0.5;
+
+        if (type === 0) { // Feszültség számítás (U = I * R)
+          I_mA = Number((getRandomInt(1, maxI) + Math.random()).toFixed(1)); // mA-ban, 1 tizedesjegy
+          I = I_mA / 1000; // A-ban
+          R_MOhm = Number((getRandomInt(1, maxR) / 1000).toFixed(3)); // MΩ-ban, 3 tizedesjegy
+          R = R_MOhm * 1000000; // Ω-ban
+          U = I * R; // V-ban
+          answer = Number(U.toFixed(precision)).toString(); // 2 tizedesjegy
+          unit = "V";
+          const exponentI = Math.floor(Math.log10(Math.abs(I_mA)));
+          const mantissaI = Number((I_mA / Math.pow(10, exponentI)).toFixed(1));
+          const exponentR = Math.floor(Math.log10(Math.abs(R_MOhm)));
+          const mantissaR = Number((R_MOhm / Math.pow(10, exponentR)).toFixed(1));
+          display = randomOrder
+            ? `Mennyi a feszültség (V-ban), ha <b>I = ${mantissaI} × 10<sup>${exponentI}</sup> <span class="blue-percent">mA</span></b> és <b>R = ${mantissaR} × 10<sup>${exponentR}</sup> <span class="blue-percent">MΩ</span></b>?`
+            : `Mennyi a feszültség (V-ban), ha <b>R = ${mantissaR} × 10<sup>${exponentR}</sup> <span class="blue-percent">MΩ</span></b> és <b>I = ${mantissaI} × 10<sup>${exponentI}</sup> <span class="blue-percent">mA</span></b>?`;
+        } else if (type === 1) { // Áram számítás (I = U / R)
+          U = Number(getRandomInt(100, maxU).toFixed(0)); // Egész szám V-ban
+          R_MOhm = Number((getRandomInt(1, maxR) / 1000).toFixed(3)); // MΩ-ban, 3 tizedesjegy
+          R = R_MOhm * 1000000; // Ω-ban
+          I = U / R; // A-ban
+          I_mA = I * 1000; // mA-ban
+          answer = Number(I_mA.toFixed(precision)).toString(); // mA-ban, 2 tizedesjegy
+          unit = "mA";
+          const exponentR = Math.floor(Math.log10(Math.abs(R_MOhm)));
+          const mantissaR = Number((R_MOhm / Math.pow(10, exponentR)).toFixed(1));
+          display = randomOrder
+            ? `Mennyi az áram (mA-ban), ha <b>U = ${U} <span class="blue-percent">V</span></b> és <b>R = ${mantissaR} × 10<sup>${exponentR}</sup> <span class="blue-percent">MΩ</span></b>?`
+            : `Mennyi az áram (mA-ban), ha <b>R = ${mantissaR} × 10<sup>${exponentR}</sup> <span class="blue-percent">MΩ</span></b> és <b>U = ${U} <span class="blue-percent">V</span></b>?`;
+        } else { // Ellenállás számítás (R = U / I)
+          U = Number(getRandomInt(100, maxU).toFixed(0)); // Egész szám V-ban
+          I_mA = Number((getRandomInt(1, maxI) + Math.random()).toFixed(1)); // mA-ban, 1 tizedesjegy
+          I = I_mA / 1000; // A-ban
+          R = U / I; // Ω-ban
+          R_MOhm = Number((R / 1000000).toFixed(precision)); // MΩ-ban, 2 tizedesjegy
+          answer = R_MOhm.toString();
+          unit = "MΩ";
+          const exponentI = Math.floor(Math.log10(Math.abs(I_mA)));
+          const mantissaI = Number((I_mA / Math.pow(10, exponentI)).toFixed(1));
+          display = randomOrder
+            ? `Mennyi az ellenállás (MΩ-ban), ha <b>U = ${U} <span class="blue-percent">V</span></b> és <b>I = ${mantissaI} × 10<sup>${exponentI}</sup> <span class="blue-percent">mA</span></b>?`
+            : `Mennyi az ellenállás (MΩ-ban), ha <b>I = ${mantissaI} × 10<sup>${exponentI}</sup> <span class="blue-percent">mA</span></b> és <b>U = ${U} <span class="blue-percent">V</span></b>?`;
+        }
+        return {
+          display,
+          answer,
+          answerType,
+          options: [],
+          unit,
+          U: type === 0 ? null : U,
+          R: type === 2 ? null : R_MOhm,
+          I: type === 1 ? null : I_mA
+        };
+      }
+    }
+  },
+  {
+    name: "Teljesítmény számolás",
+    value: "teljesitmeny",
+    generate: (difficulty) => {
       const ranges = {
-        medium: { maxI: 20, maxR: 1000, maxU: 1000 },
-        hard: { maxI: 50, maxR: 10000, maxU: 5000 }
+        easy: { maxU: 24, maxI: 10 },
+        medium: { maxU: 230, maxI: 20 },
+        hard: { maxU: 5000, maxI: 50 }
       };
-      const { maxI, maxR, maxU } = ranges[difficulty] || { maxI: 20, maxR: 1000, maxU: 1000 };
-      let I, R, U, type, answer, display, answerType = "decimal";
-      type = getRandomInt(0, 2);
-      const randomOrder = Math.random() < 0.5;
+      const { maxU, maxI } = ranges[difficulty];
       const precision = difficulty === "hard" ? 5 : 2;
+      let U, I, P, maxTries = 50;
+
+      for (let tryCount = 0; tryCount < maxTries; tryCount++) {
+        U = Number((getRandomInt(10, maxU) + Math.random()).toFixed(1)); // 1 tizedesjegy
+        I = Number((getRandomInt(1, maxI) + Math.random()).toFixed(1)); // 1 tizedesjegy
+        P = U * I; // W-ban
+        if (P <= 10000) break;
+        if (tryCount === maxTries - 1) {
+          U = Number((12 + Math.random()).toFixed(1));
+          I = Number((2 + Math.random()).toFixed(1));
+          P = U * I;
+        }
+      }
 
       if (difficulty === "medium") {
-        if (type === 0) { // Feszültség számítás
-          I = getRandomInt(1, maxI);
-          R = getRandomInt(100, maxR);
-          U = I * R;
-          const R_kOhm = R / 1000;
-          const I_formatted = Number(I.toFixed(1));
-          const R_kOhm_formatted = Number(R_kOhm.toFixed(3));
-          const formatted = formatNumber(U, 'V', difficulty);
-          answer = Number(U.toFixed(2)).toString(); // Pontos érték
-          answerType = Number.isInteger(U) ? "number" : "decimal";
-          display = randomOrder
-            ? `Mennyi a feszültség (<span class="blue-percent">${formatted.unit}</span>-ban), ha <b>I = ${I_formatted} <span class="blue-percent">A</span></b> és <b>R = ${R_kOhm_formatted} <span class="blue-percent">kΩ</span></b>?`
-            : `Mennyi a feszültség (<span class="blue-percent">${formatted.unit}</span>-ban), ha <b>R = ${R_kOhm_formatted} <span class="blue-percent">kΩ</span></b> és <b>I = ${I_formatted} <span class="blue-percent">A</span></b>?`;
-        } else if (type === 1) { // Áram számítás
-          U = getRandomInt(100, maxU);
-          R = getRandomInt(100, maxR);
-          I = U / R;
-          const R_kOhm = R / 1000;
-          const U_kV = U / 1000;
-          const U_kV_formatted = Number(U_kV.toFixed(3));
-          const R_kOhm_formatted = Number(R_kOhm.toFixed(3));
-          const formatted = formatNumber(I, 'A', difficulty);
-          answer = Number(I.toFixed(2)).toString();
-          answerType = Number.isInteger(I) ? "number" : "decimal";
-          display = randomOrder
-            ? `Mennyi az áram (<span class="blue-percent">${formatted.unit}</span>-ban), ha <b>U = ${U_kV_formatted} <span class="blue-percent">kV</span></b> és <b>R = ${R_kOhm_formatted} <span class="blue-percent">kΩ</span></b>?`
-            : `Mennyi az áram (<span class="blue-percent">${formatted.unit}</span>-ban), ha <b>R = ${R_kOhm_formatted} <span class="blue-percent">kΩ</span></b> és <b>U = ${U_kV_formatted} <span class="blue-percent">kV</span></b>?`;
-        } else { // Ellenállás számítás
-          U = getRandomInt(100, maxU);
-          I = getRandomInt(1, maxI);
-          R = U / I;
-          const U_kV = U / 1000;
-          const I_formatted = Number(I.toFixed(1));
-          const U_kV_formatted = Number(U_kV.toFixed(3));
-          const formatted = formatNumber(R, 'Ω', difficulty);
-          answer = Number(R.toFixed(2)).toString();
-          answerType = Number.isInteger(R) ? "number" : "decimal";
-          display = randomOrder
-            ? `Mennyi az ellenállás (<span class="blue-percent">${formatted.unit}</span>-ban), ha <b>U = ${U_kV_formatted} <span class="blue-percent">kV</span></b> és <b>I = ${I_formatted} <span class="blue-percent">A</span></b>?`
-            : `Mennyi az ellenállás (<span class="blue-percent">${formatted.unit}</span>-ban), ha <b>I = ${I_formatted} <span class="blue-percent">A</span></b> és <b>U = ${U_kV_formatted} <span class="blue-percent">kV</span></b>?`;
-        }
-      } else { // Nehéz
-        if (type === 0) { // Feszültség számítás
-          I = getRandomInt(1, maxI);
-          R = getRandomInt(1, maxR);
-          U = I * R;
-          const I_mA = I * 1000;
-          const R_MOhm = R / 1000000;
-          const exponentI = Math.floor(Math.log10(Math.abs(I_mA)));
-          const mantissaI = Number((I_mA / Math.pow(10, exponentI)).toFixed(1));
-          const exponentR = Math.floor(Math.log10(Math.abs(R_MOhm)));
-          const mantissaR = Number((R_MOhm / Math.pow(10, exponentR)).toFixed(1));
-          const formatted = formatNumber(U, 'V', difficulty);
-          answer = Number(U.toFixed(5)).toString();
-          answerType = Number.isInteger(U) ? "number" : "decimal";
-          display = randomOrder
-            ? `Mennyi a feszültség (<span class="blue-percent">${formatted.unit}</span>-ban), ha <b>I = ${mantissaI} × 10<sup>${exponentI}</sup> <span class="blue-percent">mA</span></b> és <b>R = ${mantissaR} × 10<sup>${exponentR}</sup> <span class="blue-percent">MΩ</span></b>?`
-            : `Mennyi a feszültség (<span class="blue-percent">${formatted.unit}</span>-ban), ha <b>R = ${mantissaR} × 10<sup>${exponentR}</sup> <span class="blue-percent">MΩ</span></b> és <b>I = ${mantissaI} × 10<sup>${exponentI}</sup> <span class="blue-percent">mA</span></b>?`;
-        } else if (type === 1) { // Áram számítás
-          U = getRandomInt(1, maxU);
-          R = getRandomInt(1, maxR);
-          I = U / R;
-          const U_kV = U / 1000;
-          const R_MOhm = R / 1000000;
-          const exponentU = Math.floor(Math.log10(Math.abs(U_kV)));
-          const mantissaU = Number((U_kV / Math.pow(10, exponentU)).toFixed(1));
-          const exponentR = Math.floor(Math.log10(Math.abs(R_MOhm)));
-          const mantissaR = Number((R_MOhm / Math.pow(10, exponentR)).toFixed(1));
-          const formatted = formatNumber(I, 'A', difficulty);
-          answer = Number(I.toFixed(5)).toString();
-          answerType = Number.isInteger(I) ? "number" : "decimal";
-          display = randomOrder
-            ? `Mennyi az áram (<span class="blue-percent">${formatted.unit}</span>-ban), ha <b>U = ${mantissaU} × 10<sup>${exponentU}</sup> <span class="blue-percent">kV</span></b> és <b>R = ${mantissaR} × 10<sup>${exponentR}</sup> <span class="blue-percent">MΩ</span></b>?`
-            : `Mennyi az áram (<span class="blue-percent">${formatted.unit}</span>-ban), ha <b>R = ${mantissaR} × 10<sup>${exponentR}</sup> <span class="blue-percent">MΩ</span></b> és <b>U = ${mantissaU} × 10<sup>${exponentU}</sup> <span class="blue-percent">kV</span></b>?`;
-        } else { // Ellenállás számítás
-          U = getRandomInt(1, maxU);
-          I = getRandomInt(1, maxI);
-          R = U / I;
-          const U_kV = U / 1000;
-          const I_mA = I * 1000;
-          const exponentU = Math.floor(Math.log10(Math.abs(U_kV)));
-          const mantissaU = Number((U_kV / Math.pow(10, exponentU)).toFixed(1));
-          const exponentI = Math.floor(Math.log10(Math.abs(I_mA)));
-          const mantissaI = Number((I_mA / Math.pow(10, exponentI)).toFixed(1));
-          const formatted = formatNumber(R, 'Ω', difficulty);
-          answer = Number(R.toFixed(5)).toString();
-          answerType = Number.isInteger(R) ? "number" : "decimal";
-          display = randomOrder
-            ? `Mennyi az ellenállás (<span class="blue-percent">${formatted.unit}</span>-ban), ha <b>U = ${mantissaU} × 10<sup>${exponentU}</sup> <span class="blue-percent">kV</span></b> és <b>I = ${mantissaI} × 10<sup>${exponentI}</sup> <span class="blue-percent">mA</span></b>?`
-            : `Mennyi az ellenállás (<span class="blue-percent">${formatted.unit}</span>-ban), ha <b>I = ${mantissaI} × 10<sup>${exponentI}</sup> <span class="blue-percent">mA</span></b> és <b>U = ${mantissaU} × 10<sup>${exponentU}</sup> <span class="blue-percent">kV</span></b>?`;
-        }
+        const I_kA = Number((I / 1000).toFixed(3)); // kA-ban, 3 tizedesjegy
+        P = U * (I_kA * 1000); // W-ban, kerekített I_kA-val
+        const formatted = formatNumber(P, 'W', difficulty);
+        answer = Number(formatted.value.toFixed(precision)).toString(); // Kerekített válasz
+        return {
+          display: `Mennyi a teljesítmény (<span class="blue-percent">${formatted.unit}</span>-ban), ha <b>U = ${U} <span class="blue-percent">V</span></b> és <b>I = ${I_kA} <span class="blue-percent">kA</span></b>?`,
+          answer,
+          answerType: Number.isInteger(formatted.value) ? "number" : "decimal",
+          options: difficulty === "easy" ? generateOptions(Number(formatted.value.toFixed(precision)), "decimal", difficulty, formatted.unit) : [],
+          unit: formatted.unit,
+          U,
+          I: I_kA * 1000 // A-ban
+        };
       }
-      return {
-        display,
-        answer,
-        answerType,
-        options: []
-      };
-    } else { // Könnyű
-      const maxI = 10;
-      const maxR = 100;
-      let I, R, U, type, answer, display, answerType = "number";
-      type = getRandomInt(0, 2);
-      const randomOrder = Math.random() < 0.5;
-      if (type === 0) { // Feszültség számítás
-        I = getRandomInt(1, maxI);
-        R = getRandomInt(1, maxR);
-        U = I * R;
-        answer = U.toString();
-        display = randomOrder
-          ? `Mennyi a feszültség (V-ban), ha <b>I = ${I} <span class="blue-percent">A</span></b> és <b>R = ${R} <span class="blue-percent">Ω</span></b>?`
-          : `Mennyi a feszültség (V-ban), ha <b>R = ${R} <span class="blue-percent">Ω</span></b> és <b>I = ${I} <span class="blue-percent">A</span></b>?`;
-      } else if (type === 1) { // Áram számítás
-        U = getRandomInt(1, maxR);
-        R = getRandomInt(1, maxR);
-        I = U / R;
-        if (!Number.isInteger(I)) {
-          U = getRandomInt(1, maxR);
-          R = getRandomInt(1, maxR);
-          I = Math.round(U / R);
-          if (I === 0) I = 1;
-          U = I * R;
-        }
-        answer = I.toString();
-        display = randomOrder
-          ? `Mennyi az áram (A-ban), ha <b>U = ${U} <span class="blue-percent">V</span></b> és <b>R = ${R} <span class="blue-percent">Ω</span></b>?`
-          : `Mennyi az áram (A-ban), ha <b>R = ${R} <span class="blue-percent">Ω</span></b> és <b>U = ${U} <span class="blue-percent">V</span></b>?`;
-      } else { // Ellenállás számítás
-        I = getRandomInt(1, maxI);
-        U = getRandomInt(1, maxR);
-        R = U / I;
-        if (!Number.isInteger(R)) {
-          U = getRandomInt(1, maxR);
-          I = getRandomInt(1, maxI);
-          R = Math.round(U / I);
-          if (R === 0) R = 1;
-          U = I * R;
-        }
-        answer = R.toString();
-        display = randomOrder
-          ? `Mennyi az ellenállás (Ω-ban), ha <b>U = ${U} <span class="blue-percent">V</span></b> és <b>I = ${I} <span class="blue-percent">A</span></b>?`
-          : `Mennyi az ellenállás (Ω-ban), ha <b>I = ${I} <span class="blue-percent">A</span></b> és <b>U = ${U} <span class="blue-percent">V</span></b>?`;
+
+      if (difficulty === "hard") {
+        const U_kV = Number((U / 1000).toFixed(3)); // kV-ban, 3 tizedesjegy
+        const I_mA = Number((I * 1000).toFixed(1)); // mA-ban, 1 tizedesjegy
+        const exponentU = Math.floor(Math.log10(Math.abs(U_kV)));
+        const mantissaU = Number((U_kV / Math.pow(10, exponentU)).toFixed(1));
+        const exponentI = Math.floor(Math.log10(Math.abs(I_mA)));
+        const mantissaI = Number((I_mA / Math.pow(10, exponentI)).toFixed(1));
+        P = (mantissaU * Math.pow(10, exponentU) * 1000) * (mantissaI * Math.pow(10, exponentI) / 1000); // W-ban
+        const formatted = formatNumber(P, 'W', difficulty);
+        answer = Number(formatted.value.toFixed(precision)).toString(); // Kerekített válasz
+        return {
+          display: `Mennyi a teljesítmény (<span class="blue-percent">${formatted.unit}</span>-ban), ha <b>U = ${mantissaU} × 10<sup>${exponentU}</sup> <span class="blue-percent">kV</span></b> és <b>I = ${mantissaI} × 10<sup>${exponentI}</sup> <span class="blue-percent">mA</span></b>?`,
+          answer,
+          answerType: Number.isInteger(formatted.value) ? "number" : "decimal",
+          options: [],
+          unit: formatted.unit,
+          U: mantissaU * Math.pow(10, exponentU) * 1000, // V-ban
+          I: mantissaI * Math.pow(10, exponentI) / 1000 // A-ban
+        };
       }
+
+      const formatted = formatNumber(P, 'W', difficulty);
+      answer = Number(formatted.value.toFixed(precision)).toString(); // Kerekített válasz
       return {
-        display,
+        display: `Mennyi a teljesítmény (<span class="blue-percent">${formatted.unit}</span>-ban), ha <b>U = ${U} <span class="blue-percent">V</span></b> és <b>I = ${I} <span class="blue-percent">A</span></b>?`,
         answer,
-        answerType,
-        options: []
+        answerType: Number.isInteger(formatted.value) ? "number" : "decimal",
+        options: difficulty === "easy" ? generateOptions(Number(formatted.value.toFixed(precision)), "decimal", difficulty, formatted.unit) : [],
+        unit: formatted.unit,
+        U,
+        I
       };
     }
-  }
-},
+  },
   {
-  name: "Teljesítmény számolás",
-  value: "teljesitmeny",
-  generate: (difficulty) => {
-    const ranges = {
-      easy: { maxU: 24, maxI: 10 },
-      medium: { maxU: 230, maxI: 20 },
-      hard: { maxU: 5000, maxI: 50 }
-    };
-    const { maxU, maxI } = ranges[difficulty];
-    let U, I, P, maxTries = 50;
-
-    for (let tryCount = 0; tryCount < maxTries; tryCount++) {
-      U = getRandomInt(10, maxU) + (Math.random() * 0.9);
-      I = getRandomInt(1, maxI) + (Math.random() * 0.9);
-      P = U * I;
-      while (P > 10000 && U > 10) {
-        U = U / 2;
-        P = U * I;
-      }
-      if (P > 10000) {
-        I = 10000 / U;
-        P = U * I;
-      }
-      if (P <= 10000) break;
-      if (tryCount === maxTries - 1) {
-        U = 12 + (Math.random() * 0.9);
-        I = 2 + (Math.random() * 0.9);
-        P = U * I;
-      }
-    }
-
-    if (difficulty === "medium") {
-      const I_kA = I / 1000;
-      P = U * (I_kA * 1000); // Helyes átváltás
-      const formatted = formatNumber(P, 'W', difficulty);
-      return {
-        display: `Mennyi a teljesítmény (<span class="blue-percent">${formatted.unit}</span>-ban), ha <b>U = ${U.toFixed(1)} <span class="blue-percent">V</span></b> és <b>I = ${I_kA.toFixed(1)} <span class="blue-percent">kA</span></b>?`,
-        answer: Number(formatted.value.toFixed(2)).toString(), // Kerekítés explicit rögzítése
-        answerType: "decimal",
-        options: difficulty === "easy" ? generateOptions(Number(formatted.value.toFixed(2)), "decimal", difficulty, formatted.unit) : []
-      };
-    }
-
-    if (difficulty === "hard") {
-      const U_kV = U / 1000;
-      const I_mA = I * 1000;
-      const exponentU = Math.floor(Math.log10(U_kV));
-      const mantissaU = U_kV / Math.pow(10, exponentU);
-      const exponentI = Math.floor(Math.log10(I_mA));
-      const mantissaI = I_mA / Math.pow(10, exponentI);
-      P = (mantissaU * Math.pow(10, exponentU) * 1000) * (mantissaI * Math.pow(10, -exponentI) / 1000);
-      const formatted = formatNumber(P, 'W', difficulty);
-      return {
-        display: `Mennyi a teljesítmény (<span class="blue-percent">${formatted.unit}</span>-ban), ha <b>U = ${mantissaU.toFixed(1)} × 10<sup>${exponentU}</sup> <span class="blue-percent">kV</span></b> és <b>I = ${mantissaI.toFixed(1)} × 10<sup>${exponentI}</sup> <span class="blue-percent">mA</span></b>?`,
-        answer: Number(formatted.value.toFixed(2)).toString(), // Kerekítés explicit rögzítése
-        answerType: "decimal",
-        options: difficulty === "easy" ? generateOptions(Number(formatted.value.toFixed(2)), "decimal", difficulty, formatted.unit) : []
-      };
-    }
-
-    const formatted = formatNumber(P, 'W', difficulty);
-    return {
-      display: `Mennyi a teljesítmény (<span class="blue-percent">${formatted.unit}</span>-ban), ha <b>U = ${U.toFixed(1)} <span class="blue-percent">V</span></b> és <b>I = ${I.toFixed(1)} <span class="blue-percent">A</span></b>?`,
-      answer: Number(formatted.value.toFixed(2)).toString(), // Kerekítés explicit rögzítése
-      answerType: "decimal",
-      options: difficulty === "easy" ? generateOptions(Number(formatted.value.toFixed(2)), "decimal", difficulty, formatted.unit) : []
-    };
-  }
-},
-{
     name: "Előtét ellenállás méretezés",
     value: "elotet_ellenallas",
     generate: (difficulty) => {
@@ -1385,55 +1380,54 @@ const taskTypes = [
         hard: { maxU_forrás: 400, minU_forrás: 100, maxU_fogyasztó: 350, minU_fogyasztó: 50, maxI: 50, minI: 1 }
       };
       const { maxU_forrás, minU_forrás, maxU_fogyasztó, minU_fogyasztó, maxI, minI } = ranges[difficulty];
+      const precision = difficulty === "hard" ? 5 : 2;
       let display, answer, answerType, unit;
+
       if (difficulty === "easy") {
-        let U_forrás = getRandomInt(minU_forrás, maxU_forrás);
-        let U_fogyasztó = getRandomInt(minU_fogyasztó, Math.min(U_forrás - 1, maxU_fogyasztó));
-        let I = getRandomInt(minI, maxI);
-        let R_s = (U_forrás - U_fogyasztó) / (I / 1000);
-        if (!Number.isInteger(R_s) && Math.abs(R_s - Math.round(R_s)) > 0.25) {
-          U_forrás = Math.round(R_s * (I / 1000)) + U_fogyasztó;
-          R_s = (U_forrás - U_fogyasztó) / (I / 1000);
+        let U_forrás = getRandomInt(minU_forrás, maxU_forrás); // Egész szám
+        let U_fogyasztó = getRandomInt(minU_fogyasztó, Math.min(U_forrás - 1, maxU_fogyasztó)); // Egész szám
+        let I = getRandomInt(minI, maxI); // mA-ban, egész szám
+        let R_s = (U_forrás - U_fogyasztó) / (I / 1000); // Ω-ban
+        R_s = Math.round(R_s); // Egész számra kerekítés
+        if (R_s === 0) {
+          U_forrás = U_fogyasztó + 1;
+          R_s = 1;
         }
         const formatted = formatNumber(R_s, 'Ω', difficulty);
         answer = formatted.value.toString();
         unit = formatted.unit;
         display = `Mennyi az előtét ellenállás (${unit}-ban), ha a forrásfeszültség <b>${U_forrás} V</b>, a fogyasztó feszültsége <b>${U_fogyasztó} V</b> és az áram <b>${I} mA</b>?`;
-        answerType = Number.isInteger(R_s) ? "number" : "decimal";
+        answerType = Number.isInteger(formatted.value) ? "number" : "decimal";
       } else if (difficulty === "medium") {
-        let U_forrás = getRandomInt(minU_forrás, maxU_forrás);
-        let U_fogyasztó = getRandomInt(minU_fogyasztó, Math.min(U_forrás - 10, maxU_fogyasztó));
-        let I = getRandomInt(minI * 1000, maxI * 1000) / 1000;
-        let R_s = (U_forrás - U_fogyasztó) / I;
-        if (!Number.isInteger(R_s) && Math.abs(R_s - Math.round(R_s)) > 0.25) {
-          U_forrás = Math.round(R_s * I) + U_fogyasztó;
-          R_s = (U_forrás - U_fogyasztó) / I;
-        }
+        let U_forrás = Number(getRandomInt(minU_forrás, maxU_forrás).toFixed(0)); // Egész szám
+        let U_fogyasztó = Number(getRandomInt(minU_fogyasztó, Math.min(U_forrás - 10, maxU_fogyasztó)).toFixed(0)); // Egész szám
+        let I = Number((getRandomInt(Math.round(minI * 1000), Math.round(maxI * 1000)) / 1000).toFixed(3)); // A-ban, 3 tizedesjegy
+        let R_s = (U_forrás - U_fogyasztó) / I; // Ω-ban
         const formatted = formatNumber(R_s, 'Ω', difficulty);
-        answer = formatted.value.toString();
+        answer = Number(formatted.value.toFixed(precision)).toString(); // Kerekített válasz
         unit = formatted.unit;
         display = `Mennyi az előtét ellenállás (${unit}-ban), ha a forrásfeszültség <b>${U_forrás} V</b>, a fogyasztó feszültsége <b>${U_fogyasztó} V</b> és az áram <b>${I} A</b>?`;
-        answerType = Number.isInteger(R_s) ? "number" : "decimal";
-      } else {
-        let U_forrás = getRandomInt(minU_forrás, maxU_forrás);
-        let U_fogyasztó = getRandomInt(minU_fogyasztó, Math.min(U_forrás - 50, maxU_fogyasztó));
-        let I = getRandomInt(minI * 1000, maxI * 1000) / 1000;
-        let R_s = (U_forrás - U_fogyasztó) / I;
-        if (!Number.isInteger(R_s) && Math.abs(R_s - Math.round(R_s)) > 0.25) {
-          U_forrás = Math.round(R_s * I) + U_fogyasztó;
-          R_s = (U_forrás - U_fogyasztó) / I;
-        }
+        answerType = Number.isInteger(formatted.value) ? "number" : "decimal";
+      } else { // Nehéz
+        let U_forrás = Number(getRandomInt(minU_forrás, maxU_forrás).toFixed(0)); // Egész szám
+        let U_fogyasztó = Number(getRandomInt(minU_fogyasztó, Math.min(U_forrás - 50, maxU_fogyasztó)).toFixed(0)); // Egész szám
+        let I = Number((getRandomInt(Math.round(minI * 1000), Math.round(maxI * 1000)) / 1000).toFixed(3)); // A-ban, 3 tizedesjegy
+        let R_s = (U_forrás - U_fogyasztó) / I; // Ω-ban
         const formatted = formatNumber(R_s, 'Ω', difficulty);
-        answer = formatted.value.toString();
+        answer = Number(formatted.value.toFixed(precision)).toString(); // Kerekített válasz
         unit = formatted.unit;
         display = `Mennyi az előtét ellenállás (${unit}-ban), ha a forrásfeszültség <b>${U_forrás} V</b>, a fogyasztó feszültsége <b>${U_fogyasztó} V</b> és az áram <b>${I} A</b>?`;
-        answerType = Number.isInteger(R_s) ? "number" : "decimal";
+        answerType = Number.isInteger(formatted.value) ? "number" : "decimal";
       }
       return {
         display,
         answer,
         answerType,
-        options: difficulty === "easy" ? generateOptions(answer, answerType, difficulty, unit) : []
+        options: difficulty === "easy" ? generateOptions(Number(answer), answerType, difficulty, unit) : [],
+        unit,
+        U_forrás,
+        U_fogyasztó,
+        I: difficulty === "easy" ? I : I * 1000 // mA vagy A
       };
     }
   },
@@ -1766,19 +1760,135 @@ function generateQuestions() {
       task.display = "Hiba: érvénytelen feladat generálódott";
       task.answer = null;
     }
+    if (!['number', 'decimal', 'fraction', 'power'].includes(task.answerType)) {
+      console.warn(`Ismeretlen answerType: ${task.answerType} a ${taskType.name} feladattípusban`);
+      task.answerType = 'number'; // Alapértelmezett típus
+    }
     questions.push(task);
   }
 }
 
-// Virtuális billentyűzet generálása a numpad gombokkal
+// Kifejezések kiértékelésére szolgáló függvény, amely ellenőrzi, hogy a felhasználó válasza helyes-e
+// Paraméterek:
+// - input: A felhasználó által megadott válasz (pl. "320/460", "0.695", "7.2*380")
+// - correctAnswer: A helyes válasz, amit a feladattól várunk (pl. "0.695", "2736")
+// - answerType: A válasz típusa ("number", "decimal", "fraction", "power")
+// - taskData: A feladat adatai, pl. Ohm-törvény esetén U, I, R és unit mezők
+// Visszatérési érték: true, ha a válasz helyes, különben false
+function evaluateExpression(input, correctAnswer, answerType, taskData) {
+  // Ellenőrizzük, hogy a bemenet és a helyes válasz létezik-e
+  if (!input || !correctAnswer) {
+    return false;
+  }
+
+  // Normalizáljuk a bevitelt: vesszőt pontra cseréljük, szorzás jelet egységesítjük (*)
+  // Pl. "3,14" → "3.14", "3×4" → "3*4"
+  let normalizedInput = input.replace(',', '.').replace('×', '*').trim();
+
+  // Ha a bemenet nem tartalmaz műveleti jelet (/ vagy *), egyszerű számként kezeljük
+  if (!normalizedInput.includes('/') && !normalizedInput.includes('*')) {
+    const userAnswer = parseFloat(normalizedInput);
+    if (isNaN(userAnswer)) {
+      return false; // Érvénytelen számformátum
+    }
+
+    // Tizedes tört esetén 2 tizedesjegy pontossággal hasonlítjuk össze
+    if (answerType === 'decimal') {
+      const precision = taskData && taskData.value === 'mertekegyseg_kerekites' 
+        ? parseInt(taskData.display.match(/kerekítve (\d) tizedesjegyre|kerekítve egészre/)?.[1] || 2) 
+        : 2;
+      return Math.abs(userAnswer - parseFloat(correctAnswer)) < Math.pow(10, -precision);
+    } 
+    // Egész szám esetén kisebb toleranciával (0.01) hasonlítjuk össze
+    else if (answerType === 'number') {
+      return Math.abs(userAnswer - parseFloat(correctAnswer)) < 0.01;
+    }
+    return false; // Ismeretlen answerType esetén
+  }
+
+  // Kifejezés kiértékelése (pl. "320/460" vagy "7.2*380")
+  try {
+    let computedResult;
+    // Osztás típusú kifejezés kezelése (pl. "320/460")
+    if (normalizedInput.includes('/')) {
+      const [left, right] = normalizedInput.split('/').map(s => parseFloat(s.trim()));
+      if (isNaN(left) || isNaN(right) || right === 0) {
+        return false; // Érvénytelen formátum vagy osztás nullával
+      }
+      computedResult = left / right;
+    } 
+    // Szorzás típusú kifejezés kezelése (pl. "7.2*380")
+    else if (normalizedInput.includes('*')) {
+      const [left, right] = normalizedInput.split('*').map(s => parseFloat(s.trim()));
+      if (isNaN(left) || isNaN(right)) {
+        return false; // Érvénytelen számok
+      }
+      computedResult = left * right;
+    } else {
+      return false; // Nem támogatott műveleti jel
+    }
+
+    // Ohm-törvény specifikus ellenőrzés
+    if (taskData && taskData.value === 'ohm_torveny') {
+      const precision = 2; // Ohm-törvény esetén 2 tizedesjegy pontosság
+      const expectedResult = parseFloat(correctAnswer);
+      const resultUnit = taskData.unit;
+      let adjustedResult = computedResult;
+
+      // Mértékegységek átváltása az összehasonlításhoz
+      if (resultUnit === 'kΩ') adjustedResult /= 1000; // kΩ → Ω
+      if (resultUnit === 'MΩ') adjustedResult /= 1000000; // MΩ → Ω
+      if (resultUnit === 'mA') adjustedResult *= 1000; // mA → A
+
+      // Ellenőrizzük, hogy a számított eredmény megfelel-e a helyes válasznak
+      if (Math.abs(adjustedResult - expectedResult) < Math.pow(10, -precision)) {
+        return true;
+      }
+
+      // Kifejezés számértékeinek ellenőrzése az Ohm-törvény képlete alapján
+      if (taskData.U && taskData.R) { // I = U / R
+        const R_factor = taskData.unit === 'MΩ' ? 1000000 : taskData.unit === 'kΩ' ? 1000 : 1;
+        const expectedLeft = taskData.U; // Várható U érték
+        const expectedRight = taskData.R * R_factor; // Várható R érték
+        const [left, right] = normalizedInput.split('/').map(s => parseFloat(s.trim()));
+        return Math.abs(left - expectedLeft) < 0.01 && Math.abs(right - expectedRight) < 0.01;
+      } else if (taskData.I && taskData.R) { // U = I * R
+        const I_factor = taskData.unit === 'mA' ? 0.001 : 1; // mA → A
+        const R_factor = taskData.unit === 'MΩ' ? 1000000 : taskData.unit === 'kΩ' ? 1000 : 1;
+        const expectedLeft = taskData.I * I_factor; // Várható I érték
+        const expectedRight = taskData.R * R_factor; // Várható R érték
+        const [left, right] = normalizedInput.split('*').map(s => parseFloat(s.trim()));
+        // A szorzás kommutatív, ezért mindkét sorrendet ellenőrizzük
+        return (Math.abs(left - expectedLeft) < 0.01 && Math.abs(right - expectedRight) < 0.01) ||
+               (Math.abs(left - expectedRight) < 0.01 && Math.abs(right - expectedLeft) < 0.01);
+      } else if (taskData.U && taskData.I) { // R = U / I
+        const I_factor = taskData.unit === 'mA' ? 0.001 : 1; // mA → A
+        const expectedLeft = taskData.U; // Várható U érték
+        const expectedRight = taskData.I * I_factor; // Várható I érték
+        const [left, right] = normalizedInput.split('/').map(s => parseFloat(s.trim()));
+        return Math.abs(left - expectedLeft) < 0.01 && Math.abs(right - expectedRight) < 0.01;
+      }
+    }
+
+    // Általános összehasonlítás más feladattípusokhoz
+    const precision = answerType === 'decimal' 
+      ? (taskData && taskData.value === 'mertekegyseg_kerekites' 
+        ? parseInt(taskData.display.match(/kerekítve (\d) tizedesjegyre|kerekítve egészre/)?.[1] || 2) 
+        : 2) 
+      : 0;
+    return Math.abs(computedResult - parseFloat(correctAnswer)) < Math.pow(10, -precision);
+  } catch {
+    return false; // Bármilyen hiba esetén (pl. érvénytelen kifejezés)
+  }
+}
+
 function renderNumpad(answerState, onChange) {
   const currentTask = questions[currentQuestion] || {};
-  const specialKey = currentTask.value === "normal_alak" ? ' ' : (currentTask.answerType === "fraction" ? '/' : ' ');
 
   const rows = [
     ['1', '2', '3', '-', '←'],
     ['4', '5', '6', '.', 'submit'],
-    ['7', '8', '9', '0', specialKey]
+    ['7', '8', '9', '0', '/'] // Kezdetben '/' (osztás)
   ];
   const numpadDiv = document.createElement('div');
   numpadDiv.className = 'numpad active';
@@ -1795,105 +1905,114 @@ function renderNumpad(answerState, onChange) {
         submitBtn.setAttribute("aria-label", "Küldés (Enter)");
         submitBtn.innerHTML = `<span>${enterIcon}</span>`;
         submitBtn.onclick = () => {
-          if (!gameActive) return;
-          let val = answerState.value.trim();
-          if (val === "") {
-            alert("Írj be egy választ!");
-            return;
-          }
-          let correct = false;
-          if (!currentTask.answer) {
-            alert("Hiba: nincs válasz definiálva!");
-            return;
-          }
+  if (!gameActive) return;
+  let val = answerState.value.trim();
+  if (val === "") {
+    alert("Írj be egy választ!");
+    return;
+  }
 
-          if (currentTask.answerType === "fraction") {
-            if (!val.includes('/')) {
-              alert("Érvénytelen tört formátum! Írj be egy törtet, pl. '3/4'.");
-              return;
-            }
-            const [ansNum, ansDen] = currentTask.answer.split('/').map(Number);
-            const [userNum, userDen] = val.split('/').map(Number);
-            if (isNaN(userNum) || isNaN(userDen) || userDen === 0) {
-              alert("Érvénytelen tört formátum!");
-              return;
-            }
-            const [simpUserNum, simpUserDen] = simplifyFraction(userNum, userDen);
-            if (simpUserNum === ansNum && simpUserDen === ansDen) {
-              correct = true;
-            }
-          } else if (currentTask.answerType === "power") {
-            const powerMatch = val.match(/^([\d\.]+)×10\^([\d\-]+)$/);
-            if (!powerMatch) {
-              alert("Érvénytelen normál alak! Használj 'a×10^b' formát, pl. '3.5×10^3'.");
-              return;
-            }
-            const [_, userCoef, userExp] = powerMatch;
-            const [ansCoef, ansExp] = currentTask.answer.match(/^([\d\.]+)×10\^([\d\-]+)$/) || [];
-            if (Math.abs(parseFloat(userCoef) - parseFloat(ansCoef)) < 0.01 && parseInt(userExp) === parseInt(ansExp)) {
-              correct = true;
-            }
-          } else if (currentTask.answerType === "decimal") {
-            const correctAnswer = parseFloat(currentTask.answer);
-            const userAnswer = parseFloat(val);
-            if (isNaN(userAnswer)) {
-              alert("Érvénytelen szám! Írj be egy tizedes törtet, pl. '3.14'.");
-              return;
-            }
-            const precision = difficultySelect.value === "hard" ? 5 : 2;
-            const roundedUser = Number(userAnswer.toFixed(precision));
-            const roundedCorrect = Number(correctAnswer.toFixed(precision));
-            if (Math.abs(roundedUser - roundedCorrect) < Math.pow(10, -precision)) {
-              correct = true;
-            }
-          } else { // number
-            const correctAnswer = parseFloat(currentTask.answer);
-            const userAnswer = parseFloat(val);
-            if (isNaN(userAnswer)) {
-              alert("Érvénytelen szám! Írj be egy egész vagy tizedes számot.");
-              return;
-            }
-            if (Math.abs(userAnswer - correctAnswer) < 0.01) { // Egyszerűbb összehasonlítás
-              correct = true;
-              console.log("Number comparison", { userAnswer, correctAnswer });
-            }
-          }
+  let correct = false;
+  const currentTask = questions[currentQuestion];
 
-          let pauseStart = null;
-          if (timerInterval) {
-            clearInterval(timerInterval);
-            pauseStart = Date.now();
-          }
+  if (!currentTask.answer) {
+    alert("Hiba: nincs válasz definiálva!");
+    return;
+  }
 
-          if (correct) {
-            score++;
-            if (difficultySelect.value === "hard") {
-              const message = motivationalMessages[getRandomInt(0, motivationalMessages.length - 1)];
-              alert(message);
-            } else if (difficultySelect.value === "medium" && currentQuestion === QUESTIONS - 2) {
-              alert("Gratulálok, csak így tovább, mindjárt a végére érsz!");
-            }
-            currentQuestion++;
-            showQuestion(currentQuestion);
-          } else {
-            wrongAnswers++;
-            alert("Nem jó válasz, próbáld újra!");
-            if (timerInterval) {
-              clearInterval(timerInterval);
-            }
-            timerInterval = setInterval(updateTimer, 1000);
+  if (currentTask.answerType === 'fraction') {
+    if (val.includes('/')) {
+      const [ansNum, ansDen] = currentTask.answer.split('/').map(Number);
+      const [userNum, userDen] = val.split('/').map(Number);
+      if (isNaN(userNum) || isNaN(userDen) || userDen === 0) {
+        alert("Érvénytelen tört formátum! Ellenőrizd, hogy helyes törtet írtál-e, pl. '3/4'.");
+        return;
+      }
+      const [simpUserNum, simpUserDen] = simplifyFraction(userNum, userDen);
+      correct = simpUserNum === ansNum && simpUserDen === ansDen;
+    } else {
+      // Tizedes tört ellenőrzése
+      const [ansNum, ansDen] = currentTask.answer.split('/').map(Number);
+      const correctValue = ansNum / ansDen;
+      const userValue = parseFloat(val.replace(',', '.'));
+      correct = !isNaN(userValue) && Math.abs(userValue - correctValue) < 0.01;
+    }
+    if (!correct) {
+      const [ansNum, ansDen] = currentTask.answer.split('/').map(Number);
+      alert(`Nem jó a válasz! A helyes válaszhoz hasonló érték: ${ansNum}/${ansDen} vagy ${(ansNum / ansDen).toFixed(2)}.`);
+    }
+  } else if (currentTask.answerType === 'power') {
+    const powerMatch = val.match(/^([\d\.]+)×10\^([\d\-]+)$/);
+    if (!powerMatch) {
+      alert("Érvénytelen normál alak! Használj 'a×10^b' formát, pl. '3,5×10^3'.");
+      return;
+    }
+    const [_, userCoef, userExp] = powerMatch;
+    const [__, ansCoef, ansExp] = currentTask.answer.match(/^([\d\.]+)×10\^([\d\-]+)$/) || [];
+    correct = Math.abs(parseFloat(userCoef.replace(',', '.')) - parseFloat(ansCoef)) < 0.01 && parseInt(userExp) === parseInt(ansExp);
+    if (!correct) {
+      alert(`Nem jó a normál alak! A helyes válaszhoz hasonló érték: ${ansCoef}×10^${ansExp}. Ellenőrizd a kitevő és az együttható értékét!`);
+    }
+  } else {
+    correct = evaluateExpression(val, currentTask.answer, currentTask.answerType, currentTask);
+    if (!correct) {
+      let hint = '';
+      const userAnswer = parseFloat(val.replace(',', '.'));
+      const correctAnswer = parseFloat(currentTask.answer);
+      if (!isNaN(userAnswer)) {
+        if (currentTask.value === 'ohm_torveny') {
+          if (currentTask.U && currentTask.R) { // I = U / R
+            hint = userAnswer < correctAnswer
+              ? `Túl kicsi a válasz! Az áramot ${currentTask.unit}-ban számold: I = U / R, ahol U = ${currentTask.U} V, R = ${currentTask.R} ${currentTask.unit === 'mA' ? 'MΩ' : 'kΩ'}.`
+              : `Túl nagy a válasz! Az áramot ${currentTask.unit}-ban számold: I = U / R, ahol U = ${currentTask.U} V, R = ${currentTask.R} ${currentTask.unit === 'mA' ? 'MΩ' : 'kΩ'}.`;
+          } else if (currentTask.I && currentTask.R) { // U = I * R
+            hint = userAnswer < correctAnswer
+              ? `Túl kicsi a válasz! A feszültséget V-ban számold: U = I * R, ahol I = ${currentTask.I} ${currentTask.unit === 'V' ? 'mA' : 'A'}, R = ${currentTask.R} ${currentTask.unit === 'V' ? 'MΩ' : 'kΩ'}.`
+              : `Túl nagy a válasz! A feszültséget V-ban számold: U = I * R, ahol I = ${currentTask.I} ${currentTask.unit === 'V' ? 'mA' : 'A'}, R = ${currentTask.R} ${currentTask.unit === 'V' ? 'MΩ' : 'kΩ'}.`;
+          } else if (currentTask.U && currentTask.I) { // R = U / I
+            hint = userAnswer < correctAnswer
+              ? `Túl kicsi a válasz! Az ellenállást ${currentTask.unit}-ban számold: R = U / I, ahol U = ${currentTask.U} V, I = ${currentTask.I} ${currentTask.unit === 'kΩ' || currentTask.unit === 'MΩ' ? 'mA' : 'A'}.`
+              : `Túl nagy a válasz! Az ellenállást ${currentTask.unit}-ban számold: R = U / I, ahol U = ${currentTask.U} V, I = ${currentTask.I} ${currentTask.unit === 'kΩ' || currentTask.unit === 'MΩ' ? 'mA' : 'A'}.`;
           }
+        } else {
+          hint = userAnswer < correctAnswer
+            ? `Túl kicsi a válasz! Próbálj nagyobb értéket, közel ${correctAnswer.toFixed(2)} ${currentTask.unit || ''}-hoz.`
+            : `Túl nagy a válasz! Próbálj kisebb értéket, közel ${correctAnswer.toFixed(2)} ${currentTask.unit || ''}-hoz.`;
+        }
+      } else {
+        hint = `Érvénytelen válasz! Ellenőrizd a formátumot, pl. '123', '0,93', vagy '${currentTask.answerType === 'fraction' ? '3/4' : '320/460'}'.`;
+      }
+      alert(hint);
+    }
+  }
 
-          if (gameActive && currentQuestion < QUESTIONS) {
-            if (pauseStart) {
-              const pauseDuration = Date.now() - pauseStart;
-              startTime += pauseDuration;
-            }
-            timerInterval = setInterval(updateTimer, 1000);
-          } else if (currentQuestion >= QUESTIONS) {
-            finishGame();
-          }
-        };
+  let pauseStart = null;
+  if (timerInterval) {
+    clearInterval(timerInterval);
+    pauseStart = Date.now();
+  }
+
+  if (correct) {
+    score++;
+    currentQuestion++;
+    showQuestion(currentQuestion);
+    if (currentQuestion >= QUESTIONS) {
+      finishGame();
+    } else {
+      if (pauseStart) {
+        const pauseDuration = Date.now() - pauseStart;
+        startTime += pauseDuration;
+      }
+      timerInterval = setInterval(updateTimer, 1000);
+    }
+  } else {
+    wrongAnswers++;
+    if (timerInterval) {
+      clearInterval(timerInterval);
+    }
+    timerInterval = setInterval(updateTimer, 1000);
+  }
+};
         rowDiv.appendChild(submitBtn);
       } else {
         const btn = document.createElement('button');
@@ -1901,6 +2020,13 @@ function renderNumpad(answerState, onChange) {
         btn.className = 'numpad-btn';
         btn.textContent = key;
         btn.tabIndex = -1;
+
+        // Speciális gomb inicializálása
+        if (key === '/') {
+          btn.dataset.state = '/'; // Kezdeti állapot
+          btn.textContent = '/'; // Kezdeti szöveg
+        }
+
         btn.onclick = () => {
           btn.classList.add('flash');
           setTimeout(() => btn.classList.remove('flash'), 200);
@@ -1913,17 +2039,32 @@ function renderNumpad(answerState, onChange) {
             } else {
               answerState.value = answerState.value.substring(1);
             }
-          } else if (key === specialKey) {
-            if (!answerState.value.includes(specialKey)) {
-              answerState.value += specialKey;
+          } else if (btn.dataset.state) { // Speciális gomb kezelése
+            const currentState = btn.dataset.state;
+            const lastChar = answerState.value.slice(-1);
+            console.log('Speciális gomb nyomva:', { currentState, lastChar, currentValue: answerState.value });
+
+            // Ha az utolsó karakter '/' vagy '*', eltávolítjuk
+            if (lastChar === '/' || lastChar === '*') {
+              answerState.value = answerState.value.slice(0, -1);
             }
+
+            // Aktuális jel hozzáadása
+            answerState.value += currentState;
+
+            // Váltás a másik jelre
+            const newState = currentState === '/' ? '*' : '/';
+            btn.dataset.state = newState;
+            btn.textContent = newState;
+            console.log('Speciális gomb frissítve:', { newState, buttonText: btn.textContent, newValue: answerState.value });
           } else if (key === '.') {
             if (answerState.value !== "" && !answerState.value.includes('.')) {
-              answerState.value += '.';
+              answerState.value += ','; // Vessző a magyar billentyűzethez
             }
           } else if (['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'].includes(key)) {
             answerState.value += key;
           }
+          console.log('Új beviteli mező tartalom:', answerState.value);
           onChange(answerState.value);
         };
         rowDiv.appendChild(btn);
@@ -1934,6 +2075,87 @@ function renderNumpad(answerState, onChange) {
   return numpadDiv;
 }
 
+
+function evaluateExpression(input, correctAnswer, answerType, taskData) {
+  if (!input || !correctAnswer) return false;
+
+  // Normalizáljuk a bevitelt: vessző → pont, szorzás jele egységesítése
+  let normalizedInput = input.replace(',', '.').replace('×', '*').trim();
+
+  // Ha nem tartalmaz műveleti jelet, akkor egyszerű számként kezeljük
+  if (!normalizedInput.includes('/') && !normalizedInput.includes('*')) {
+    const userAnswer = parseFloat(normalizedInput);
+    if (answerType === 'decimal') {
+      const precision = 2;
+      return Math.abs(userAnswer - parseFloat(correctAnswer)) < Math.pow(10, -precision);
+    } else if (answerType === 'number') {
+      return Math.abs(userAnswer - parseFloat(correctAnswer)) < 0.01;
+    }
+    return false;
+  }
+
+  try {
+    // Kifejezés kiértékelése
+    let computedResult;
+    if (normalizedInput.includes('/')) {
+      const [left, right] = normalizedInput.split('/').map(s => parseFloat(s.trim()));
+      if (isNaN(left) || isNaN(right) || right === 0) return false;
+      computedResult = left / right;
+    } else if (normalizedInput.includes('*')) {
+      const [left, right] = normalizedInput.split('*').map(s => parseFloat(s.trim()));
+      if (isNaN(left) || isNaN(right)) return false;
+      computedResult = left * right;
+    } else {
+      return false;
+    }
+
+    // Mértékegységek figyelembevétele az Ohm-törvény esetén
+    if (taskData && taskData.value === 'ohm_torveny') {
+      const precision = 2;
+      const expectedResult = parseFloat(correctAnswer);
+      const resultUnit = taskData.unit;
+      let adjustedResult = computedResult;
+
+      // Mértékegységek átváltása
+      if (resultUnit === 'kΩ') adjustedResult /= 1000;
+      if (resultUnit === 'MΩ') adjustedResult /= 1000000;
+      if (resultUnit === 'mA') adjustedResult *= 1000;
+
+      if (Math.abs(adjustedResult - expectedResult) < Math.pow(10, -precision)) {
+        return true;
+      }
+
+      // Ellenőrizzük a kifejezés számértékeit
+      if (taskData.U && taskData.R) { // I = U / R
+        const R_factor = taskData.unit === 'MΩ' ? 1000000 : taskData.unit === 'kΩ' ? 1000 : 1;
+        const expectedLeft = taskData.U;
+        const expectedRight = taskData.R * R_factor;
+        const [left, right] = normalizedInput.split('/').map(s => parseFloat(s.trim()));
+        return Math.abs(left - expectedLeft) < 0.01 && Math.abs(right - expectedRight) < 0.01;
+      } else if (taskData.I && taskData.R) { // U = I * R
+        const I_factor = taskData.unit === 'mA' ? 0.001 : 1;
+        const R_factor = taskData.unit === 'MΩ' ? 1000000 : taskData.unit === 'kΩ' ? 1000 : 1;
+        const expectedLeft = taskData.I * I_factor;
+        const expectedRight = taskData.R * R_factor;
+        const [left, right] = normalizedInput.split('*').map(s => parseFloat(s.trim()));
+        return (Math.abs(left - expectedLeft) < 0.01 && Math.abs(right - expectedRight) < 0.01) ||
+               (Math.abs(left - expectedRight) < 0.01 && Math.abs(right - expectedLeft) < 0.01);
+      } else if (taskData.U && taskData.I) { // R = U / I
+        const I_factor = taskData.unit === 'mA' ? 0.001 : 1;
+        const expectedLeft = taskData.U;
+        const expectedRight = taskData.I * I_factor;
+        const [left, right] = normalizedInput.split('/').map(s => parseFloat(s.trim()));
+        return Math.abs(left - expectedLeft) < 0.01 && Math.abs(right - expectedRight) < 0.01;
+      }
+    }
+
+    // Általános összehasonlítás
+    const precision = answerType === 'decimal' ? 2 : 0;
+    return Math.abs(computedResult - parseFloat(correctAnswer)) < Math.pow(10, -precision);
+  } catch {
+    return false;
+  }
+}
 // --- JÁTÉK LOGIKA ---
 function showQuestion(index) {
   quizContainer.innerHTML = "";
