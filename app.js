@@ -393,7 +393,82 @@ const taskTypes = [
     };
   }
 },
+{
+  name: "Egyenletek átrendezése",
+  value: "egyenletek_atrendezese",
+  generate: (difficulty) => {
+    const { min, max } = DIFFICULTY_SETTINGS[difficulty];
+    // Egységes változó és szín minden szinten
+    const variable = 'X'; // Minden szinten X
+    const color = '#00CED1'; // Türkiz szín, mindkét témában jól látható
+    const formattedVar = `<i>${variable}</i>`;
+    const coloredVar = `<span style="color: ${color};">${formattedVar}</span>`;
+    
+    if (difficulty === "hard") {
+      // Segédfüggvény az osztók meghatározására
+      const getDivisors = (n) => {
+        const divisors = [];
+        for (let i = 1; i <= Math.abs(n); i++) {
+          if (n % i === 0) {
+            divisors.push(i);
+            if (i !== Math.abs(n) / i) divisors.push(Math.abs(n / i));
+          }
+        }
+        return divisors.sort((a, b) => a - b);
+      };
 
+      let a = getRandomInt(2, 10);
+      let b = getRandomInt(2, 10);
+      let x = getRandomInt(min, max); // x változó használata
+      let product = a * x * b;
+      const divisors = getDivisors(product).filter(d => d >= 2 && d <= 10); // c tartomány: [2, 10]
+      let c = divisors.length > 0 ? divisors[getRandomInt(0, divisors.length - 1)] : getRandomInt(2, 10);
+      let d = getRandomInt(min, max);
+      let result = (a * x * b) / c + d;
+
+      // Biztosítjuk, hogy result egész szám legyen
+      if (!Number.isInteger(result)) {
+        result = Math.round(result);
+        d = result - (a * x * b) / c; // d korrigálása
+      }
+
+      // Ha result túl nagy, csökkentjük a számokat
+      if (Math.abs(result) > 10000) {
+        x = getRandomInt(Math.max(min, -50), Math.min(max, 50)); // Szűkítjük x tartományát
+        product = a * x * b;
+        const newDivisors = getDivisors(product).filter(d => d >= 2 && d <= 10);
+        c = newDivisors.length > 0 ? newDivisors[getRandomInt(0, newDivisors.length - 1)] : getRandomInt(2, 10);
+        d = getRandomInt(Math.max(min, -50), Math.min(max, 50));
+        result = (a * x * b) / c + d;
+        if (!Number.isInteger(result)) {
+          result = Math.round(result);
+          d = result - (a * x * b) / c;
+        }
+      }
+
+      return {
+        display: `${a}${coloredVar} * ${b} / ${c} ${d >= 0 ? "+" : "-"} ${Math.abs(d)} = ${result} | ${coloredVar}`,
+        answer: x.toString(),
+        answerType: "number"
+      };
+    }
+
+    let aMin = difficulty === "easy" ? 1 : 2;
+    let aMax = difficulty === "easy" ? 5 : 10;
+    let bMin = difficulty === "easy" ? -5 : -15;
+    let bMax = difficulty === "easy" ? 5 : 15;
+    let x = getRandomInt(min, max); // x változó minden szinten
+    let a = getRandomInt(aMin, aMax);
+    let b = getRandomInt(bMin, bMax);
+    let result = a * x + b;
+
+    return {
+      display: `${a}${coloredVar} ${b >= 0 ? "+" : "-"} ${Math.abs(b)} = ${result} | ${coloredVar}`,
+      answer: x.toString(),
+      answerType: "number"
+    };
+  }
+},
 {
   name: "Normál alakos számok",
   value: "normal_alak",
@@ -1965,7 +2040,7 @@ function renderNumpad(answerState, onChange) {
   const currentTask = questions[currentQuestion] || {};
 
   const rows = [
-    ['1', '2', '3', '-', '←'],
+    ['1', '2', '3', '±', '←'],
     ['4', '5', '6', '.', 'submit'],
     ['7', '8', '9', '0', '/'] // Kezdetben '/' (osztás)
   ];
@@ -2113,7 +2188,7 @@ function renderNumpad(answerState, onChange) {
 
           if (key === '←') {
             answerState.value = answerState.value.slice(0, -1);
-          } else if (key === '-') {
+          } else if (key === '±') {
             if (!answerState.value.startsWith('-')) {
               answerState.value = '-' + answerState.value;
             } else {
