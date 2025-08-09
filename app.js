@@ -751,6 +751,138 @@ const taskTypes = [
     }
   }
 },
+
+
+{
+  name: "Mértékegység előtagok",
+  value: "mertekegyseg_elotagok",
+  generate: (difficulty) => {
+    // Mértékegység előtagok és adataik normál alakkal
+    const prefixes = {
+      easy: [
+        { name: "deci", symbol: "d", multiplier: "10^-1", fullName: "tized rész" },
+        { name: "centi", symbol: "c", multiplier: "10^-2", fullName: "század rész" },
+        { name: "milli", symbol: "m", multiplier: "10^-3", fullName: "ezredik rész" },
+        { name: "kilo", symbol: "k", multiplier: "10^3", fullName: "ezerszeres" },
+        { name: "alapegység", symbol: "", multiplier: "10^0", fullName: "alapegység" }
+      ],
+      medium: [
+        { name: "deci", symbol: "d", multiplier: "10^-1", fullName: "tized rész" },
+        { name: "mikro", symbol: "µ", multiplier: "10^-6", fullName: "milliomod rész" },
+        { name: "milli", symbol: "m", multiplier: "10^-3", fullName: "ezredik rész" },
+        { name: "kilo", symbol: "k", multiplier: "10^3", fullName: "ezerszeres" },
+        { name: "mega", symbol: "M", multiplier: "10^6", fullName: "milliószoros" },
+        { name: "alapegység", symbol: "", multiplier: "10^0", fullName: "alapegység" }
+      ],
+      hard: [
+        { name: "nano", symbol: "n", multiplier: "10^-9", fullName: "milliárdod rész" },
+        { name: "mikro", symbol: "µ", multiplier: "10^-6", fullName: "milliomod rész" },
+        { name: "milli", symbol: "m", multiplier: "10^-3", fullName: "ezredik rész" },
+        { name: "kilo", symbol: "k", multiplier: "10^3", fullName: "ezerszeres" },
+        { name: "mega", symbol: "M", multiplier: "10^6", fullName: "milliószoros" },
+        { name: "giga", symbol: "G", multiplier: "10^9", fullName: "milliárdszoros" },
+        { name: "tera", symbol: "T", multiplier: "10^12", fullName: "billiomodszoros" },
+        { name: "alapegység", symbol: "", multiplier: "10^0", fullName: "alapegység" }
+      ]
+    };
+
+    const selectedPrefixes = prefixes[difficulty];
+    const prefix = selectedPrefixes[getRandomInt(0, selectedPrefixes.length - 1)];
+    const taskType = getRandomInt(0, 4); // 0-4, hogy mind az 5 kérdéstípus előforduljon
+
+    let options = [];
+    let correctAnswer;
+    const wrongOptions = {
+      names: ["nano", "mikro", "milli", "centi", "deci", "alapegység", "kilo", "mega", "giga", "tera"],
+      symbols: ["n", "µ", "m", "c", "d", "", "k", "M", "G", "T"],
+      multipliers: ["10^-9", "10^-6", "10^-3", "10^-2", "10^-1", "10^0", "10^3", "10^6", "10^9", "10^12"],
+      fullNames: ["milliárdod rész", "milliomod rész", "ezredik rész", "század rész", "tized rész", "alapegység", "ezerszeres", "milliószoros", "milliárdszoros", "billiomodszoros"]
+    };
+
+    // Segédfüggvény a szorzó formázására HTML felső indexszel
+    const formatMultiplier = (multiplier) => {
+      return multiplier.replace(/10\^(-?\d+)/, "10<sup>$1</sup>");
+    };
+
+    if (taskType === 0) { // Mi a neve, ha a jele: ...
+      options = [prefix.name];
+      const wrongNames = wrongOptions.names.filter(name => name !== prefix.name && selectedPrefixes.some(p => p.name === name));
+      while (options.length < 3) {
+        const wrongName = wrongNames[getRandomInt(0, wrongNames.length - 1)];
+        if (!options.includes(wrongName)) options.push(wrongName);
+      }
+      options = shuffleArray(options);
+      correctAnswer = (options.indexOf(prefix.name) + 1).toString();
+      const displaySymbol = prefix.symbol || "(nincs előtag)";
+      return {
+        display: `Mi a neve, ha a jele: <span class="blue-percent">${displaySymbol}</span> ?<br>1.&nbsp;&nbsp;&nbsp;${options[0]}<br>2.&nbsp;&nbsp;&nbsp;${options[1]}<br>3.&nbsp;&nbsp;&nbsp;${options[2]}`,
+        answer: correctAnswer,
+        answerType: "number"
+      };
+    } else if (taskType === 1) { // Mi a jele az előtagnak, ha a neve: ...
+      options = [prefix.symbol || "(nincs előtag)"];
+      const wrongSymbols = wrongOptions.symbols.filter(symbol => symbol !== prefix.symbol && selectedPrefixes.some(p => p.symbol === symbol));
+      while (options.length < 3) {
+        const wrongSymbol = wrongSymbols[getRandomInt(0, wrongSymbols.length - 1)];
+        const displaySymbol = wrongSymbol || "(nincs előtag)";
+        if (!options.includes(displaySymbol)) options.push(displaySymbol);
+      }
+      options = shuffleArray(options);
+      correctAnswer = (options.indexOf(prefix.symbol || "(nincs előtag)") + 1).toString();
+      return {
+        display: `Mi a jele az előtagnak, ha a neve: <span class="blue-percent">${prefix.name}</span> ?<br>1.&nbsp;&nbsp;&nbsp;${options[0]}<br>2.&nbsp;&nbsp;&nbsp;${options[1]}<br>3.&nbsp;&nbsp;&nbsp;${options[2]}`,
+        answer: correctAnswer,
+        answerType: "number"
+      };
+    } else if (taskType === 2) { // Mi a szorzó értéke, ha a neve: ...
+      options = [prefix.multiplier];
+      const wrongMultipliers = wrongOptions.multipliers.filter(multiplier => multiplier !== prefix.multiplier && selectedPrefixes.some(p => p.multiplier === multiplier));
+      while (options.length < 3) {
+        const wrongMultiplier = wrongMultipliers[getRandomInt(0, wrongMultipliers.length - 1)];
+        if (!options.includes(wrongMultiplier)) options.push(wrongMultiplier);
+      }
+      options = shuffleArray(options);
+      correctAnswer = (options.indexOf(prefix.multiplier) + 1).toString();
+      // Formázott válaszlehetőségek felső indexszel
+      const formattedOptions = options.map(opt => formatMultiplier(opt));
+      return {
+        display: `Mi a szorzó értéke, ha a neve: <span class="blue-percent">${prefix.name}</span> ?<br>1.&nbsp;&nbsp;&nbsp;${formattedOptions[0]}<br>2.&nbsp;&nbsp;&nbsp;${formattedOptions[1]}<br>3.&nbsp;&nbsp;&nbsp;${formattedOptions[2]}`,
+        answer: correctAnswer,
+        answerType: "number"
+      };
+    } else if (taskType === 3) { // Mi a jelentése, ha a neve: ...
+      options = [prefix.fullName];
+      const wrongFullNames = wrongOptions.fullNames.filter(fullName => fullName !== prefix.fullName && selectedPrefixes.some(p => p.fullName === fullName));
+      while (options.length < 3) {
+        const wrongFullName = wrongFullNames[getRandomInt(0, wrongFullNames.length - 1)];
+        if (!options.includes(wrongFullName)) options.push(wrongFullName);
+      }
+      options = shuffleArray(options);
+      correctAnswer = (options.indexOf(prefix.fullName) + 1).toString();
+      return {
+        display: `Mi a jelentése, ha a neve: <span class="blue-percent">${prefix.name}</span> ?<br>1.&nbsp;&nbsp;&nbsp;${options[0]}<br>2.&nbsp;&nbsp;&nbsp;${options[1]}<br>3.&nbsp;&nbsp;&nbsp;${options[2]}`,
+        answer: correctAnswer,
+        answerType: "number"
+      };
+    } else { // Mi a neve, ha a szorzó értéke: ...
+      options = [prefix.name];
+      const wrongNames = wrongOptions.names.filter(name => name !== prefix.name && selectedPrefixes.some(p => p.name === name));
+      while (options.length < 3) {
+        const wrongName = wrongNames[getRandomInt(0, wrongNames.length - 1)];
+        if (!options.includes(wrongName)) options.push(wrongName);
+      }
+      options = shuffleArray(options);
+      correctAnswer = (options.indexOf(prefix.name) + 1).toString();
+      return {
+        display: `Mi a neve, ha a szorzó értéke: <span class="blue-percent">${formatMultiplier(prefix.multiplier)}</span> ?<br>1.&nbsp;&nbsp;&nbsp;${options[0]}<br>2.&nbsp;&nbsp;&nbsp;${options[1]}<br>3.&nbsp;&nbsp;&nbsp;${options[2]}`,
+        answer: correctAnswer,
+        answerType: "number"
+      };
+    }
+  }
+},
+
+
 {
   name: "Mértékegység átváltás",
   value: "mertekegyseg_atvaltas",
@@ -2154,12 +2286,20 @@ function formatScientific(value) {
   return `${mantissa} × 10^${exponent}`;
 }
 
-
 function renderNumpad(answerState, onChange) {
   const currentTask = questions[currentQuestion] || {};
 
+  // **ÚJ**: Globális állapot mentése a speciális gombokhoz
+  if (!window.numpadState) {
+    window.numpadState = {
+      lightningActivated: false,
+      lightningCurrentSymbol: '/',
+      lightningCount: 0
+    };
+  }
+
   // Számláló a villám gomb egymást követő lenyomásainak követésére
-  let lightningCount = 0;
+  let lightningCount = window.numpadState.lightningCount;
 
   const rows = [
     ['1', '2', '3', '±', '←'],
@@ -2303,8 +2443,14 @@ function renderNumpad(answerState, onChange) {
 
         // Speciális gomb inicializálása
         if (key === '⚡️') {
-          btn.dataset.state = '⚡️'; // Kezdeti állapot: villám
-          btn.dataset.lightningCount = '0'; // Számláló inicializálása
+          // **MÓDOSÍTOTT**: Állapot visszaállítása a mentett értékekből
+          if (window.numpadState.lightningActivated) {
+            btn.dataset.state = window.numpadState.lightningCurrentSymbol;
+            btn.textContent = window.numpadState.lightningCurrentSymbol;
+          } else {
+            btn.dataset.state = '⚡️'; // Kezdeti állapot: villám
+          }
+          btn.dataset.lightningCount = window.numpadState.lightningCount.toString();
           lightningButton = btn; // Referencia tárolása a villám gombra
         } else if (key === '/') {
           btn.dataset.state = '/'; // Kezdeti állapot: /
@@ -2317,6 +2463,7 @@ function renderNumpad(answerState, onChange) {
           // Ha nem a villám gombot nyomták meg, és a villám gomb még villám állapotban van, visszaállítjuk a számlálót
           if (key !== '⚡️' && lightningButton && lightningButton.dataset.state === '⚡️') {
             lightningCount = 0;
+            window.numpadState.lightningCount = 0; // **ÚJ**: Globális állapot frissítése
             lightningButton.dataset.lightningCount = '0';
             console.log('Más gomb lenyomva, villám számláló visszaállítva:', { lightningCount, currentValue: answerState.value });
           }
@@ -2333,13 +2480,17 @@ function renderNumpad(answerState, onChange) {
             // Villám gomb kezelése
             lightningCount = parseInt(btn.dataset.lightningCount || '0') + 1;
             btn.dataset.lightningCount = lightningCount.toString();
+            window.numpadState.lightningCount = lightningCount; // **ÚJ**: Globális állapot frissítése
             console.log('Villám gomb lenyomva:', { lightningCount, currentValue: answerState.value });
 
-            if (lightningCount >= 9) {
-              // Kilenc egymást követő lenyomás után váltás / jelre
+            if (lightningCount >= 9 && !window.numpadState.lightningActivated) {
+              // **MÓDOSÍTOTT**: Kilenc egymást követő lenyomás után váltás / jelre
               btn.dataset.state = '/';
               btn.textContent = '/';
+              window.numpadState.lightningActivated = true; // **ÚJ**: Aktiválás jelzése
+              window.numpadState.lightningCurrentSymbol = '/'; // **ÚJ**: Aktuális szimbólum mentése
               lightningCount = 0; // Számláló visszaállítása
+              window.numpadState.lightningCount = 0; // **ÚJ**: Globális állapot frissítése
               btn.dataset.lightningCount = '0';
               console.log('Villám gomb átváltva / jelre:', { newState: '/', newText: btn.textContent });
             }
@@ -2350,7 +2501,7 @@ function renderNumpad(answerState, onChange) {
               return;
             }
 
-            // Ha már / jelre váltott, a / jel viselkedését követi
+            // Ha már / vagy * jelre váltott, a speciális viselkedését követi
             const currentState = btn.dataset.state;
             const lastChar = answerState.value.slice(-1);
             console.log('Speciális gomb kezelése:', { currentState, lastChar, currentValue: answerState.value });
@@ -2363,10 +2514,11 @@ function renderNumpad(answerState, onChange) {
             // Aktuális jel hozzáadása
             answerState.value += currentState;
 
-            // Váltás a másik jelre (*-ra)
+            // Váltás a másik jelre
             const newState = currentState === '/' ? '*' : '/';
             btn.dataset.state = newState;
             btn.textContent = newState;
+            window.numpadState.lightningCurrentSymbol = newState; // **ÚJ**: Új szimbólum mentése
             console.log('Speciális gomb frissítve:', { newState, buttonText: btn.textContent, newValue: answerState.value });
           } else if (key === '.') {
             if (answerState.value !== "" && !answerState.value.includes('.')) {
@@ -2385,7 +2537,6 @@ function renderNumpad(answerState, onChange) {
   });
   return numpadDiv;
 }
-
 
 // --- JÁTÉK LOGIKA ---
 function showQuestion(index) {
@@ -2432,10 +2583,17 @@ function showQuestion(index) {
 
 // --- JÁTÉK INDITÁS ---
 function startGame() {
+  // **ÚJ**: Numpad állapot visszaállítása új játéknál
+  window.numpadState = {
+    lightningActivated: false,
+    lightningCurrentSymbol: '/',
+    lightningCount: 0
+  };
+  
   gameActive = true;
   score = 0;
   currentQuestion = 0;
-  wrongAnswers = jakab = 0; // Helytelen válaszok inicializálása
+  wrongAnswers = 0; // Helytelen válaszok inicializálása
   generateQuestions();
   showQuestion(0);
   startTime = Date.now();
