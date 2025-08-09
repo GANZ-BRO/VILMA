@@ -378,7 +378,7 @@ const taskTypes = [
     }
     let percent = percentArr[getRandomInt(0, percentArr.length - 1)];
     let base = baseCandidates[getRandomInt(0, baseCandidates.length - 1)];
-    let result = Math.round(base * percent / 100);
+    let result = Number((base * percent / 100).toFixed(2)); // 2 tizedesjegyre kerekítés
     let lastDigit = base % 10;
     let lastTwoDigits = base % 100;
     let rag = (lastDigit === 3 || lastDigit === 6 || lastDigit === 8 ||
