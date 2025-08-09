@@ -229,11 +229,11 @@ body.dark #quiz > div {
 }
 
 .question-text {
-  font-weight: 700;
-  font-size: clamp(2.4em, 8vw, 3.6em);
-  margin-bottom: 0.5em;
+  font-weight: 450;
+  font-size: clamp(1.2em, 6vw, 2.4em);
+  margin-bottom: 0.3em;
   color: var(--text-light);
-  line-height: 1.4;
+  line-height: 1.2;
   word-break: break-word;
   width: 100%;
   text-align: center;
@@ -244,21 +244,15 @@ body.dark .question-text {
 }
 
 .answer-view {
-  font-size: 3em;
-  padding: 0.75em;
-  margin: 0.5em 0;
-  border: 2px solid var(--input-border-light);
-  background: var(--input-bg-light);
-  color: var(--input-text-light);
-  border-radius: 10px;
-  min-width: 150px;
-  min-height: 60px;
-  box-sizing: border-box;
-  display: flex;
+  font-size: 3em;        /* vagy 2.25em, ha 1.5x nagyobb kell */
+  height: 1.5em;           /* fix magasság, hogy ne nőjön túl nagyra, próbáld ki mekkora fér el szépen */
+  padding: 0.1em 0.3em;  /* kisebb padding */
+  min-height: unset;     /* ha volt ilyen */
+  max-width: 450px;
+  width: 100%;
   align-items: center;
   justify-content: center;
   text-align: center;
-  max-width: 300px;
   white-space: normal;
   overflow: auto;
   transition: background 0.2s ease, border-color 0.2s ease;

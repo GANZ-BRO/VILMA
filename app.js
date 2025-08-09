@@ -1381,7 +1381,8 @@ const taskTypes = [
     }
   }
 },
-  {
+  // --- TELJESÍTMÉNY GENERÁTOR JAVÍTVA ---
+{
   name: "Teljesítmény számolás",
   value: "teljesitmeny",
   generate: (difficulty) => {
@@ -1393,130 +1394,198 @@ const taskTypes = [
     const { maxU, maxI, maxP } = ranges[difficulty];
     const precision = difficulty === "hard" ? 5 : 2;
     let U, I, P, type, answer, display, answerType, unit;
+    let display_U, display_U_unit, display_I, display_I_unit, display_P, display_P_unit;
+
     type = getRandomInt(0, 2); // 0: P, 1: U, 2: I
     const randomOrder = Math.random() < 0.5;
 
-    if (type === 0) { // Teljesítmény számítás (P = U * I)
-      U = Number((getRandomInt(10, maxU) + Math.random()).toFixed(1)); // 1 tizedesjegy
-      I = Number((getRandomInt(1, maxI) + Math.random()).toFixed(1)); // 1 tizedesjegy
-      P = U * I; // W-ban
-      const formatted = formatNumber(P, 'W', difficulty);
-      answer = Number(formatted.value.toFixed(precision)).toString();
-      unit = formatted.unit;
-      answerType = Number.isInteger(formatted.value) ? "number" : "decimal";
-      if (difficulty === "medium") {
-        const I_kA = Number((I / 1000).toFixed(3)); // kA-ban
-        display = randomOrder
-          ? `Mennyi a teljesítmény (<span class="blue-percent">${unit}</span>-ban), ha <b>U = ${U} <span class="blue-percent">V</span></b> és <b>I = ${I_kA} <span class="blue-percent">kA</span></b>?`
-          : `Mennyi a teljesítmény (<span class="blue-percent">${unit}</span>-ban), ha <b>I = ${I_kA} <span class="blue-percent">kA</span></b> és <b>U = ${U} <span class="blue-percent">V</span></b>?`;
-        I = I_kA * 1000; // A-ban
-      } else if (difficulty === "hard") {
-        const U_kV = Number((U / 1000).toFixed(3)); // kV-ban
-        const I_mA = Number((I * 1000).toFixed(1)); // mA-ban
-        const exponentU = Math.floor(Math.log10(Math.abs(U_kV)));
-        const mantissaU = Number((U_kV / Math.pow(10, exponentU)).toFixed(1));
-        const exponentI = Math.floor(Math.log10(Math.abs(I_mA)));
-        const mantissaI = Number((I_mA / Math.pow(10, exponentI)).toFixed(1));
-        display = randomOrder
-          ? `Mennyi a teljesítmény (<span class="blue-percent">${unit}</span>-ban), ha <b>U = ${mantissaU} × 10<sup>${exponentU}</sup> <span class="blue-percent">kV</span></b> és <b>I = ${mantissaI} × 10<sup>${exponentI}</sup> <span class="blue-percent">mA</span></b>?`
-          : `Mennyi a teljesítmény (<span class="blue-percent">${unit}</span>-ban), ha <b>I = ${mantissaI} × 10<sup>${exponentI}</sup> <span class="blue-percent">mA</span></b> és <b>U = ${mantissaU} × 10<sup>${exponentU}</sup> <span class="blue-percent">kV</span></b>?`;
-        U = mantissaU * Math.pow(10, exponentU) * 1000; // V-ban
-        I = mantissaI * Math.pow(10, exponentI) / 1000; // A-ban
+    // --- TELJESÍTMÉNY SZÁMÍTÁS (P = U * I) ---
+    if (type === 0) {
+      if (difficulty === "easy") {
+        U = Number((getRandomInt(10, maxU) + Math.random()).toFixed(1));
+        I = Number((getRandomInt(1, maxI) + Math.random()).toFixed(1));
+        P = U * I;
+        display_U = U;
+        display_U_unit = "V";
+        display_I = I;
+        display_I_unit = "A";
+        display_P = Number(P.toFixed(2));
+        display_P_unit = "W";
+        answer = display_P.toString();
+        answerType = Number.isInteger(display_P) ? "number" : "decimal";
+        unit = display_P_unit;
+      } else if (difficulty === "medium") {
+        U = Number((getRandomInt(10, maxU) + Math.random()).toFixed(1));
+        let I_kA = Number(((getRandomInt(1, maxI) + Math.random()) / 1000).toFixed(3));
+        I = Number((I_kA * 1000).toFixed(1));
+        P = U * (I / 1000);
+        display_U = U;
+        display_U_unit = "V";
+        display_I = I_kA;
+        display_I_unit = "kA";
+        display_P = Number(P.toFixed(2));
+        display_P_unit = "kW";
+        answer = display_P.toString();
+        answerType = "decimal";
+        unit = display_P_unit;
       } else {
-        display = randomOrder
-          ? `Mennyi a teljesítmény (<span class="blue-percent">${unit}</span>-ban), ha <b>U = ${U} <span class="blue-percent">V</span></b> és <b>I = ${I} <span class="blue-percent">A</span></b>?`
-          : `Mennyi a teljesítmény (<span class="blue-percent">${unit}</span>-ban), ha <b>I = ${I} <span class="blue-percent">A</span></b> és <b>U = ${U} <span class="blue-percent">V</span></b>?`;
+        let U_kV = Number((getRandomInt(1, maxU/1000) + Math.random()).toFixed(3));
+        let I_mA = Number((getRandomInt(1, maxI*100) + Math.random()).toFixed(1));
+        U = U_kV;
+        I = I_mA;
+        P = U_kV * 1000 * (I_mA / 1000);
+        display_U = U_kV;
+        display_U_unit = "kV";
+        display_I = I_mA;
+        display_I_unit = "mA";
+        display_P = Number(P.toFixed(precision));
+        display_P_unit = "W";
+        answer = display_P.toString();
+        answerType = "decimal";
+        unit = display_P_unit;
       }
+      display = randomOrder
+        ? `Mennyi a teljesítmény (<span class="blue-percent">${unit}</span>-ban), ha <b>U = ${display_U} <span class="blue-percent">${display_U_unit}</span></b> és <b>I = ${display_I} <span class="blue-percent">${display_I_unit}</span></b>?`
+        : `Mennyi a teljesítmény (<span class="blue-percent">${unit}</span>-ban), ha <b>I = ${display_I} <span class="blue-percent">${display_I_unit}</span></b> és <b>U = ${display_U} <span class="blue-percent">${display_U_unit}</span></b>?`;
+
       return {
         display,
         answer,
         answerType,
-        options: difficulty === "easy" ? generateOptions(Number(formatted.value.toFixed(precision)), "decimal", difficulty, unit) : [],
+        options: [],
         unit,
-        U,
-        I
+        display_U, display_U_unit,
+        display_I, display_I_unit,
+        display_P, display_P_unit,
+        value: "teljesitmeny",
+        difficulty
       };
-    } else if (type === 1) { // Feszültség számítás (U = P / I)
-      P = Number((getRandomInt(10, maxP) + Math.random()).toFixed(1)); // W-ban
-      I = Number((getRandomInt(1, maxI) + Math.random()).toFixed(1)); // A-ban
-      U = P / I; // V-ban
-      const formatted = formatNumber(U, 'V', difficulty);
-      answer = Number(formatted.value.toFixed(precision)).toString();
-      unit = formatted.unit;
-      answerType = Number.isInteger(formatted.value) ? "number" : "decimal";
-      if (difficulty === "medium") {
-        const I_kA = Number((I / 1000).toFixed(3)); // kA-ban
-        const P_kW = Number((P / 1000).toFixed(3)); // kW-ban
-        display = randomOrder
-          ? `Mennyi a feszültség (<span class="blue-percent">${unit}</span>-ban), ha <b>P = ${P_kW} <span class="blue-percent">kW</span></b> és <b>I = ${I_kA} <span class="blue-percent">kA</span></b>?`
-          : `Mennyi a feszültség (<span class="blue-percent">${unit}</span>-ban), ha <b>I = ${I_kA} <span class="blue-percent">kA</span></b> és <b>P = ${P_kW} <span class="blue-percent">kW</span></b>?`;
-        I = I_kA * 1000; // A-ban
-        P = P_kW * 1000; // W-ban
-      } else if (difficulty === "hard") {
-        const P_kW = Number((P / 1000).toFixed(3)); // kW-ban
-        const I_mA = Number((I * 1000).toFixed(1)); // mA-ban
-        const exponentP = Math.floor(Math.log10(Math.abs(P_kW)));
-        const mantissaP = Number((P_kW / Math.pow(10, exponentP)).toFixed(1));
-        const exponentI = Math.floor(Math.log10(Math.abs(I_mA)));
-        const mantissaI = Number((I_mA / Math.pow(10, exponentI)).toFixed(1));
-        display = randomOrder
-          ? `Mennyi a feszültség (<span class="blue-percent">${unit}</span>-ban), ha <b>P = ${mantissaP} × 10<sup>${exponentP}</sup> <span class="blue-percent">kW</span></b> és <b>I = ${mantissaI} × 10<sup>${exponentI}</sup> <span class="blue-percent">mA</span></b>?`
-          : `Mennyi a feszültség (<span class="blue-percent">${unit}</span>-ban), ha <b>I = ${mantissaI} × 10<sup>${exponentI}</sup> <span class="blue-percent">mA</span></b> és <b>P = ${mantissaP} × 10<sup>${exponentP}</sup> <span class="blue-percent">kW</span></b>?`;
-        P = mantissaP * Math.pow(10, exponentP) * 1000; // W-ban
-        I = mantissaI * Math.pow(10, exponentI) / 1000; // A-ban
+    }
+
+    // --- FESZÜLTSÉG SZÁMÍTÁS (U = P / I) ---
+    if (type === 1) {
+      if (difficulty === "easy") {
+        P = Number((getRandomInt(10, maxP) + Math.random()).toFixed(1));
+        I = Number((getRandomInt(1, maxI) + Math.random()).toFixed(1));
+        U = P / I;
+        display_P = P;
+        display_P_unit = "W";
+        display_I = I;
+        display_I_unit = "A";
+        display_U = Number(U.toFixed(2));
+        display_U_unit = "V";
+        answer = display_U.toString();
+        answerType = Number.isInteger(display_U) ? "number" : "decimal";
+        unit = display_U_unit;
+      } else if (difficulty === "medium") {
+        let P_kW = Number(((getRandomInt(1, maxP / 1000) + Math.random())).toFixed(3));
+        let I_kA = Number(((getRandomInt(1, maxI) + Math.random()) / 1000).toFixed(3));
+        P = P_kW * 1000;
+        I = I_kA * 1000;
+        U = P / (I_kA * 1000);
+        display_P = P_kW;
+        display_P_unit = "kW";
+        display_I = I_kA;
+        display_I_unit = "kA";
+        display_U = Number(U.toFixed(2));
+        display_U_unit = "V";
+        answer = display_U.toString();
+        answerType = "decimal";
+        unit = display_U_unit;
       } else {
-        display = randomOrder
-          ? `Mennyi a feszültség (<span class="blue-percent">${unit}</span>-ban), ha <b>P = ${P} <span class="blue-percent">W</span></b> és <b>I = ${I} <span class="blue-percent">A</span></b>?`
-          : `Mennyi a feszültség (<span class="blue-percent">${unit}</span>-ban), ha <b>I = ${I} <span class="blue-percent">A</span></b> és <b>P = ${P} <span class="blue-percent">W</span></b>?`;
+        let P_kW = Number(((getRandomInt(1, maxP / 1000) + Math.random())).toFixed(3));
+        let I_mA = Number((getRandomInt(1, maxI*100) + Math.random()).toFixed(1));
+        P = P_kW * 1000;
+        I = I_mA;
+        U = P / (I_mA / 1000);
+        display_P = P_kW;
+        display_P_unit = "kW";
+        display_I = I_mA;
+        display_I_unit = "mA";
+        display_U = Number(U.toFixed(precision));
+        display_U_unit = "V";
+        answer = display_U.toString();
+        answerType = "decimal";
+        unit = display_U_unit;
       }
+      display = randomOrder
+        ? `Mennyi a feszültség (<span class="blue-percent">${unit}</span>-ban), ha <b>P = ${display_P} <span class="blue-percent">${display_P_unit}</span></b> és <b>I = ${display_I} <span class="blue-percent">${display_I_unit}</span></b>?`
+        : `Mennyi a feszültség (<span class="blue-percent">${unit}</span>-ban), ha <b>I = ${display_I} <span class="blue-percent">${display_I_unit}</span></b> és <b>P = ${display_P} <span class="blue-percent">${display_P_unit}</span></b>?`;
+
       return {
         display,
         answer,
         answerType,
-        options: difficulty === "easy" ? generateOptions(Number(formatted.value.toFixed(precision)), "decimal", difficulty, unit) : [],
+        options: [],
         unit,
-        P,
-        I
+        display_P, display_P_unit,
+        display_I, display_I_unit,
+        display_U, display_U_unit,
+        value: "teljesitmeny",
+        difficulty
       };
-    } else { // Áramerősség számítás (I = P / U)
-      P = Number((getRandomInt(10, maxP) + Math.random()).toFixed(1)); // W-ban
-      U = Number((getRandomInt(10, maxU) + Math.random()).toFixed(1)); // V-ban
-      I = P / U; // A-ban
-      const formatted = formatNumber(I, 'A', difficulty);
-      answer = Number(formatted.value.toFixed(precision)).toString();
-      unit = formatted.unit;
-      answerType = Number.isInteger(formatted.value) ? "number" : "decimal";
-      if (difficulty === "medium") {
-        const P_kW = Number((P / 1000).toFixed(3)); // kW-ban
-        display = randomOrder
-          ? `Mennyi az áramerősség (<span class="blue-percent">${unit}</span>-ban), ha <b>P = ${P_kW} <span class="blue-percent">kW</span></b> és <b>U = ${U} <span class="blue-percent">V</span></b>?`
-          : `Mennyi az áramerősség (<span class="blue-percent">${unit}</span>-ban), ha <b>U = ${U} <span class="blue-percent">V</span></b> és <b>P = ${P_kW} <span class="blue-percent">kW</span></b>?`;
-        P = P_kW * 1000; // W-ban
-      } else if (difficulty === "hard") {
-        const P_kW = Number((P / 1000).toFixed(3)); // kW-ban
-        const U_kV = Number((U / 1000).toFixed(3)); // kV-ban
-        const exponentP = Math.floor(Math.log10(Math.abs(P_kW)));
-        const mantissaP = Number((P_kW / Math.pow(10, exponentP)).toFixed(1));
-        const exponentU = Math.floor(Math.log10(Math.abs(U_kV)));
-        const mantissaU = Number((U_kV / Math.pow(10, exponentU)).toFixed(1));
-        display = randomOrder
-          ? `Mennyi az áramerősség (<span class="blue-percent">${unit}</span>-ban), ha <b>P = ${mantissaP} × 10<sup>${exponentP}</sup> <span class="blue-percent">kW</span></b> és <b>U = ${mantissaU} × 10<sup>${exponentU}</sup> <span class="blue-percent">kV</span></b>?`
-          : `Mennyi az áramerősség (<span class="blue-percent">${unit}</span>-ban), ha <b>U = ${mantissaU} × 10<sup>${exponentU}</sup> <span class="blue-percent">kV</span></b> és <b>P = ${mantissaP} × 10<sup>${exponentP}</sup> <span class="blue-percent">kW</span></b>?`;
-        P = mantissaP * Math.pow(10, exponentP) * 1000; // W-ban
-        U = mantissaU * Math.pow(10, exponentU) * 1000; // V-ban
+    }
+
+    // --- ÁRAMERŐSSÉG SZÁMÍTÁS (I = P / U) ---
+    if (type === 2) {
+      if (difficulty === "easy") {
+        P = Number((getRandomInt(10, maxP) + Math.random()).toFixed(1));
+        U = Number((getRandomInt(10, maxU) + Math.random()).toFixed(1));
+        I = P / U;
+        display_P = P;
+        display_P_unit = "W";
+        display_U = U;
+        display_U_unit = "V";
+        display_I = Number(I.toFixed(2));
+        display_I_unit = "A";
+        answer = display_I.toString();
+        answerType = Number.isInteger(display_I) ? "number" : "decimal";
+        unit = display_I_unit;
+      } else if (difficulty === "medium") {
+        let P_kW = Number(((getRandomInt(1, maxP / 1000) + Math.random())).toFixed(3));
+        let U = Number((getRandomInt(10, maxU) + Math.random()).toFixed(1));
+        P = P_kW * 1000;
+        I = P / U;
+        display_P = P_kW;
+        display_P_unit = "kW";
+        display_U = U;
+        display_U_unit = "V";
+        display_I = Number(I.toFixed(2));
+        display_I_unit = "A";
+        answer = display_I.toString();
+        answerType = "decimal";
+        unit = display_I_unit;
       } else {
-        display = randomOrder
-          ? `Mennyi az áramerősség (<span class="blue-percent">${unit}</span>-ban), ha <b>P = ${P} <span class="blue-percent">W</span></b> és <b>U = ${U} <span class="blue-percent">V</span></b>?`
-          : `Mennyi az áramerősség (<span class="blue-percent">${unit}</span>-ban), ha <b>U = ${U} <span class="blue-percent">V</span></b> és <b>P = ${P} <span class="blue-percent">W</span></b>?`;
+        let P_kW = Number(((getRandomInt(1, maxP / 1000) + Math.random())).toFixed(3));
+        let U_kV = Number((getRandomInt(1, maxU / 1000) + Math.random()).toFixed(3));
+        P = P_kW * 1000;
+        U = U_kV * 1000;
+        I = P / U;
+        display_P = P_kW;
+        display_P_unit = "kW";
+        display_U = U_kV;
+        display_U_unit = "kV";
+        display_I = Number((I * 1000).toFixed(2));
+        display_I_unit = "mA";
+        answer = display_I.toString();
+        answerType = "decimal";
+        unit = display_I_unit;
       }
+      display = randomOrder
+        ? `Mennyi az áramerősség (<span class="blue-percent">${unit}</span>-ban), ha <b>P = ${display_P} <span class="blue-percent">${display_P_unit}</span></b> és <b>U = ${display_U} <span class="blue-percent">${display_U_unit}</span></b>?`
+        : `Mennyi az áramerősség (<span class="blue-percent">${unit}</span>-ban), ha <b>U = ${display_U} <span class="blue-percent">${display_U_unit}</span></b> és <b>P = ${display_P} <span class="blue-percent">${display_P_unit}</span></b>?`;
+
       return {
         display,
         answer,
         answerType,
-        options: difficulty === "easy" ? generateOptions(Number(formatted.value.toFixed(precision)), "decimal", difficulty, unit) : [],
+        options: [],
         unit,
-        P,
-        U
+        display_P, display_P_unit,
+        display_U, display_U_unit,
+        display_I, display_I_unit,
+        value: "teljesitmeny",
+        difficulty
       };
     }
   }
