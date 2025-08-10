@@ -1805,7 +1805,7 @@ const taskTypes = [
     const ranges = {
       easy: { minR: 10, maxR: 1000 },
       medium: { minR: 100, maxR: 10000 },
-      hard: { minR: 100, maxR: 100000 }
+      hard: { minR: 1000, maxR: 100000 }
     };
     const { minR, maxR } = ranges[difficulty];
     function getE12Resistance(min, max) {
@@ -1817,41 +1817,43 @@ const taskTypes = [
       resistance = Math.max(min, Math.min(max, resistance));
       return Math.round(resistance);
     }
-    let display, answer, answerType, unit;
+    let display, answer, answerType, unit, resistors = [], displayResistors = [];
+
     if (difficulty === "easy") {
       const numResistors = getRandomInt(2, 3);
-      const resistors = [];
       const units = [];
       for (let i = 0; i < numResistors; i++) {
         let resistance = getE12Resistance(minR, maxR);
         let unit = (i < 2 && Math.random() < 0.5) ? 'kΩ' : 'Ω';
         if (unit === 'kΩ') {
           resistance = resistance / 1000;
-          resistance = Math.round(resistance * 100) / 100;
+          resistance = Math.round(resistance * 100) / 100; // 2 tizedesjegy
+        } else {
+          resistance = Math.round(resistance); // Egész szám Ω-ban
         }
         resistors.push(resistance);
         units.push(unit);
+        displayResistors.push(`<b>R${i + 1} = ${resistance} <span class="blue-percent">${unit}</span></b>`);
       }
       const resistorsInOhms = resistors.map((r, i) => units[i] === 'kΩ' ? r * 1000 : r);
-      const R_eredo = resistorsInOhms.reduce((sum, r) => sum + r, 0);
+      let R_eredo = resistorsInOhms.reduce((sum, r) => sum + r, 0);
       const formatted = formatNumber(R_eredo, 'Ω', difficulty);
-      answer = formatted.value.toString();
+      answer = Math.round(formatted.value).toString(); // Egész szám
       unit = formatted.unit;
-      // Ha a válasz kΩ-ban van, akkor decimal típusú
-      answerType = (unit === 'kΩ') ? "decimal" : (Number.isInteger(R_eredo) ? "number" : "decimal");
-      let displayResistors = resistors.map((r, i) => `<b>R${i + 1} = ${r} ${units[i]}</b>`);
+      answerType = "number";
       if (numResistors === 3 && units[0] === units[1]) {
         units[2] = units[0] === 'Ω' ? 'kΩ' : 'Ω';
         resistors[2] = units[2] === 'kΩ' ? resistorsInOhms[2] / 1000 : resistorsInOhms[2];
         resistors[2] = Math.round(resistors[2] * 100) / 100;
-        displayResistors[2] = `<b>R₃ = ${resistors[2]} ${units[2]}</b>`;
+        displayResistors[2] = `<b>R₃ = ${resistors[2]} <span class="blue-percent">${units[2]}</span></b>`;
       }
-      display = `Mennyi az eredő ellenállás (${unit}-ban), ha az ellenállások sorosan vannak kapcsolva: ${displayResistors.join(numResistors === 3 ? ', ' : ', ')}?`;
+      display = `Mennyi az eredő ellenállás (<span class="blue-percent">${unit}</span>-ban), ha az ellenállások sorosan vannak kapcsolva: ${displayResistors.join(numResistors === 3 ? ', ' : ', ')}?`;
     } else if (difficulty === "medium") {
       const numResistors = getRandomInt(2, 3);
-      const resistors = [];
       for (let i = 0; i < numResistors; i++) {
-        resistors.push(getE12Resistance(minR, maxR));
+        let resistance = getE12Resistance(minR, maxR);
+        resistors.push(resistance);
+        displayResistors.push(`<b>R${i + 1} = ${resistance} <span class="blue-percent">Ω</span></b>`);
       }
       let R_eredo;
       if (numResistors === 2) {
@@ -1859,42 +1861,59 @@ const taskTypes = [
       } else {
         R_eredo = 1 / resistors.reduce((sum, r) => sum + 1 / r, 0);
       }
-      R_eredo = Math.round(R_eredo * 100) / 100;
-      const formatted = formatNumber(R_eredo, 'Ω', difficulty);
-      answer = formatted.value.toString();
-      unit = formatted.unit;
-      display = `Mennyi az eredő ellenállás (${unit}-ban), ha az ellenállások párhuzamosan vannak kapcsolva: <b>R₁ = ${resistors[0]} Ω${numResistors > 2 ? `, R₂ = ${resistors[1]} Ω, R₃ = ${resistors[2]} Ω` : `, R₂ = ${resistors[1]} Ω`}</b>?`;
-      answerType = Number.isInteger(R_eredo) ? "number" : "decimal";
-    } else {
-      const type = getRandomInt(0, 1);
-      const resistors = [getE12Resistance(minR, maxR), getE12Resistance(minR, maxR), getE12Resistance(minR, maxR)];
-      let R_eredo;
-      if (type === 0) {
-        const R_parallel = (resistors[0] * resistors[1]) / (resistors[0] + resistors[1]);
-        R_eredo = R_parallel + resistors[2];
-        R_eredo = Math.round(R_eredo * 100) / 100;
-        const formatted = formatNumber(R_eredo, 'Ω', difficulty);
-        answer = formatted.value.toString();
-        unit = formatted.unit;
-        display = `Mennyi az eredő ellenállás (${unit}-ban), ha <b>R₁ = ${resistors[0]} Ω</b> és <b>R₂ = ${resistors[1]} Ω</b> párhuzamosan, majd <b>R₃ = ${resistors[2]} Ω</b> sorosan van kapcsolva?`;
-        answerType = Number.isInteger(R_eredo) ? "number" : "decimal";
-      } else {
-        const R_parallel = (resistors[1] * resistors[2]) / (resistors[1] + resistors[2]);
-        R_eredo = resistors[0] + R_parallel;
-        R_eredo = Math.round(R_eredo * 100) / 100;
-        const formatted = formatNumber(R_eredo, 'Ω', difficulty);
-        answer = formatted.value.toString();
-        unit = formatted.unit;
-        display = `Mennyi az eredő ellenállás (${unit}-ban), ha <b>R₁ = ${resistors[0]} Ω</b> sorosan, majd <b>R₂ = ${resistors[1]} Ω</b> és <b>R₃ = ${resistors[2]} Ω</b> párhuzamosan van kapcsolva?`;
-        answerType = Number.isInteger(R_eredo) ? "number" : "decimal";
+      R_eredo = Math.round(R_eredo * 100) / 100; // 2 tizedesjegy
+      unit = 'kΩ';
+      answer = (R_eredo / 1000).toFixed(2); // kΩ-ban, 2 tizedesjegy
+      answerType = "decimal";
+      display = `Mennyi az eredő ellenállás (<span class="blue-percent">${unit}</span>-ban), ha az ellenállások párhuzamosan vannak kapcsolva: ${displayResistors.join(numResistors === 3 ? ', ' : ', ')}?`;
+    } else { // Nehéz szint
+      const type = getRandomInt(0, 6); // 0-6 típusok
+      const numResistors = [0, 1, 2].includes(type) ? 3 : type === 3 || type === 5 ? 2 : 3;
+      for (let i = 0; i < numResistors; i++) {
+        let resistance = getE12Resistance(minR, maxR) / 1000; // kΩ-ban
+        resistance = Math.round(resistance * 100) / 100; // 2 tizedesjegy
+        const exponent = Math.floor(Math.log10(Math.abs(resistance)));
+        const mantissa = Number((resistance / Math.pow(10, exponent)).toFixed(2)); // 2 tizedesjegy
+        resistors.push(resistance);
+        displayResistors.push(`${mantissa} × 10<sup>${exponent}</sup>`);
       }
+      let R_eredo;
+      if (type === 0) { // R₁ és R₂ párhuzamosan, majd R₃ sorosan
+        R_eredo = (resistors[0] * resistors[1]) / (resistors[0] + resistors[1]) + resistors[2];
+        display = `Mennyi az eredő ellenállás (<span class="blue-percent">MΩ</span>-ban), ha <b>R₁ = ${displayResistors[0]} <span class="blue-percent">kΩ</span></b> és <b>R₂ = ${displayResistors[1]} <span class="blue-percent">kΩ</span></b> párhuzamosan, <b>R₃ = ${displayResistors[2]} <span class="blue-percent">kΩ</span></b> pedig sorosan van kötve?`;
+      } else if (type === 1) { // R₂ és R₃ párhuzamosan, majd R₁ sorosan
+        R_eredo = resistors[0] + (resistors[1] * resistors[2]) / (resistors[1] + resistors[2]);
+        display = `Mennyi az eredő ellenállás (<span class="blue-percent">MΩ</span>-ban), ha <b>R₂ = ${displayResistors[1]} <span class="blue-percent">kΩ</span></b> és <b>R₃ = ${displayResistors[2]} <span class="blue-percent">kΩ</span></b> párhuzamosan, <b>R₁ = ${displayResistors[0]} <span class="blue-percent">kΩ</span></b> pedig sorosan van kötve?`;
+      } else if (type === 2) { // R₁ és R₂ sorosan, majd R₃ párhuzamosan
+        const R_series = resistors[0] + resistors[1];
+        R_eredo = (R_series * resistors[2]) / (R_series + resistors[2]);
+        display = `Mennyi az eredő ellenállás (<span class="blue-percent">MΩ</span>-ban), ha <b>R₁ = ${displayResistors[0]} <span class="blue-percent">kΩ</span></b> és <b>R₂ = ${displayResistors[1]} <span class="blue-percent">kΩ</span></b> sorosan, <b>R₃ = ${displayResistors[2]} <span class="blue-percent">kΩ</span></b> pedig párhuzamosan van kötve?`;
+      } else if (type === 3) { // 2 ellenállás sorosan (könnyű szintről)
+        R_eredo = resistors[0] + resistors[1];
+        display = `Mennyi az eredő ellenállás (<span class="blue-percent">MΩ</span>-ban), ha <b>R₁ = ${displayResistors[0]} <span class="blue-percent">kΩ</span></b> és <b>R₂ = ${displayResistors[1]} <span class="blue-percent">kΩ</span></b> sorosan van kötve?`;
+      } else if (type === 4) { // 3 ellenállás sorosan (könnyű szintről)
+        R_eredo = resistors[0] + resistors[1] + resistors[2];
+        display = `Mennyi az eredő ellenállás (<span class="blue-percent">MΩ</span>-ban), ha <b>R₁ = ${displayResistors[0]} <span class="blue-percent">kΩ</span></b>, <b>R₂ = ${displayResistors[1]} <span class="blue-percent">kΩ</span></b> és <b>R₃ = ${displayResistors[2]} <span class="blue-percent">kΩ</span></b> sorosan van kötve?`;
+      } else if (type === 5) { // 2 ellenállás párhuzamosan (közepes szintről)
+        R_eredo = (resistors[0] * resistors[1]) / (resistors[0] + resistors[1]);
+        display = `Mennyi az eredő ellenállás (<span class="blue-percent">MΩ</span>-ban), ha <b>R₁ = ${displayResistors[0]} <span class="blue-percent">kΩ</span></b> és <b>R₂ = ${displayResistors[1]} <span class="blue-percent">kΩ</span></b> párhuzamosan van kötve?`;
+      } else { // type === 6: 3 ellenállás párhuzamosan (közepes szintről)
+        R_eredo = 1 / (1 / resistors[0] + 1 / resistors[1] + 1 / resistors[2]);
+        display = `Mennyi az eredő ellenállás (<span class="blue-percent">MΩ</span>-ban), ha <b>R₁ = ${displayResistors[0]} <span class="blue-percent">kΩ</span></b>, <b>R₂ = ${displayResistors[1]} <span class="blue-percent">kΩ</span></b> és <b>R₃ = ${displayResistors[2]} <span class="blue-percent">kΩ</span></b> párhuzamosan van kötve?`;
+      }
+      R_eredo = Math.round(R_eredo * 100) / 100; // 2 tizedesjegy
+      unit = 'MΩ';
+      answer = (R_eredo / 1000).toFixed(2); // MΩ-ban, 2 tizedesjegy
+      answerType = "decimal";
     }
+
     return {
       display,
       answer,
       answerType,
-      options: [],
-      hadWrongAnswer: false
+      options: generateOptions(Number(answer), answerType, difficulty, unit),
+      resistors,
+      unit
     };
   }
 }
