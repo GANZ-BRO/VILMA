@@ -2005,10 +2005,10 @@ function showBest() {
       wrongAnswersText = `${best.wrongAnswers} hiba`;
     }
     bestStats.innerHTML = `🏆 <b>Legjobb eredmény:</b> ${best.time} mp (${categoryLabel()} / ${difficultyLabel()}, ${wrongAnswersText})`;
-    bestStats.style.display = "";
   } else {
-    bestStats.style.display = "none";
+    bestStats.innerHTML = `🏆 <b>Még nincs megjeleníthető legjobb eredmény.</b>`;
   }
+  bestStats.style.display = ""; // Mindig látható
 }
 
 function difficultyLabel() {
