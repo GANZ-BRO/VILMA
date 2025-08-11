@@ -1964,22 +1964,31 @@ difficultySelect.addEventListener("change", function () {
   loadBest();
 });
 
-// --- LEGJOBB EREDMÉNY MENTÉSE/BETÖLTÉSE ---
 function loadBest() {
   const diff = difficultySelect.value;
   const cat = categorySelect.value;
   try {
     const bestRaw = localStorage.getItem("vilma-best-" + cat + "-" + diff);
-    best = bestRaw ? JSON.parse(bestRaw) : { score: 0, time: null };
-  } catch { best = { score: 0, time: null }; }
+    best = bestRaw ? JSON.parse(bestRaw) : { score: 0, time: null, wrongAnswers: Infinity };
+    // Biztosítjuk, hogy a best objektum tartalmazza a wrongAnswers mezőt
+    best.wrongAnswers = best.wrongAnswers !== undefined ? best.wrongAnswers : Infinity;
+  } catch {
+    best = { score: 0, time: null, wrongAnswers: Infinity };
+  }
   showBest();
 }
 
 function saveBest(newScore, time) {
   const diff = difficultySelect.value;
   const cat = categorySelect.value;
-  if (newScore > best.score || (newScore === best.score && (best.time === null || time < best.time))) {
-    best = { score: newScore, time: time };
+  let currentBest = JSON.parse(localStorage.getItem("vilma-best-" + cat + "-" + diff)) || { score: 0, time: null, wrongAnswers: Infinity };
+  
+  if (newScore > currentBest.score || 
+      (newScore === currentBest.score && 
+       (currentBest.time === null || 
+        (time < currentBest.time || 
+         (time === currentBest.time && wrongAnswers < currentBest.wrongAnswers))))) {
+    best = { score: newScore, time: time, wrongAnswers: wrongAnswers };
     localStorage.setItem("vilma-best-" + cat + "-" + diff, JSON.stringify(best));
     showBest();
   }
@@ -1987,7 +1996,15 @@ function saveBest(newScore, time) {
 
 function showBest() {
   if (best.score > 0) {
-    bestStats.innerHTML = `🏆 <b>Legjobb eredmény:</b> ${best.time} mp (${categoryLabel()} / ${difficultyLabel()})`;
+    let wrongAnswersText;
+    if (best.wrongAnswers === Infinity) {
+      wrongAnswersText = "még nincs adat";
+    } else if (best.wrongAnswers === 0) {
+      wrongAnswersText = "hibátlan";
+    } else {
+      wrongAnswersText = `${best.wrongAnswers} hiba`;
+    }
+    bestStats.innerHTML = `🏆 <b>Legjobb eredmény:</b> ${best.time} mp (${categoryLabel()} / ${difficultyLabel()}, ${wrongAnswersText})`;
     bestStats.style.display = "";
   } else {
     bestStats.style.display = "none";
