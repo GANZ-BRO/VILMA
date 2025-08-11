@@ -64,17 +64,26 @@ body.dark header {
   border-bottom: 1px solid var(--input-border-dark);
 }
 
-h1.subtitle {
-  font-size: 1.5em;
-  margin: 0;
-  font-weight: 700;
+#title-button {
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  //cursor: pointer;
   color: var(--primary);
-  text-transform: uppercase;
-  letter-spacing: 1px;
+  font-size: 1em;
+  font-weight: 700;
+  text-align: left;
+  //display: block;
+  width: 100%;
+  margin: 0em 
+	letter-spacing: 1px;
 }
-
-body.dark h1.subtitle {
+body.dark #title-button {
   color: var(--primary-inverse);
+}
+#title-button:hover {
+  text-decoration: uppercase;
 }
 
 .settings {
