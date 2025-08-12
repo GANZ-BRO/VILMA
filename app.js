@@ -1937,7 +1937,7 @@ function loadCategories() {
 
 // --- ÁLLAPOTVÁLTOZÓK ---
 let score = 0, startTime = 0, timerInterval = null, currentQuestion = 0, questions = [];
-let best = { score: 0, time: null };
+let best = { score: 0, time: null, wrongAnswers: Infinity };
 let gameActive = false;
 let answerState = { value: "" }; // Válasz állapota a numpadhoz
 let wrongAnswers = 0; // Helytelen válaszok száma
@@ -1964,6 +1964,7 @@ difficultySelect.addEventListener("change", function () {
   loadBest();
 });
 
+// --- LEGJOBB EREDMÉNY MENTÉSE/BETÖLTÉSE ---
 function loadBest() {
   const diff = difficultySelect.value;
   const cat = categorySelect.value;
@@ -1983,32 +1984,30 @@ function saveBest(newScore, time) {
   const cat = categorySelect.value;
   let currentBest = JSON.parse(localStorage.getItem("vilma-best-" + cat + "-" + diff)) || { score: 0, time: null, wrongAnswers: Infinity };
   
-  if (newScore > currentBest.score || 
-      (newScore === currentBest.score && 
-       (currentBest.time === null || 
-        (time < currentBest.time || 
-         (time === currentBest.time && wrongAnswers < currentBest.wrongAnswers))))) {
-    best = { score: newScore, time: time, wrongAnswers: wrongAnswers };
+  // Biztosítjuk, hogy wrongAnswers érvényes legyen
+  const newWrongAnswers = wrongAnswers !== undefined ? wrongAnswers : 0;
+  
+  if (newWrongAnswers < (currentBest.wrongAnswers || Infinity) || 
+      (newWrongAnswers === (currentBest.wrongAnswers || Infinity) && 
+       (currentBest.time === null || time < currentBest.time))) {
+    best = { score: newScore, time: time, wrongAnswers: newWrongAnswers };
     localStorage.setItem("vilma-best-" + cat + "-" + diff, JSON.stringify(best));
     showBest();
   }
 }
 
+
 function showBest() {
-  if (best.score > 0) {
-    let wrongAnswersText;
-    if (best.wrongAnswers === Infinity) {
-      wrongAnswersText = "még nincs adat";
-    } else if (best.wrongAnswers === 0) {
-      wrongAnswersText = "hibátlan";
-    } else {
-      wrongAnswersText = `${best.wrongAnswers} hiba`;
+  if (best.time !== null && best.wrongAnswers !== Infinity) {
+    let resultText = `🏆 <b>Legjobb eredmény:</b> ${best.time} mp`;
+    if (best.wrongAnswers > 0) {
+      resultText += `, ${best.wrongAnswers} hiba`;
     }
-    bestStats.innerHTML = `🏆 <b>Legjobb eredmény:</b> ${best.time} mp (${categoryLabel()} / ${difficultyLabel()}, ${wrongAnswersText})`;
+    bestStats.innerHTML = resultText;
   } else {
     bestStats.innerHTML = `🏆 <b>Még nincs megjeleníthető legjobb eredmény.</b>`;
   }
-  bestStats.style.display = ""; // Mindig látható
+  bestStats.style.display = "";
 }
 
 function difficultyLabel() {
