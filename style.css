@@ -77,7 +77,7 @@ body.dark header {
   //display: block;
   width: 100%;
   margin: 0em 
-	letter-spacing: 1px;
+    letter-spacing: 1px;
 }
 body.dark #title-button {
   color: var(--primary-inverse);
@@ -253,10 +253,10 @@ body.dark .question-text {
 }
 
 .answer-view {
-  font-size: 3em;        /* vagy 2.25em, ha 1.5x nagyobb kell */
-  height: 1.5em;           /* fix magasság, hogy ne nőjön túl nagyra, próbáld ki mekkora fér el szépen */
-  padding: 0.1em 0.3em;  /* kisebb padding */
-  min-height: unset;     /* ha volt ilyen */
+  font-size: 3em;
+  height: 1.5em;
+  padding: 0.1em 0.3em;
+  min-height: unset;
   max-width: 450px;
   width: 100%;
   align-items: center;
@@ -264,7 +264,10 @@ body.dark .question-text {
   text-align: center;
   white-space: normal;
   overflow: auto;
-  transition: background 0.2s ease, border-color 0.2s ease;
+  background: #F5F7F8; /* Világos szürke háttér világos módban */
+  border: 2px solid #B0B8BC; /* Közepes szürke szegély világos módban */
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); /* Finom árnyék a kiemeléshez */
+  transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 body.dark .answer-view {

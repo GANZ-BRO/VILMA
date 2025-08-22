@@ -469,42 +469,49 @@ const taskTypes = [
     };
   }
 },
+
+
 {
   name: "Normál alakos számok",
   value: "normal_alak",
   generate: (difficulty) => {
-    // A mantisszát mindig 1 ≤ m < 10 közé generáljuk mindenhol!
+    // Segédfüggvény: véletlenszerű mantissza generálása (1 ≤ m < 10)
     function getRandomMantissa(decimals = 2) {
       let m = Math.random() * 9 + 1; // 1 - 9.999...
       return Number(m.toFixed(decimals));
     }
 
-    // A direction-től függően (0: szám → normál alak kitevője, 1: normál alak → érték)
-    const direction = Math.random() < 0.5 ? 0 : 1;
+    // Váltakozó direction: ha az utolsó 0 volt, most 1, ha 1 volt, most 0
+    const direction = lastDirection === 0 ? 1 : 0;
+    lastDirection = direction; // Frissítjük az utolsó direction-t
 
-    // Könnyű szint
+    // Könnyű szint (változatlan, mert itt eleve nincs negatív szám)
     if (difficulty === "easy") {
       if (direction === 0) {
         // Szám → normál alak kitevője
-        // 60% kétjegyű, 35% háromjegyű, 5% négyjegyű
-        let rand = Math.random();
-        let number;
-        if (rand < 0.60) {
-          number = getRandomInt(10, 99); // kétjegyű
-        } else if (rand < 0.95) {
-          number = getRandomInt(100, 999); // háromjegyű
-        } else {
-          number = getRandomInt(1000, 9999); // négyjegyű
-        }
-        // néha generálhat tizedes törtet is (pl. 0.37, 2.1, 36.5)
-        if (Math.random() < 0.15) {
-          let base = getRandomInt(1, 99);
-          let d = Math.random() < 0.5 ? 1 : 2;
-          number = Number((base / Math.pow(10, d)).toFixed(d));
-        }
-        let absNumber = Math.abs(number);
-        let exponent = absNumber === 0 ? 0 : Math.floor(Math.log10(absNumber));
-        exponent = Math.max(1, Math.min(4, exponent));
+        let number, exponent;
+        let attempts = 0;
+        const maxAttempts = 10;
+        do {
+          let rand = Math.random();
+          if (rand < 0.3333) {
+            number = getRandomInt(10, 99);
+            exponent = 1;
+          } else if (rand < 0.6666) {
+            number = getRandomInt(100, 999);
+            exponent = 2;
+          } else {
+            number = getRandomInt(1000, 9999);
+            exponent = 3;
+          }
+          attempts++;
+          if (attempts > maxAttempts) {
+            console.warn(`Maximális próbálkozások elérve, alapértelmezett kitevő: ${exponent}`);
+            break;
+          }
+        } while (exponent === lastExponent);
+        lastExponent = exponent;
+        console.log(`Könnyű szint, direction=0: Kérdés: ${number}, Várt kitevő: ${exponent}, Direction: ${direction}, Előző kitevő: ${lastExponent}`);
         return {
           display: `Milyen kitevő szerepel a 10 hatványaként a következő szám normál alakjában:<br><span class="blue-percent">${number}</span> ?`,
           answer: exponent.toString(),
@@ -512,21 +519,30 @@ const taskTypes = [
         };
       } else {
         // Normál alak → érték
-        // 80% pozitív kitevő, 20% negatív (legkisebb: -1)
-        let exp;
-        if (Math.random() < 0.8) {
-          exp = getRandomInt(1, 4);
-        } else {
-          exp = getRandomInt(-1, -1);
-        }
-        let mant = getRandomMantissa(2);
-        let value = mant * Math.pow(10, exp);
-        value = exp > 0 ? Math.round(value) : Number(value.toFixed(2));
+        let exp, mant, value;
+        let attempts = 0;
+        const maxAttempts = 10;
+        do {
+          let rand = Math.random();
+          if (rand < 0.3333) exp = 1;
+          else if (rand < 0.6666) exp = 2;
+          else exp = 3;
+          attempts++;
+          if (attempts > maxAttempts) {
+            console.warn(`Maximális próbálkozások elérve, alapértelmezett kitevő: ${exp}`);
+            break;
+          }
+        } while (exp === lastExponent);
+        mant = getRandomMantissa(2);
+        value = mant * Math.pow(10, exp);
+        let formattedValue = Number(value.toFixed(2));
+        lastExponent = exp;
         let mantStr = ("" + mant).replace(".", ",");
+        console.log(`Könnyű szint, direction=1: Kérdés: ${mantStr}×10^${exp}, Nyers érték: ${value}, Formázott válasz: ${formattedValue.toFixed(2).replace(".", ",")}, Direction: ${direction}, Előző kitevő: ${lastExponent}`);
         return {
           display: `Mennyi a következő normál alakú szám értéke:<br><span class="blue-percent">${mantStr}×10<sup>${exp}</sup></span> ?`,
-          answer: value.toString(),
-          answerType: exp > 0 ? "number" : "decimal"
+          answer: formattedValue.toFixed(2).replace(".", ","),
+          answerType: "decimal"
         };
       }
     }
@@ -535,23 +551,32 @@ const taskTypes = [
     if (difficulty === "medium") {
       if (direction === 0) {
         // Szám → normál alak kitevője
-        // 30% 0,xx - 0,999; 20% 1,xx - 9,99; 30% 10-999; 20% 1000-99999
-        let rand = Math.random();
-        let number;
-        if (rand < 0.3) {
-          number = Number((Math.random() * 0.9 + 0.1).toFixed(2)); // 0,10 - 0,99
-        } else if (rand < 0.5) {
-          number = Number((Math.random() * 9.89 + 1.01).toFixed(2)); // 1,01 - 10,9
-        } else if (rand < 0.8) {
-          number = getRandomInt(10, 999);
-        } else {
-          number = getRandomInt(1000, 99999);
-        }
-        // néha mínuszos számot generál
-        if (Math.random() < 0.12) number *= -1;
-        let absNumber = Math.abs(number);
-        let exponent = absNumber === 0 ? 0 : Math.floor(Math.log10(absNumber));
-        exponent = Math.max(-2, Math.min(6, exponent));
+        let number, exponent;
+        let attempts = 0;
+        const maxAttempts = 10;
+        do {
+          let rand = Math.random();
+          if (rand < 0.25) {
+            number = Number((Math.random() * 0.00899 + 0.001).toFixed(4));
+            exponent = -3;
+          } else if (rand < 0.5) {
+            number = Number((Math.random() * 0.089 + 0.01).toFixed(3));
+            exponent = -2;
+          } else if (rand < 0.75) {
+            number = Number((Math.random() * 0.89 + 0.1).toFixed(2));
+            exponent = -1;
+          } else {
+            number = Number((Math.random() * 8.98 + 1.01).toFixed(2));
+            exponent = 0;
+          }
+          attempts++;
+          if (attempts > maxAttempts) {
+            console.warn(`Maximális próbálkozások elérve, alapértelmezett kitevő: ${exponent}`);
+            break;
+          }
+        } while (exponent === lastExponent);
+        lastExponent = exponent;
+        console.log(`Közepes szint, direction=0: Kérdés: ${number}, Várt kitevő: ${exponent}, Direction: ${direction}, Előző kitevő: ${lastExponent}`);
         return {
           display: `Milyen kitevő szerepel a 10 hatványaként a következő szám normál alakjában:<br><span class="blue-percent">${number}</span> ?`,
           answer: exponent.toString(),
@@ -559,73 +584,114 @@ const taskTypes = [
         };
       } else {
         // Normál alak → érték
-        // 50% pozitív kitevő (0-6), 50% negatív (-2 - -1)
-        let exp = Math.random() < 0.5 ? getRandomInt(0, 6) : getRandomInt(-2, -1);
-        let mant = getRandomMantissa(2);
-        let value = mant * Math.pow(10, exp);
+        let exp, mant, value;
+        let attempts = 0;
+        const maxAttempts = 10;
+        do {
+          let rand = Math.random();
+          if (rand < 0.25) exp = -3;
+          else if (rand < 0.5) exp = -2;
+          else if (rand < 0.75) exp = -1;
+          else exp = 0;
+          attempts++;
+          if (attempts > maxAttempts) {
+            console.warn(`Maximális próbálkozások elérve, alapértelmezett kitevő: ${exp}`);
+            break;
+          }
+        } while (exp === lastExponent);
+        mant = getRandomMantissa(2);
+        value = mant * Math.pow(10, exp);
         value = exp >= 0 ? Number(value.toFixed(2)) : Number(value.toFixed(4));
-        if (Math.random() < 0.2) value *= -1;
+        lastExponent = exp;
         let mantStr = ("" + mant).replace(".", ",");
+        console.log(`Közepes szint, direction=1: Kérdés: ${mantStr}×10^${exp}, Nyers érték: ${value}, Formázott válasz: ${value.toString().replace(".", ",")}, Direction: ${direction}, Előző kitevő: ${lastExponent}`);
         return {
           display: `Mennyi a következő normál alakú szám értéke:<br><span class="blue-percent">${mantStr}×10<sup>${exp}</sup></span> ?`,
-          answer: value.toString(),
-          answerType: exp >= 0 ? "decimal" : "decimal"
-        };
-      }
-    }
-
-    // Kihívás szint
-    if (difficulty === "hard") {
-      if (direction === 0) {
-        // Szám → normál alak kitevője
-        // 20% 0,000xx - 0,0999; 20% 0,1 - 0,99; 20% 1-9,99; 20% 10-9999; 20% 1e5 - 1e9
-        let rand = Math.random();
-        let number;
-        if (rand < 0.2) {
-          number = Number((Math.random() * 0.0999 + 0.0001).toFixed(5));
-        } else if (rand < 0.4) {
-          number = Number((Math.random() * 0.89 + 0.1).toFixed(3));
-        } else if (rand < 0.6) {
-          number = Number((Math.random() * 8.99 + 1.01).toFixed(2));
-        } else if (rand < 0.8) {
-          number = getRandomInt(10, 9999);
-        } else {
-          number = getRandomInt(100000, 999999999);
-        }
-        // néha mínuszos számot generál
-        if (Math.random() < 0.18) number *= -1;
-        let absNumber = Math.abs(number);
-        let exponent = absNumber === 0 ? 0 : Math.floor(Math.log10(absNumber));
-        exponent = Math.max(-5, Math.min(10, exponent));
-        return {
-          display: `Milyen kitevő szerepel a 10 hatványaként a következő szám normál alakjában:<br><span class="blue-percent">${number}</span> ?`,
-          answer: exponent.toString(),
-          answerType: "number"
-        };
-      } else {
-        // Normál alak → érték
-        // 60% pozitív kitevő (0-10), 40% negatív (-5 - -1)
-        let exp = Math.random() < 0.6 ? getRandomInt(0, 10) : getRandomInt(-5, -1);
-        let mant = getRandomMantissa(3);
-        let value = mant * Math.pow(10, exp);
-        value = exp >= 0 ? Number(value.toFixed(3)) : Number(value.toFixed(8));
-        if (Math.random() < 0.25) value *= -1;
-        let mantStr = ("" + mant).replace(".", ",");
-        return {
-          display: `Mennyi a következő normál alakú szám értéke:<br><span class="blue-percent">${mantStr}×10<sup>${exp}</sup></span> ?`,
-          answer: value.toString(),
+          answer: value.toString().replace(".", ","),
           answerType: "decimal"
         };
       }
     }
 
-    // Helper
+    // Nehéz szint
+    if (difficulty === "hard") {
+      if (direction === 0) {
+        // Szám → normál alak kitevője
+        let number, exponent;
+        let attempts = 0;
+        const maxAttempts = 10;
+        do {
+          let rand = Math.random();
+          if (rand < 0.1667) {
+            number = Number((Math.random() * 0.000089 + 0.00001).toFixed(6));
+            exponent = -5;
+          } else if (rand < 0.3334) {
+            number = Number((Math.random() * 0.00089 + 0.0001).toFixed(5));
+            exponent = -4;
+          } else if (rand < 0.5) {
+            number = Number((Math.random() * 0.0089 + 0.001).toFixed(4));
+            exponent = -3;
+          } else if (rand < 0.6667) {
+            number = getRandomInt(1000, 9999);
+            exponent = 3;
+          } else if (rand < 0.8334) {
+            number = getRandomInt(10000, 99999);
+            exponent = 4;
+          } else {
+            number = getRandomInt(100000, 999999);
+            exponent = 5;
+          }
+          attempts++;
+          if (attempts > maxAttempts) {
+            console.warn(`Maximális próbálkozások elérve, alapértelmezett kitevő: ${exponent}`);
+            break;
+          }
+        } while (exponent === lastExponent);
+        lastExponent = exponent;
+        console.log(`Nehéz szint, direction=0: Kérdés: ${number}, Várt kitevő: ${exponent}, Direction: ${direction}, Előző kitevő: ${lastExponent}`);
+        return {
+          display: `Milyen kitevő szerepel a 10 hatványaként a következő szám normál alakjában:<br><span class="blue-percent">${number}</span> ?`,
+          answer: exponent.toString(),
+          answerType: "number"
+        };
+      } else {
+        // Normál alak → érték
+        let exp, mant, value;
+        let attempts = 0;
+        const maxAttempts = 10;
+        do {
+          let rand = Math.random();
+          if (rand < 0.1667) exp = -5;
+          else if (rand < 0.3334) exp = -4;
+          else if (rand < 0.5) exp = -3;
+          else if (rand < 0.6667) exp = 3;
+          else if (rand < 0.8334) exp = 4;
+          else exp = 5;
+          attempts++;
+          if (attempts > maxAttempts) {
+            console.warn(`Maximális próbálkozások elérve, alapértelmezett kitevő: ${exp}`);
+            break;
+          }
+        } while (exp === lastExponent);
+        mant = getRandomMantissa(3);
+        value = mant * Math.pow(10, exp);
+        value = exp >= 0 ? Number(value.toFixed(3)) : Number(value.toFixed(8));
+        lastExponent = exp;
+        let mantStr = ("" + mant).replace(".", ",");
+        console.log(`Nehéz szint, direction=1: Kérdés: ${mantStr}×10^${exp}, Nyers érték: ${value}, Formázott válasz: ${value.toString().replace(".", ",")}, Direction: ${direction}, Előző kitevő: ${lastExponent}`);
+        return {
+          display: `Mennyi a következő normál alakú szám értéke:<br><span class="blue-percent">${mantStr}×10<sup>${exp}</sup></span> ?`,
+          answer: value.toString().replace(".", ","),
+          answerType: "decimal"
+        };
+      }
+    }
+
     function getRandomInt(min, max) {
       return Math.floor(Math.random() * (max - min + 1)) + min;
     }
   }
 },
-
 
 {
   name: "Villamos mértékegységek",
@@ -751,8 +817,6 @@ const taskTypes = [
     }
   }
 },
-
-
 {
   name: "Mértékegység előtagok",
   value: "mertekegyseg_elotagok",
@@ -763,40 +827,40 @@ const taskTypes = [
         { name: "deci", symbol: "d", multiplier: "10^-1", fullName: "tized rész" },
         { name: "centi", symbol: "c", multiplier: "10^-2", fullName: "század rész" },
         { name: "milli", symbol: "m", multiplier: "10^-3", fullName: "ezredik rész" },
-        { name: "kilo", symbol: "k", multiplier: "10^3", fullName: "ezerszeres" },
-        { name: "alapegység", symbol: "", multiplier: "10^0", fullName: "alapegység" }
+        { name: "kilo", symbol: "k", multiplier: "10^3", fullName: "ezerszeres" }
       ],
       medium: [
         { name: "deci", symbol: "d", multiplier: "10^-1", fullName: "tized rész" },
+        { name: "centi", symbol: "c", multiplier: "10^-2", fullName: "század rész" },
         { name: "mikro", symbol: "µ", multiplier: "10^-6", fullName: "milliomod rész" },
         { name: "milli", symbol: "m", multiplier: "10^-3", fullName: "ezredik rész" },
         { name: "kilo", symbol: "k", multiplier: "10^3", fullName: "ezerszeres" },
-        { name: "mega", symbol: "M", multiplier: "10^6", fullName: "milliószoros" },
-        { name: "alapegység", symbol: "", multiplier: "10^0", fullName: "alapegység" }
+        { name: "mega", symbol: "M", multiplier: "10^6", fullName: "milliószoros" }
       ],
       hard: [
+        { name: "deci", symbol: "d", multiplier: "10^-1", fullName: "tized rész" },
+        { name: "centi", symbol: "c", multiplier: "10^-2", fullName: "század rész" },
         { name: "nano", symbol: "n", multiplier: "10^-9", fullName: "milliárdod rész" },
         { name: "mikro", symbol: "µ", multiplier: "10^-6", fullName: "milliomod rész" },
         { name: "milli", symbol: "m", multiplier: "10^-3", fullName: "ezredik rész" },
         { name: "kilo", symbol: "k", multiplier: "10^3", fullName: "ezerszeres" },
         { name: "mega", symbol: "M", multiplier: "10^6", fullName: "milliószoros" },
         { name: "giga", symbol: "G", multiplier: "10^9", fullName: "milliárdszoros" },
-        { name: "tera", symbol: "T", multiplier: "10^12", fullName: "billiomodszoros" },
-        { name: "alapegység", symbol: "", multiplier: "10^0", fullName: "alapegység" }
+        { name: "tera", symbol: "T", multiplier: "10^12", fullName: "billiomodszoros" }
       ]
     };
 
     const selectedPrefixes = prefixes[difficulty];
     const prefix = selectedPrefixes[getRandomInt(0, selectedPrefixes.length - 1)];
-    const taskType = getRandomInt(0, 4); // 0-4, hogy mind az 5 kérdéstípus előforduljon
+    const taskType = getRandomInt(0, 4); // 0-4, csak az eredeti kérdéstípusok
 
     let options = [];
     let correctAnswer;
     const wrongOptions = {
-      names: ["nano", "mikro", "milli", "centi", "deci", "alapegység", "kilo", "mega", "giga", "tera"],
-      symbols: ["n", "µ", "m", "c", "d", "", "k", "M", "G", "T"],
-      multipliers: ["10^-9", "10^-6", "10^-3", "10^-2", "10^-1", "10^0", "10^3", "10^6", "10^9", "10^12"],
-      fullNames: ["milliárdod rész", "milliomod rész", "ezredik rész", "század rész", "tized rész", "alapegység", "ezerszeres", "milliószoros", "milliárdszoros", "billiomodszoros"]
+      names: ["deci", "centi", "nano", "mikro", "milli", "kilo", "mega", "giga", "tera"],
+      symbols: ["d", "c", "n", "µ", "m", "k", "M", "G", "T"],
+      multipliers: ["10^-1", "10^-2", "10^-9", "10^-6", "10^-3", "10^3", "10^6", "10^9", "10^12"],
+      fullNames: ["tized rész", "század rész", "milliárdod rész", "milliomod rész", "ezredik rész", "ezerszeres", "milliószoros", "milliárdszoros", "billiomodszoros"]
     };
 
     // Segédfüggvény a szorzó formázására HTML felső indexszel
@@ -813,22 +877,20 @@ const taskTypes = [
       }
       options = shuffleArray(options);
       correctAnswer = (options.indexOf(prefix.name) + 1).toString();
-      const displaySymbol = prefix.symbol || "(nincs előtag)";
       return {
-        display: `Mi a neve, ha a jele: <span class="blue-percent">${displaySymbol}</span> ?<br>1.&nbsp;&nbsp;&nbsp;${options[0]}<br>2.&nbsp;&nbsp;&nbsp;${options[1]}<br>3.&nbsp;&nbsp;&nbsp;${options[2]}`,
+        display: `Mi a neve, ha a jele: <span class="blue-percent">${prefix.symbol}</span> ?<br>1.&nbsp;&nbsp;&nbsp;${options[0]}<br>2.&nbsp;&nbsp;&nbsp;${options[1]}<br>3.&nbsp;&nbsp;&nbsp;${options[2]}`,
         answer: correctAnswer,
         answerType: "number"
       };
     } else if (taskType === 1) { // Mi a jele az előtagnak, ha a neve: ...
-      options = [prefix.symbol || "(nincs előtag)"];
+      options = [prefix.symbol];
       const wrongSymbols = wrongOptions.symbols.filter(symbol => symbol !== prefix.symbol && selectedPrefixes.some(p => p.symbol === symbol));
       while (options.length < 3) {
         const wrongSymbol = wrongSymbols[getRandomInt(0, wrongSymbols.length - 1)];
-        const displaySymbol = wrongSymbol || "(nincs előtag)";
-        if (!options.includes(displaySymbol)) options.push(displaySymbol);
+        if (!options.includes(wrongSymbol)) options.push(wrongSymbol);
       }
       options = shuffleArray(options);
-      correctAnswer = (options.indexOf(prefix.symbol || "(nincs előtag)") + 1).toString();
+      correctAnswer = (options.indexOf(prefix.symbol) + 1).toString();
       return {
         display: `Mi a jele az előtagnak, ha a neve: <span class="blue-percent">${prefix.name}</span> ?<br>1.&nbsp;&nbsp;&nbsp;${options[0]}<br>2.&nbsp;&nbsp;&nbsp;${options[1]}<br>3.&nbsp;&nbsp;&nbsp;${options[2]}`,
         answer: correctAnswer,
@@ -843,7 +905,6 @@ const taskTypes = [
       }
       options = shuffleArray(options);
       correctAnswer = (options.indexOf(prefix.multiplier) + 1).toString();
-      // Formázott válaszlehetőségek felső indexszel
       const formattedOptions = options.map(opt => formatMultiplier(opt));
       return {
         display: `Mi a szorzó értéke, ha a neve: <span class="blue-percent">${prefix.name}</span> ?<br>1.&nbsp;&nbsp;&nbsp;${formattedOptions[0]}<br>2.&nbsp;&nbsp;&nbsp;${formattedOptions[1]}<br>3.&nbsp;&nbsp;&nbsp;${formattedOptions[2]}`,
@@ -854,7 +915,7 @@ const taskTypes = [
       options = [prefix.fullName];
       const wrongFullNames = wrongOptions.fullNames.filter(fullName => fullName !== prefix.fullName && selectedPrefixes.some(p => p.fullName === fullName));
       while (options.length < 3) {
-        const wrongFullName = wrongFullNames[getRandomInt(0, wrongFullNames.length - 1)];
+        const wrongFullName = wrongFullNames[getRandomInt(0, wrongNames.length - 1)];
         if (!options.includes(wrongFullName)) options.push(wrongFullName);
       }
       options = shuffleArray(options);
@@ -881,7 +942,6 @@ const taskTypes = [
     }
   }
 },
-
 
 {
   name: "Mértékegység átváltás",
@@ -933,89 +993,93 @@ const taskTypes = [
         mHzMin: 1, mHzMax: 50 
       }
     };
+
     const { mAMin, mAMax, ohmMin, ohmMax, kOhmMin, kOhmMax, mOhmMin, mOhmMax, ampMin, ampMax, microAMin, microAMax, mVMin, mVMax, vMin, vMax, kVMin, kVMax, microVMin, microVMax, mWMin, mWMax, wMin, wMax, kWMin, kWMax, pFMin, pFMax, nFMin, nFMax, microFMin, microFMax, hzMin, hzMax, kHzMin, kHzMax, mHzMin, mHzMax } = ranges[difficulty];
 
     const types = {
       easy: [
-        () => {
+        // Kisebbről nagyobbra (osztás)
+        { direction: "smallerToLarger", fn: () => {
           let mA = getRandomInt(mAMin, mAMax);
           let answer = mA / 1000;
           const formatted = formatNumber(answer, 'A', difficulty);
           return {
             display: `<b>${mA} mA</b> = ? <span class="blue-percent">${formatted.unit}</span>`,
-            answer: answer.toString(), // Pontos érték, pl. 0.236
-            answerType: "decimal" // Tizedes, mert átváltás történhet
+            answer: answer.toString(),
+            answerType: "decimal"
           };
-        },
-        () => {
+        }},
+        { direction: "smallerToLarger", fn: () => {
           let ohm = getRandomInt(ohmMin, ohmMax);
           let answer = ohm / 1000;
           const formatted = formatNumber(answer, 'kΩ', difficulty);
           return {
             display: `<b>${ohm} Ω</b> = ? <span class="blue-percent">${formatted.unit}</span>`,
-            answer: answer.toString(), // Pontos érték
+            answer: answer.toString(),
             answerType: "decimal"
           };
-        },
-        () => {
-          let kOhm = getRandomInt(kOhmMin, kOhmMax);
-          let answer = kOhm * 1000;
-          return {
-            display: `<b>${kOhm} kΩ</b> = ? <span class="blue-percent">Ω</span>`,
-            answer: answer.toString(),
-            answerType: "number" // Egész szám, mert szorzás
-          };
-        },
-        () => {
-          let amp = getRandomInt(ampMin, ampMax);
-          let answer = amp * 1000;
-          return {
-            display: `<b>${amp} A</b> = ? <span class="blue-percent">mA</span>`,
-            answer: answer.toString(),
-            answerType: "number" // Egész szám
-          };
-        },
-        () => {
+        }},
+        { direction: "smallerToLarger", fn: () => {
           let mV = getRandomInt(mVMin, mVMax);
           let answer = mV / 1000;
           const formatted = formatNumber(answer, 'V', difficulty);
           return {
             display: `<b>${mV} mV</b> = ? <span class="blue-percent">${formatted.unit}</span>`,
-            answer: answer.toString(), // Pontos érték
+            answer: answer.toString(),
             answerType: "decimal"
           };
-        },
-        () => {
+        }},
+        { direction: "smallerToLarger", fn: () => {
+          let w = getRandomInt(wMin, wMax);
+          let answer = w / 1000;
+          const formatted = formatNumber(answer, 'kW', difficulty);
+          return {
+            display: `<b>${w} W</b> = ? <span class="blue-percent">${formatted.unit}</span>`,
+            answer: answer.toString(),
+            answerType: "decimal"
+          };
+        }},
+        // Nagyobbról kisebbre (szorzás)
+        { direction: "largerToSmaller", fn: () => {
+          let kOhm = getRandomInt(kOhmMin, kOhmMax);
+          let answer = kOhm * 1000;
+          return {
+            display: `<b>${kOhm} kΩ</b> = ? <span class="blue-percent">Ω</span>`,
+            answer: answer.toString(),
+            answerType: "number"
+          };
+        }},
+        { direction: "largerToSmaller", fn: () => {
+          let amp = getRandomInt(ampMin, ampMax);
+          let answer = amp * 1000;
+          return {
+            display: `<b>${amp} A</b> = ? <span class="blue-percent">mA</span>`,
+            answer: answer.toString(),
+            answerType: "number"
+          };
+        }},
+        { direction: "largerToSmaller", fn: () => {
           let v = getRandomInt(vMin, vMax);
           let answer = v * 1000;
           return {
             display: `<b>${v} V</b> = ? <span class="blue-percent">mV</span>`,
             answer: answer.toString(),
-            answerType: "number" // Egész szám
+            answerType: "number"
           };
-        },
-        () => {
-          let w = getRandomInt(wMin, wMax);
-          let answer = w / 1000; // kW-ra váltás
-          const formatted = formatNumber(answer, 'kW', difficulty);
-          return {
-            display: `<b>${w} W</b> = ? <span class="blue-percent">${formatted.unit}</span>`,
-            answer: answer.toString(), // Pontos érték, pl. 0.236
-            answerType: "decimal" // Tizedes, mert kW átváltás tizedes törtet ad
-          };
-        },
-        () => {
+        }},
+        { direction: "largerToSmaller", fn: () => {
           let kW = getRandomInt(kWMin, kWMax);
           let answer = kW * 1000;
           return {
             display: `<b>${kW} kW</b> = ? <span class="blue-percent">W</span>`,
             answer: answer.toString(),
-            answerType: "number" // Egész szám
+            answerType: "number"
           };
-        }
+        }}
       ],
       medium: [
-        () => {
+        // Kisebbről nagyobbra (osztás)
+        { direction: "smallerToLarger", fn: () => {
           let v = getRandomInt(vMin, vMax);
           let answer = v / 1000;
           const formatted = formatNumber(answer, 'kV', difficulty);
@@ -1024,17 +1088,8 @@ const taskTypes = [
             answer: answer.toString(),
             answerType: "decimal"
           };
-        },
-        () => {
-          let kV = getRandomInt(kVMin, kVMax);
-          let answer = kV * 1000;
-          return {
-            display: `<b>${kV} kV</b> = ? <span class="blue-percent">V</span>`,
-            answer: answer.toString(),
-            answerType: "number"
-          };
-        },
-        () => {
+        }},
+        { direction: "smallerToLarger", fn: () => {
           let microA = getRandomInt(microAMin, microAMax);
           let answer = microA / 1000;
           const formatted = formatNumber(answer, 'mA', difficulty);
@@ -1043,8 +1098,8 @@ const taskTypes = [
             answer: answer.toString(),
             answerType: "decimal"
           };
-        },
-        () => {
+        }},
+        { direction: "smallerToLarger", fn: () => {
           let kOhm = getRandomInt(kOhmMin, kOhmMax);
           let answer = kOhm / 1000;
           const formatted = formatNumber(answer, 'MΩ', difficulty);
@@ -1053,36 +1108,8 @@ const taskTypes = [
             answer: answer.toString(),
             answerType: "decimal"
           };
-        },
-        () => {
-          let mOhm = getRandomInt(mOhmMin, mOhmMax);
-          let answer = mOhm * 1000;
-          return {
-            display: `<b>${mOhm} MΩ</b> = ? <span class="blue-percent">kΩ</span>`,
-            answer: answer.toString(),
-            answerType: "number"
-          };
-        },
-        () => {
-          let mW = getRandomInt(mWMin, mWMax);
-          let answer = mW / 1000;
-          const formatted = formatNumber(answer, 'W', difficulty);
-          return {
-            display: `<b>${mW} mW</b> = ? <span class="blue-percent">${formatted.unit}</span>`,
-            answer: answer.toString(),
-            answerType: "decimal"
-          };
-        },
-        () => {
-          let w = getRandomInt(wMin, wMax);
-          let answer = w * 1000;
-          return {
-            display: `<b>${w} W</b> = ? <span class="blue-percent">mW</span>`,
-            answer: answer.toString(),
-            answerType: "number"
-          };
-        },
-        () => {
+        }},
+        { direction: "smallerToLarger", fn: () => {
           let hz = getRandomInt(hzMin, hzMax);
           let answer = hz / 1000;
           const formatted = formatNumber(answer, 'kHz', difficulty);
@@ -1091,8 +1118,36 @@ const taskTypes = [
             answer: answer.toString(),
             answerType: "decimal"
           };
-        },
-        () => {
+        }},
+        // Nagyobbról kisebbre (szorzás)
+        { direction: "largerToSmaller", fn: () => {
+          let kV = getRandomInt(kVMin, kVMax);
+          let answer = kV * 1000;
+          return {
+            display: `<b>${kV} kV</b> = ? <span class="blue-percent">V</span>`,
+            answer: answer.toString(),
+            answerType: "number"
+          };
+        }},
+        { direction: "largerToSmaller", fn: () => {
+          let mOhm = getRandomInt(mOhmMin, mOhmMax);
+          let answer = mOhm * 1000;
+          return {
+            display: `<b>${mOhm} MΩ</b> = ? <span class="blue-percent">kΩ</span>`,
+            answer: answer.toString(),
+            answerType: "number"
+          };
+        }},
+        { direction: "largerToSmaller", fn: () => {
+          let w = getRandomInt(wMin, wMax);
+          let answer = w * 1000;
+          return {
+            display: `<b>${w} W</b> = ? <span class="blue-percent">mW</span>`,
+            answer: answer.toString(),
+            answerType: "number"
+          };
+        }},
+        { direction: "largerToSmaller", fn: () => {
           let kHz = getRandomInt(kHzMin, kHzMax);
           let answer = kHz * 1000;
           return {
@@ -1100,10 +1155,22 @@ const taskTypes = [
             answer: answer.toString(),
             answerType: "number"
           };
-        }
+        }},
+        // Extra: kisebbről nagyobbra (teljesítmény)
+        { direction: "smallerToLarger", fn: () => {
+          let mW = getRandomInt(mWMin, mWMax);
+          let answer = mW / 1000;
+          const formatted = formatNumber(answer, 'W', difficulty);
+          return {
+            display: `<b>${mW} mW</b> = ? <span class="blue-percent">${formatted.unit}</span>`,
+            answer: answer.toString(),
+            answerType: "decimal"
+          };
+        }}
       ],
       hard: [
-        () => {
+        // Kisebbről nagyobbra (osztás)
+        { direction: "smallerToLarger", fn: () => {
           let microV = getRandomInt(microVMin, microVMax);
           let answer = microV / 1000;
           const formatted = formatNumber(answer, 'mV', difficulty);
@@ -1112,8 +1179,8 @@ const taskTypes = [
             answer: answer.toString(),
             answerType: "decimal"
           };
-        },
-        () => {
+        }},
+        { direction: "smallerToLarger", fn: () => {
           let pF = getRandomInt(pFMin, pFMax);
           let answer = pF / 1000;
           const formatted = formatNumber(answer, 'nF', difficulty);
@@ -1122,8 +1189,8 @@ const taskTypes = [
             answer: answer.toString(),
             answerType: "decimal"
           };
-        },
-        () => {
+        }},
+        { direction: "smallerToLarger", fn: () => {
           let nF = getRandomInt(nFMin, nFMax);
           let answer = nF / 1000;
           const formatted = formatNumber(answer, 'µF', difficulty);
@@ -1132,17 +1199,8 @@ const taskTypes = [
             answer: answer.toString(),
             answerType: "decimal"
           };
-        },
-        () => {
-          let microF = getRandomInt(microFMin, microFMax);
-          let answer = microF * 1000;
-          return {
-            display: `<b>${microF} µF</b> = ? <span class="blue-percent">nF</span>`,
-            answer: answer.toString(),
-            answerType: "number"
-          };
-        },
-        () => {
+        }},
+        { direction: "smallerToLarger", fn: () => {
           let kHz = getRandomInt(kHzMin, kHzMax);
           let answer = kHz / 1000;
           const formatted = formatNumber(answer, 'MHz', difficulty);
@@ -1151,8 +1209,18 @@ const taskTypes = [
             answer: answer.toString(),
             answerType: "decimal"
           };
-        },
-        () => {
+        }},
+        // Nagyobbról kisebbre (szorzás)
+        { direction: "largerToSmaller", fn: () => {
+          let microF = getRandomInt(microFMin, microFMax);
+          let answer = microF * 1000;
+          return {
+            display: `<b>${microF} µF</b> = ? <span class="blue-percent">nF</span>`,
+            answer: answer.toString(),
+            answerType: "number"
+          };
+        }},
+        { direction: "largerToSmaller", fn: () => {
           let mHz = getRandomInt(mHzMin, mHzMax);
           let answer = mHz * 1000;
           return {
@@ -1160,13 +1228,58 @@ const taskTypes = [
             answer: answer.toString(),
             answerType: "number"
           };
-        }
+        }},
+        // Extra: nagyobbról kisebbre (áram és ellenállás hozzáadása)
+        { direction: "largerToSmaller", fn: () => {
+          let mOhm = getRandomInt(mOhmMin, mOhmMax);
+          let answer = mOhm * 1000;
+          return {
+            display: `<b>${mOhm} MΩ</b> = ? <span class="blue-percent">kΩ</span>`,
+            answer: answer.toString(),
+            answerType: "number"
+          };
+        }},
+        { direction: "largerToSmaller", fn: () => {
+          let amp = getRandomInt(ampMin, ampMax);
+          let answer = amp * 1000;
+          return {
+            display: `<b>${amp} A</b> = ? <span class="blue-percent">mA</span>`,
+            answer: answer.toString(),
+            answerType: "number"
+          };
+        }}
       ]
     };
 
-    return types[difficulty][getRandomInt(0, types[difficulty].length - 1)]();
+    // Váltakozó irányok biztosítása
+    const selectedTypes = types[difficulty];
+    const smallerToLarger = selectedTypes.filter(t => t.direction === "smallerToLarger");
+    const largerToSmaller = selectedTypes.filter(t => t.direction === "largerToSmaller");
+    
+    // A QUESTIONS számától függően váltakozó irányú feladatok generálása
+    const generateAlternatingTasks = () => {
+      const tasks = [];
+      for (let i = 0; i < QUESTIONS; i++) {
+        const isEven = i % 2 === 0;
+        const typeArray = isEven ? smallerToLarger : largerToSmaller;
+        const randomIndex = getRandomInt(0, typeArray.length - 1);
+        tasks.push(typeArray[randomIndex].fn());
+      }
+      return tasks;
+    };
+
+    // Ha csak egy feladatot generálunk (pl. teszteléshez), véletlenszerűen választunk
+    const singleTask = selectedTypes[getRandomInt(0, selectedTypes.length - 1)].fn();
+    
+    // Ha a generateQuestions hívja, akkor a teljes váltakozó listát adjuk vissza
+    if (window.isGeneratingQuestions) {
+      return generateAlternatingTasks();
+    }
+    
+    return singleTask;
   }
 },
+
 {
   name: "Mértékegység kerekítés",
   value: "mertekegyseg_kerekites",
@@ -1942,6 +2055,10 @@ let gameActive = false;
 let answerState = { value: "" }; // Válasz állapota a numpadhoz
 let wrongAnswers = 0; // Helytelen válaszok száma
 
+let lastDirection = null; // Az utolsó kérdéstípus tárolása (0 vagy 1)
+let lastExponent = null; // Az utolsó kitevő tárolása
+
+
 // --- UTOLSÓ VÁLASZTÁS MENTÉSE/BETÖLTÉSE ---
 function saveLastSelection() {
   localStorage.setItem("vilma-last-category", categorySelect.value);
@@ -2155,18 +2272,44 @@ function generateQuestions() {
     questions.push({ display: "Hiba: kategória nincs implementálva", answer: null, answerType: "number" });
     return;
   }
-  for (let i = 0; i < QUESTIONS; i++) {
-    const task = taskType.generate(difficulty);
-    if (!task.answer || task.answer === "?") {
-      task.display = "Hiba: érvénytelen feladat generálódott";
-      task.answer = null;
+
+  // Jelzés a generate függvénynek, hogy teljes kérdéssort generálunk
+  window.isGeneratingQuestions = true;
+
+  if (category === "mertekegyseg_atvaltas") {
+    // A generate függvény egy tömböt ad vissza váltakozó irányú feladatokkal
+    questions = taskType.generate(difficulty);
+    // Ellenőrizzük, hogy a generált kérdések érvényesek-e
+    questions.forEach(task => {
+      if (!task.answer || task.answer === "?") {
+        task.display = "Hiba: érvénytelen feladat generálódott";
+        task.answer = null;
+      }
+      if (!['number', 'decimal', 'fraction', 'power'].includes(task.answerType)) {
+        console.warn(`Ismeretlen answerType: ${task.answerType} a ${taskType.name} feladattípusban`);
+        task.answerType = 'number'; // Alapértelmezett típus
+      }
+    });
+  } else {
+    // Más feladattípusok esetében az eredeti ciklusos logika
+    for (let i = 0; i < QUESTIONS; i++) {
+      const task = taskType.generate(difficulty);
+      if (!task.answer || task.answer === "?") {
+        task.display = "Hiba: érvénytelen feladat generálódott";
+        task.answer = null;
+      }
+      if (!['number', 'decimal', 'fraction', 'power'].includes(task.answerType)) {
+        console.warn(`Ismeretlen answerType: ${task.answerType} a ${taskType.name} feladattípusban`);
+        task.answerType = 'number'; // Alapértelmezett típus
+      }
+      questions.push(task);
     }
-    if (!['number', 'decimal', 'fraction', 'power'].includes(task.answerType)) {
-      console.warn(`Ismeretlen answerType: ${task.answerType} a ${taskType.name} feladattípusban`);
-      task.answerType = 'number'; // Alapértelmezett típus
-    }
-    questions.push(task);
   }
+
+  // Visszaállítjuk a jelzést
+  window.isGeneratingQuestions = false;
+
+  console.log("Generált kérdések:", questions);
 }
 
 // Kifejezések kiértékelésére szolgáló függvény, amely ellenőrzi, hogy a felhasználó válasza helyes-e
@@ -2179,7 +2322,6 @@ function evaluateExpression(input, correctAnswer, answerType, taskData) {
   let normalizedInput = input.replace(',', '.').trim();
   console.log("Normalizált bemenet:", normalizedInput);
 
-  // Normál alakú számok kezelése segédfüggvény
   function parseScientificNumber(str) {
     str = str.trim();
     const scientificMatch = str.match(/^([\d\.]+)\*10\^([\-]?\d+)$/);
@@ -2192,22 +2334,15 @@ function evaluateExpression(input, correctAnswer, answerType, taskData) {
   }
 
   try {
-    // Képlet kiértékelése, ha tartalmaz műveleti jeleket
     if (normalizedInput.match(/[\*\/\+-]/)) {
-      let expression = normalizedInput.replace(/\s/g, ''); // Szóközök eltávolítása
-
-      // Normál alakú számok átalakítása a kifejezésben
+      let expression = normalizedInput.replace(/\s/g, '');
       expression = expression.replace(/(\d+\.\d+)\*10\^([\-]?\d+)/g, (match, mantissa, exponent) => {
         return parseScientificNumber(`${mantissa}*10^${exponent}`);
       });
-
-      // Ellenőrizzük, hogy a kifejezés csak számokat és műveleti jeleket tartalmaz
       if (!expression.match(/^[\d\.\+\-\*\/\(\)]+$/)) {
         console.warn("Érvénytelen kifejezés formátum", { expression });
         return false;
       }
-
-      // Kifejezés kiértékelése
       let computedResult;
       try {
         computedResult = eval(expression);
@@ -2219,12 +2354,8 @@ function evaluateExpression(input, correctAnswer, answerType, taskData) {
         console.warn("Hiba a kifejezés kiértékelése során", { expression, error });
         return false;
       }
-
-      // Precizitás: minden szinten két tizedesjegy
       const precision = 2;
-      const parsedCorrectAnswer = parseFloat(correctAnswer);
-
-      // Összehasonlítás a helyes válasszal
+      const parsedCorrectAnswer = parseFloat(correctAnswer.replace(',', '.'));
       const difference = Math.abs(computedResult - parsedCorrectAnswer);
       console.log("Képlet kiértékelés:", {
         expression,
@@ -2237,7 +2368,6 @@ function evaluateExpression(input, correctAnswer, answerType, taskData) {
       return difference < Math.pow(10, -precision);
     }
 
-    // Normál alakú szám kezelése
     if (answerType === 'power') {
       const powerMatch = normalizedInput.match(/^([\d\.]+)\*10\^([\-]?\d+)$/);
       if (!powerMatch) {
@@ -2252,27 +2382,25 @@ function evaluateExpression(input, correctAnswer, answerType, taskData) {
       }
       const userValue = parseFloat(userCoef) * Math.pow(10, parseInt(userExp));
       const correctValue = parseFloat(ansCoef) * Math.pow(10, parseInt(ansExp));
-      const precision = 2; // Két tizedesjegy pontosság
+      const precision = 2;
       console.log("Normál alak ellenőrzés:", { userValue, correctValue, userCoef, userExp, ansCoef, ansExp, precision });
       return Math.abs(userValue - correctValue) < Math.pow(10, -precision);
     }
 
-    // Tizedes tört kezelése
     if (answerType === 'decimal') {
-      const precision = 2; // Két tizedesjegy pontosság
-      const tolerance = 0.2;
+      const precision = 2;
+      const tolerance = 0.01;
       const userAnswer = parseFloat(normalizedInput);
-      const parsedCorrectAnswer = parseFloat(correctAnswer);
+      const parsedCorrectAnswer = parseFloat(correctAnswer.replace(',', '.'));
       if (isNaN(userAnswer) || isNaN(parsedCorrectAnswer)) {
-        console.warn("Érvénytelen számformátum", { userAnswer, parsedCorrectAnswer });
+        console.warn("Érvénytelen számformátum", { userAnswer, parsedCorrectAnswer, normalizedInput, correctAnswer });
         return false;
       }
       const difference = Math.abs(userAnswer - parsedCorrectAnswer);
-      console.log("Tizedes tört ellenőrzés:", { userAnswer, parsedCorrectAnswer, difference, tolerance, precision });
+      console.log("Tizedes tört ellenőrzés:", { userAnswer, parsedCorrectAnswer, difference, tolerance, precision, normalizedInput, correctAnswer });
       return difference <= tolerance;
     }
 
-    // Egész szám kezelése
     if (answerType === 'number') {
       const userAnswer = parseFloat(normalizedInput);
       const parsedCorrectAnswer = parseFloat(correctAnswer);
@@ -2282,10 +2410,9 @@ function evaluateExpression(input, correctAnswer, answerType, taskData) {
       }
       const difference = Math.abs(userAnswer - parsedCorrectAnswer);
       console.log("Egész szám ellenőrzés:", { userAnswer, parsedCorrectAnswer, difference, tolerance: 0.01 });
-      return difference < 0.01; // Egész számoknál szigorúbb tolerancia
+      return difference < 0.01;
     }
 
-    // Tört kezelése
     if (answerType === 'fraction') {
       if (normalizedInput.includes('/')) {
         const [userNum, userDen] = normalizedInput.split('/').map(Number);
@@ -2317,6 +2444,8 @@ function evaluateExpression(input, correctAnswer, answerType, taskData) {
     return false;
   }
 }
+
+
 // Segédfüggvény normál alakhoz
 function formatScientific(value) {
   if (value === 0) return "0";
@@ -2328,7 +2457,6 @@ function formatScientific(value) {
 function renderNumpad(answerState, onChange) {
   const currentTask = questions[currentQuestion] || {};
 
-  // **ÚJ**: Globális állapot mentése a speciális gombokhoz
   if (!window.numpadState) {
     window.numpadState = {
       lightningActivated: false,
@@ -2337,7 +2465,6 @@ function renderNumpad(answerState, onChange) {
     };
   }
 
-  // Számláló a villám gomb egymást követő lenyomásainak követésére
   let lightningCount = window.numpadState.lightningCount;
 
   const rows = [
@@ -2348,7 +2475,6 @@ function renderNumpad(answerState, onChange) {
   const numpadDiv = document.createElement('div');
   numpadDiv.className = 'numpad active';
 
-  // Referencia a villám gombra a számláló kezeléséhez
   let lightningButton = null;
 
   rows.forEach((row) => {
@@ -2378,13 +2504,13 @@ function renderNumpad(answerState, onChange) {
             return;
           }
 
-          // Időzítő szüneteltetése
           let pauseStart = Date.now();
           if (timerInterval) {
             clearInterval(timerInterval);
           }
 
-          // Válasz ellenőrzése
+          console.log("Válaszellenőrzés kezdete:", { val, correctAnswer: currentTask.answer, answerType: currentTask.answerType });
+
           if (currentTask.answerType === 'fraction') {
             if (val.includes('/')) {
               const [ansNum, ansDen] = currentTask.answer.split('/').map(Number);
@@ -2403,7 +2529,7 @@ function renderNumpad(answerState, onChange) {
             }
             if (!correct) {
               const [ansNum, ansDen] = currentTask.answer.split('/').map(Number);
-              alert(`Nem jó a válasz! A helyes válaszhoz hasonló érték: ${ansNum}/${ansDen} vagy ${(ansNum / ansDen).toFixed(2)}.`);
+              alert(`Nem jó a válasz! A helyes válaszhoz hasonló érték: ${ansNum}/${ansDen} vagy ${(ansNum / ansDen).toFixed(2).replace('.', ',')}.`);
             }
           } else if (currentTask.answerType === 'power') {
             const powerMatch = val.match(/^([\d\.]+)×10\^([\d\-]+)$/);
@@ -2422,26 +2548,26 @@ function renderNumpad(answerState, onChange) {
             if (!correct) {
               let hint = '';
               const userAnswer = parseFloat(val.replace(',', '.'));
-              const correctAnswer = parseFloat(currentTask.answer);
+              const correctAnswer = parseFloat(currentTask.answer.replace(',', '.'));
               if (!isNaN(userAnswer)) {
                 if (currentTask.value === 'ohm_torveny') {
-                  if (currentTask.U && currentTask.R) { // I = U / R
+                  if (currentTask.U && currentTask.R) {
                     hint = userAnswer < correctAnswer
                       ? `Túl kicsi a válasz! Az áramot ${currentTask.unit}-ban számold: I = U / R, ahol U = ${currentTask.U} V, R = ${currentTask.R} ${currentTask.unit === 'mA' ? 'MΩ' : 'kΩ'}.`
                       : `Túl nagy a válasz! Az áramot ${currentTask.unit}-ban számold: I = U / R, ahol U = ${currentTask.U} V, R = ${currentTask.R} ${currentTask.unit === 'mA' ? 'MΩ' : 'kΩ'}.`;
-                  } else if (currentTask.I && currentTask.R) { // U = I * R
+                  } else if (currentTask.I && currentTask.R) {
                     hint = userAnswer < correctAnswer
                       ? `Túl kicsi a válasz! A feszültséget V-ban számold: U = I * R, ahol I = ${currentTask.I} ${currentTask.unit === 'V' ? 'mA' : 'A'}, R = ${currentTask.R} ${currentTask.unit === 'V' ? 'MΩ' : 'kΩ'}.`
                       : `Túl nagy a válasz! A feszültséget V-ban számold: U = I * R, ahol I = ${currentTask.I} ${currentTask.unit === 'V' ? 'mA' : 'A'}, R = ${currentTask.R} ${currentTask.unit === 'V' ? 'MΩ' : 'kΩ'}.`;
-                  } else if (currentTask.U && currentTask.I) { // R = U / I
+                  } else if (currentTask.U && currentTask.I) {
                     hint = userAnswer < correctAnswer
                       ? `Túl kicsi a válasz! Az ellenállást ${currentTask.unit}-ban számold: R = U / I, ahol U = ${currentTask.U} V, I = ${currentTask.I} ${currentTask.unit === 'kΩ' || currentTask.unit === 'MΩ' ? 'mA' : 'A'}.`
                       : `Túl nagy a válasz! Az ellenállást ${currentTask.unit}-ban számold: R = U / I, ahol U = ${currentTask.U} V, I = ${currentTask.I} ${currentTask.unit === 'kΩ' || currentTask.unit === 'MΩ' ? 'mA' : 'A'}.`;
                   }
                 } else {
                   hint = userAnswer < correctAnswer
-                    ? `Túl kicsi a válasz! Próbálj nagyobb értéket, közel ${correctAnswer.toFixed(2)} ${currentTask.unit || ''}-hoz.`
-                    : `Túl nagy a válasz! Próbálj kisebb értéket, közel ${correctAnswer.toFixed(2)} ${currentTask.unit || ''}-hoz.`;
+                    ? `Túl kicsi a válasz! Próbálj nagyobb értéket, közel ${currentTask.answer} ${currentTask.unit || ''}-hoz.`
+                    : `Túl nagy a válasz! Próbálj kisebb értéket, közel ${currentTask.answer} ${currentTask.unit || ''}-hoz.`;
                 }
               } else {
                 hint = `Érvénytelen válasz! Ellenőrizd a formátumot, pl. '123', '0,93', vagy '${currentTask.answerType === 'fraction' ? '3/4' : '320/460'}'.`;
@@ -2450,7 +2576,8 @@ function renderNumpad(answerState, onChange) {
             }
           }
 
-          // Szüneteltetés időtartamának kiszámítása
+          console.log("Válaszellenőrzés eredménye:", { val, correct, correctAnswer: currentTask.answer });
+
           const pauseEnd = Date.now();
           const pauseDuration = pauseEnd - pauseStart;
 
@@ -2461,14 +2588,12 @@ function renderNumpad(answerState, onChange) {
             if (currentQuestion >= QUESTIONS) {
               finishGame();
             } else {
-              // Időzítő folytatása a szüneteltetés figyelembevételével
-              startTime += pauseDuration; // startTime korrigálása
+              startTime += pauseDuration;
               timerInterval = setInterval(updateTimer, 1000);
             }
           } else {
             wrongAnswers++;
-            // Időzítő folytatása a szüneteltetés figyelembevételével
-            startTime += pauseDuration; // startTime korrigálása
+            startTime += pauseDuration;
             timerInterval = setInterval(updateTimer, 1000);
           }
         };
@@ -2480,29 +2605,26 @@ function renderNumpad(answerState, onChange) {
         btn.textContent = key;
         btn.tabIndex = -1;
 
-        // Speciális gomb inicializálása
         if (key === '⚡️') {
-          // **MÓDOSÍTOTT**: Állapot visszaállítása a mentett értékekből
           if (window.numpadState.lightningActivated) {
             btn.dataset.state = window.numpadState.lightningCurrentSymbol;
             btn.textContent = window.numpadState.lightningCurrentSymbol;
           } else {
-            btn.dataset.state = '⚡️'; // Kezdeti állapot: villám
+            btn.dataset.state = '⚡️';
           }
           btn.dataset.lightningCount = window.numpadState.lightningCount.toString();
-          lightningButton = btn; // Referencia tárolása a villám gombra
+          lightningButton = btn;
         } else if (key === '/') {
-          btn.dataset.state = '/'; // Kezdeti állapot: /
+          btn.dataset.state = '/';
         }
 
         btn.onclick = () => {
           btn.classList.add('flash');
           setTimeout(() => btn.classList.remove('flash'), 200);
 
-          // Ha nem a villám gombot nyomták meg, és a villám gomb még villám állapotban van, visszaállítjuk a számlálót
           if (key !== '⚡️' && lightningButton && lightningButton.dataset.state === '⚡️') {
             lightningCount = 0;
-            window.numpadState.lightningCount = 0; // **ÚJ**: Globális állapot frissítése
+            window.numpadState.lightningCount = 0;
             lightningButton.dataset.lightningCount = '0';
             console.log('Más gomb lenyomva, villám számláló visszaállítva:', { lightningCount, currentValue: answerState.value });
           }
@@ -2516,52 +2638,45 @@ function renderNumpad(answerState, onChange) {
               answerState.value = answerState.value.substring(1);
             }
           } else if (key === '⚡️') {
-            // Villám gomb kezelése
             lightningCount = parseInt(btn.dataset.lightningCount || '0') + 1;
             btn.dataset.lightningCount = lightningCount.toString();
-            window.numpadState.lightningCount = lightningCount; // **ÚJ**: Globális állapot frissítése
+            window.numpadState.lightningCount = lightningCount;
             console.log('Villám gomb lenyomva:', { lightningCount, currentValue: answerState.value });
 
             if (lightningCount >= 9 && !window.numpadState.lightningActivated) {
-              // **MÓDOSÍTOTT**: Kilenc egymást követő lenyomás után váltás / jelre
               btn.dataset.state = '/';
               btn.textContent = '/';
-              window.numpadState.lightningActivated = true; // **ÚJ**: Aktiválás jelzése
-              window.numpadState.lightningCurrentSymbol = '/'; // **ÚJ**: Aktuális szimbólum mentése
-              lightningCount = 0; // Számláló visszaállítása
-              window.numpadState.lightningCount = 0; // **ÚJ**: Globális állapot frissítése
+              window.numpadState.lightningActivated = true;
+              window.numpadState.lightningCurrentSymbol = '/';
+              lightningCount = 0;
+              window.numpadState.lightningCount = 0;
               btn.dataset.lightningCount = '0';
               console.log('Villám gomb átváltva / jelre:', { newState: '/', newText: btn.textContent });
             }
 
-            // Ha még villám állapotban van, nem adunk hozzá semmit
             if (btn.dataset.state === '⚡️') {
               console.log('Villám gomb még nem váltott, nincs bevitel.');
               return;
             }
 
-            // Ha már / vagy * jelre váltott, a speciális viselkedését követi
             const currentState = btn.dataset.state;
             const lastChar = answerState.value.slice(-1);
             console.log('Speciális gomb kezelése:', { currentState, lastChar, currentValue: answerState.value });
 
-            // Ha az utolsó karakter '/' vagy '*', eltávolítjuk
             if (lastChar === '/' || lastChar === '*') {
               answerState.value = answerState.value.slice(0, -1);
             }
 
-            // Aktuális jel hozzáadása
             answerState.value += currentState;
 
-            // Váltás a másik jelre
             const newState = currentState === '/' ? '*' : '/';
             btn.dataset.state = newState;
             btn.textContent = newState;
-            window.numpadState.lightningCurrentSymbol = newState; // **ÚJ**: Új szimbólum mentése
+            window.numpadState.lightningCurrentSymbol = newState;
             console.log('Speciális gomb frissítve:', { newState, buttonText: btn.textContent, newValue: answerState.value });
           } else if (key === '.') {
             if (answerState.value !== "" && !answerState.value.includes('.')) {
-              answerState.value += ','; // Vessző a magyar billentyűzethez
+              answerState.value += ',';
             }
           } else if (['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'].includes(key)) {
             answerState.value += key;
