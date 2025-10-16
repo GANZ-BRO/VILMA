@@ -2454,6 +2454,7 @@ function formatScientific(value) {
   return `${mantissa} × 10^${exponent}`;
 }
 
+// Replace the existing renderNumpad function with this version
 function renderNumpad(answerState, onChange) {
   const currentTask = questions[currentQuestion] || {};
 
@@ -2482,7 +2483,7 @@ function renderNumpad(answerState, onChange) {
     rowDiv.className = 'numpad-row';
     row.forEach((key) => {
       if (key === 'submit') {
-        const enterIcon = `<svg viewBox="0 0 48 48" width="1.2em" height="1.2em" style="display:block;margin:auto;" aria-hidden="true" focusable="false"><path d="M40 6v23H14.83l6.58-6.59L19 20l-10 10 10 10 2.41-2.41L14.83 31H44V6z" fill="currentColor"/></svg>`;
+        const enterIcon = `<svg viewBox="0 0 48 48" width="1.2em" height="1.2em" style="display:block;margin:auto;" aria-hidden="true" focusable="false"><path d="M40 6v23H14.83l6.58-6.59L19 20l-10 10 [...]"/></svg>`;
         const submitBtn = document.createElement("button");
         submitBtn.type = "button";
         submitBtn.className = "numpad-btn numpad-submit-btn";
@@ -2550,25 +2551,9 @@ function renderNumpad(answerState, onChange) {
               const userAnswer = parseFloat(val.replace(',', '.'));
               const correctAnswer = parseFloat(currentTask.answer.replace(',', '.'));
               if (!isNaN(userAnswer)) {
-                if (currentTask.value === 'ohm_torveny') {
-                  if (currentTask.U && currentTask.R) {
-                    hint = userAnswer < correctAnswer
-                      ? `Túl kicsi a válasz! Az áramot ${currentTask.unit}-ban számold: I = U / R, ahol U = ${currentTask.U} V, R = ${currentTask.R} ${currentTask.unit === 'mA' ? 'MΩ' : 'kΩ'}.`
-                      : `Túl nagy a válasz! Az áramot ${currentTask.unit}-ban számold: I = U / R, ahol U = ${currentTask.U} V, R = ${currentTask.R} ${currentTask.unit === 'mA' ? 'MΩ' : 'kΩ'}.`;
-                  } else if (currentTask.I && currentTask.R) {
-                    hint = userAnswer < correctAnswer
-                      ? `Túl kicsi a válasz! A feszültséget V-ban számold: U = I * R, ahol I = ${currentTask.I} ${currentTask.unit === 'V' ? 'mA' : 'A'}, R = ${currentTask.R} ${currentTask.unit === 'V' ? 'MΩ' : 'kΩ'}.`
-                      : `Túl nagy a válasz! A feszültséget V-ban számold: U = I * R, ahol I = ${currentTask.I} ${currentTask.unit === 'V' ? 'mA' : 'A'}, R = ${currentTask.R} ${currentTask.unit === 'V' ? 'MΩ' : 'kΩ'}.`;
-                  } else if (currentTask.U && currentTask.I) {
-                    hint = userAnswer < correctAnswer
-                      ? `Túl kicsi a válasz! Az ellenállást ${currentTask.unit}-ban számold: R = U / I, ahol U = ${currentTask.U} V, I = ${currentTask.I} ${currentTask.unit === 'kΩ' || currentTask.unit === 'MΩ' ? 'mA' : 'A'}.`
-                      : `Túl nagy a válasz! Az ellenállást ${currentTask.unit}-ban számold: R = U / I, ahol U = ${currentTask.U} V, I = ${currentTask.I} ${currentTask.unit === 'kΩ' || currentTask.unit === 'MΩ' ? 'mA' : 'A'}.`;
-                  }
-                } else {
-                  hint = userAnswer < correctAnswer
-                    ? `Túl kicsi a válasz! Próbálj nagyobb értéket, közel ${currentTask.answer} ${currentTask.unit || ''}-hoz.`
-                    : `Túl nagy a válasz! Próbálj kisebb értéket, közel ${currentTask.answer} ${currentTask.unit || ''}-hoz.`;
-                }
+                hint = userAnswer < correctAnswer
+                  ? `Túl kicsi a válasz! Próbálj nagyobb értéket, közel ${currentTask.answer} ${currentTask.unit || ''}-hoz.`
+                  : `Túl nagy a válasz! Próbálj kisebb értéket, közel ${currentTask.answer} ${currentTask.unit || ''}-hoz.`;
               } else {
                 hint = `Érvénytelen válasz! Ellenőrizd a formátumot, pl. '123', '0,93', vagy '${currentTask.answerType === 'fraction' ? '3/4' : '320/460'}'.`;
               }
@@ -2606,13 +2591,26 @@ function renderNumpad(answerState, onChange) {
         btn.tabIndex = -1;
 
         if (key === '⚡️') {
-          if (window.numpadState.lightningActivated) {
-            btn.dataset.state = window.numpadState.lightningCurrentSymbol;
-            btn.textContent = window.numpadState.lightningCurrentSymbol;
+          // Ha az aktuális feladat tört típusú, a villám gombot előre '/'-re állítjuk és "lezárjuk"
+          const isFractionTask = currentTask.answerType === 'fraction';
+          if (isFractionTask) {
+            btn.dataset.state = '/';
+            btn.textContent = '/';
+            btn.dataset.locked = 'true'; // lezárjuk, hogy ne váltson vissza
+            // Frissítsük a globális állapotot is (vizuális konzisztencia)
+            window.numpadState.lightningActivated = true;
+            window.numpadState.lightningCurrentSymbol = '/';
+            btn.dataset.lightningCount = '0';
           } else {
-            btn.dataset.state = '⚡️';
+            // Eredeti viselkedés: ha korábban aktiválva volt, tükrözzük az állapotot
+            if (window.numpadState.lightningActivated) {
+              btn.dataset.state = window.numpadState.lightningCurrentSymbol;
+              btn.textContent = window.numpadState.lightningCurrentSymbol;
+            } else {
+              btn.dataset.state = '⚡️';
+            }
+            btn.dataset.lightningCount = window.numpadState.lightningCount.toString();
           }
-          btn.dataset.lightningCount = window.numpadState.lightningCount.toString();
           lightningButton = btn;
         } else if (key === '/') {
           btn.dataset.state = '/';
@@ -2638,6 +2636,19 @@ function renderNumpad(answerState, onChange) {
               answerState.value = answerState.value.substring(1);
             }
           } else if (key === '⚡️') {
+            // Ha lezárt (fraction feladathoz beállított) állapotban van, egyszerűen '/'-t viszünk be
+            if (btn.dataset.locked === 'true') {
+              const lastChar = answerState.value.slice(-1);
+              if (lastChar === '/' || lastChar === '*') {
+                answerState.value = answerState.value.slice(0, -1);
+              }
+              answerState.value += '/';
+              onChange(answerState.value);
+              console.log('Lezárt villám gomb: beírva "/"', answerState.value);
+              return;
+            }
+
+            // Eredeti villám logika
             lightningCount = parseInt(btn.dataset.lightningCount || '0') + 1;
             btn.dataset.lightningCount = lightningCount.toString();
             window.numpadState.lightningCount = lightningCount;
@@ -2678,7 +2689,7 @@ function renderNumpad(answerState, onChange) {
             if (answerState.value !== "" && !answerState.value.includes('.')) {
               answerState.value += ',';
             }
-          } else if (['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'].includes(key)) {
+          } else if (['0','1','2','3','4','5','6','7','8','9','/'].includes(key)) {
             answerState.value += key;
           }
           console.log('Új beviteli mező tartalom:', answerState.value);
@@ -2691,6 +2702,7 @@ function renderNumpad(answerState, onChange) {
   });
   return numpadDiv;
 }
+
 
 // --- JÁTÉK LOGIKA ---
 function showQuestion(index) {
