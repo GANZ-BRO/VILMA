@@ -2313,6 +2313,7 @@ function generateQuestions() {
 }
 
 // Kifejezések kiértékelésére szolgáló függvény, amely ellenőrzi, hogy a felhasználó válasza helyes-e
+
 function evaluateExpression(input, correctAnswer, answerType, taskData) {
   if (!input || !correctAnswer) {
     console.warn("Érvénytelen bemenet vagy helyes válasz hiányzik", { input, correctAnswer });
@@ -2354,7 +2355,9 @@ function evaluateExpression(input, correctAnswer, answerType, taskData) {
         console.warn("Hiba a kifejezés kiértékelése során", { expression, error });
         return false;
       }
+      // Pontosság: 2 tizedesjegy esetén a helyes tolerancia = 0.5 * 10^-precision (pl. 0.005)
       const precision = 2;
+      const tolerance = 0.5 * Math.pow(10, -precision);
       const parsedCorrectAnswer = parseFloat(correctAnswer.replace(',', '.'));
       const difference = Math.abs(computedResult - parsedCorrectAnswer);
       console.log("Képlet kiértékelés:", {
@@ -2363,9 +2366,10 @@ function evaluateExpression(input, correctAnswer, answerType, taskData) {
         correctAnswer: parsedCorrectAnswer,
         difference,
         precision,
+        tolerance,
         unit: taskData ? taskData.unit : 'N/A'
       });
-      return difference < Math.pow(10, -precision);
+      return difference <= tolerance;
     }
 
     if (answerType === 'power') {
@@ -2383,13 +2387,14 @@ function evaluateExpression(input, correctAnswer, answerType, taskData) {
       const userValue = parseFloat(userCoef) * Math.pow(10, parseInt(userExp));
       const correctValue = parseFloat(ansCoef) * Math.pow(10, parseInt(ansExp));
       const precision = 2;
-      console.log("Normál alak ellenőrzés:", { userValue, correctValue, userCoef, userExp, ansCoef, ansExp, precision });
-      return Math.abs(userValue - correctValue) < Math.pow(10, -precision);
+      const tolerance = 0.5 * Math.pow(10, -precision);
+      console.log("Normál alak ellenőrzés:", { userValue, correctValue, userCoef, userExp, ansCoef, ansExp, precision, tolerance });
+      return Math.abs(userValue - correctValue) <= tolerance;
     }
 
     if (answerType === 'decimal') {
       const precision = 2;
-      const tolerance = 0.01;
+      const tolerance = 0.5 * Math.pow(10, -precision); // 0.005 for 2 decimal places
       const userAnswer = parseFloat(normalizedInput);
       const parsedCorrectAnswer = parseFloat(correctAnswer.replace(',', '.'));
       if (isNaN(userAnswer) || isNaN(parsedCorrectAnswer)) {
@@ -2408,9 +2413,10 @@ function evaluateExpression(input, correctAnswer, answerType, taskData) {
         console.warn("Érvénytelen számformátum", { userAnswer, parsedCorrectAnswer });
         return false;
       }
+      // Egész számoknál megköveteljük az egyenlőséget (kis numerikus eltérések engedélyezése minimálisan)
       const difference = Math.abs(userAnswer - parsedCorrectAnswer);
-      console.log("Egész szám ellenőrzés:", { userAnswer, parsedCorrectAnswer, difference, tolerance: 0.01 });
-      return difference < 0.01;
+      console.log("Egész szám ellenőrzés:", { userAnswer, parsedCorrectAnswer, difference });
+      return difference <= 1e-9;
     }
 
     if (answerType === 'fraction') {
@@ -2432,8 +2438,11 @@ function evaluateExpression(input, correctAnswer, answerType, taskData) {
           console.warn("Érvénytelen számformátum tört esetén", { normalizedInput });
           return false;
         }
-        console.log("Tört decimális ellenőrzés:", { userAnswer, correctValue });
-        return Math.abs(userAnswer - correctValue) < 0.01;
+        // Ha tizedes formátumban adták meg, használjuk a 2 tizedes pontosságra vonatkozó toleranciát
+        const precision = 2;
+        const tolerance = 0.5 * Math.pow(10, -precision);
+        console.log("Tört decimális ellenőrzés:", { userAnswer, correctValue, tolerance });
+        return Math.abs(userAnswer - correctValue) <= tolerance;
       }
     }
 
@@ -2444,7 +2453,6 @@ function evaluateExpression(input, correctAnswer, answerType, taskData) {
     return false;
   }
 }
-
 
 // Segédfüggvény normál alakhoz
 function formatScientific(value) {
