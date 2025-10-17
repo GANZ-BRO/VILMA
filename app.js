@@ -2478,7 +2478,7 @@ function renderNumpad(answerState, onChange) {
 
   const rows = [
     ['1', '2', '3', '±', '←'],
-    ['4', '5', '6', '.', 'submit'],
+    ['4', '5', '6', ',', 'submit'],
     ['7', '8', '9', '0', '⚡️']
   ];
   const numpadDiv = document.createElement('div');
