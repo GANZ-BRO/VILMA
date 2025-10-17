@@ -96,31 +96,41 @@ function formatNumber(value, unit, difficulty, forceBaseUnit = false) {
 }
 
 // Válaszlehetőségek generálása
-function generateOptions(correctAnswer, answerType, difficulty, unit) {
-  console.log("generateOptions called", { correctAnswer, answerType, difficulty, unit });
+function generateOptions(correctAnswer, answerType, difficulty, unit, precision = 2) {
+  console.log("generateOptions called", { correctAnswer, answerType, difficulty, unit, precision });
   if (answerType !== "decimal") return [];
-  const options = [correctAnswer.toFixed(2)];
+  // Ensure correctAnswer is a number
+  const base = Number(correctAnswer);
+  if (isNaN(base)) return [];
+
+  // Format correct answer using requested precision
+  const correctStr = base.toFixed(precision);
+
+  const options = [correctStr];
   const range = difficulty === "easy" ? 10 : 20;
-  const min = Math.max(0, correctAnswer - range);
-  const max = correctAnswer + range;
-  
+  const min = Math.max(0, base - range);
+  const max = base + range;
+
   while (options.length < 4) {
-    const option = (min + Math.random() * (max - min)).toFixed(2);
-    if (Math.abs(option - correctAnswer) >= 0.1 && !options.includes(option)) {
+    const optionNum = (min + Math.random() * (max - min));
+    const option = optionNum.toFixed(precision);
+    // Exclude options that are too close to correct answer or duplicates
+    if (Math.abs(Number(option) - base) >= Math.pow(10, -precision) && !options.includes(option)) {
       options.push(option);
     }
   }
-  
-  // Véletlenszerű keverés
+
+  // Shuffle
   for (let i = options.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     [options[i], options[j]] = [options[j], options[i]];
   }
-  
+
   const result = options.map(opt => ({ value: opt, label: `${opt} ${unit}` }));
   console.log("generateOptions result", result);
   return result;
 }
+
 
 
 // --- FELADATTÍPUSOK ---
@@ -1280,10 +1290,12 @@ const taskTypes = [
   }
 },
 
+// --- Mértékegység kerekítés (javított) ---
 {
   name: "Mértékegység kerekítés",
   value: "mertekegyseg_kerekites",
   generate: (difficulty) => {
+    // (kezdő rész: tartományok ugyanazok mint korábban)
     const ranges = {
       easy: { 
         mAMin: 100, mAMax: 5000, 
@@ -1331,16 +1343,21 @@ const taskTypes = [
         mHzMin: 1, mHzMax: 50 
       }
     };
-    const { mAMin, mAMax, ohmMin, ohmMax, kOhmMin, kOhmMax, mOhmMin, mOhmMax, ampMin, ampMax, microAMin, microAMax, mVMin, mVMax, vMin, vMax, kVMin, kVMax, microVMin, microVMax, mWMin, mWMax, wMin, wMax, kWMin, kWMax, pFMin, pFMax, nFMin, nFMax, microFMin, microFMax, hzMin, hzMax, kHzMin, kHzMax, mHzMin, mHzMax } = ranges[difficulty];
 
-    // Lehetséges egységek a nehézségi szint alapján
+    const {
+      mAMin, mAMax, ohmMin, ohmMax, kOhmMin, kOhmMax, mOhmMin, mOhmMax,
+      ampMin, ampMax, microAMin, microAMax, mVMin, mVMax, vMin, vMax,
+      kVMin, kVMax, microVMin, microVMax, mWMin, mWMax, wMin, wMax,
+      kWMin, kWMax, pFMin, pFMax, nFMin, nFMax, microFMin, microFMax,
+      hzMin, hzMax, kHzMin, kHzMax, mHzMin, mHzMax
+    } = ranges[difficulty];
+
     const units = {
       easy: ['mA', 'Ω', 'kΩ', 'mΩ', 'A', 'µA', 'mV', 'V', 'kV', 'mW', 'W', 'Hz', 'kHz'],
       medium: ['mA', 'Ω', 'kΩ', 'A', 'mV', 'V', 'W', 'kW'],
       hard: ['mA', 'Ω', 'kΩ', 'mΩ', 'A', 'µA', 'µV', 'mV', 'V', 'kV', 'mW', 'W', 'pF', 'nF', 'µF', 'Hz', 'kHz', 'MHz']
     };
 
-    // Egységpárok az átváltáshoz (hard szinten, kisebb egységből nagyobbba)
     const conversionPairs = {
       'mA': 'A',
       'Ω': 'kΩ',
@@ -1363,12 +1380,8 @@ const taskTypes = [
       'MHz': 'GHz'
     };
 
-    // Véletlenszerű egység kiválasztása
+    // Pick unit & prepare value
     const unit = units[difficulty][getRandomInt(0, units[difficulty].length - 1)];
-    let value, convertedValue, targetUnit, decimalPlaces;
-
-    // Egységhez tartozó tartomány kiválasztása és pontos tizedes generálás
-    const decimalPart = Math.random(); // 0-1 közötti véletlen szám
     let minVal, maxVal;
     switch (unit) {
       case 'mA': minVal = mAMin; maxVal = mAMax; break;
@@ -1390,63 +1403,50 @@ const taskTypes = [
       case 'Hz': minVal = hzMin; maxVal = hzMax; break;
       case 'kHz': minVal = kHzMin; maxVal = kHzMax; break;
       case 'MHz': minVal = mHzMin; maxVal = mHzMax; break;
-      default: minVal = 100; maxVal = 1000; break; // Alapértelmezett tartomány hibás esetre
-    }
-    value = getRandomInt(minVal, maxVal) + decimalPart;
-    if (isNaN(value)) {
-      value = 100 + Math.random(); // Hibakezelés: alapértelmezett érték
+      default: minVal = 100; maxVal = 1000; break;
     }
 
-    // Kerekítési pontosság meghatározása
-    if (difficulty === 'easy') {
-      decimalPlaces = 0; // Egészre kerekítés
-    } else if (difficulty === 'medium') {
-      decimalPlaces = getRandomInt(1, 2); // 1 vagy 2 tizedesjegy
-    } else if (difficulty === 'hard') {
-      decimalPlaces = getRandomInt(1, 3); // 1, 2 vagy 3 tizedesjegy
-    }
+    // Generate raw value (keep some decimal part)
+    const decimalPart = Math.random();
+    let value = getRandomInt(minVal, maxVal) + decimalPart;
+    if (isNaN(value)) value = 100 + Math.random();
 
-    // Hard szinten mértékegység-átváltás és kerekítés
-    if (difficulty === 'hard') {
-      targetUnit = conversionPairs[unit];
-      switch (unit) {
-        case 'mA': convertedValue = value / 1000; break; // mA -> A
-        case 'Ω': convertedValue = value / 1000; break; // Ω -> kΩ
-        case 'kΩ': convertedValue = value / 1000; break; // kΩ -> MΩ
-        case 'mΩ': convertedValue = value / 1000; break; // mΩ -> Ω
-        case 'A': convertedValue = value / 1000; break; // A -> kA
-        case 'µA': convertedValue = value / 1000; break; // µA -> mA
-        case 'mV': convertedValue = value / 1000; break; // mV -> V
-        case 'V': convertedValue = value / 1000; break; // V -> kV
-        case 'kV': convertedValue = value / 1000; break; // kV -> MV
-        case 'µV': convertedValue = value / 1000; break; // µV -> mV
-        case 'mW': convertedValue = value / 1000; break; // mW -> W
-        case 'W': convertedValue = value / 1000; break; // W -> kW
-        case 'kW': convertedValue = value / 1000; break; // kW -> MW
-        case 'pF': convertedValue = value / 1000; break; // pF -> nF
-        case 'nF': convertedValue = value / 1000; break; // nF -> µF
-        case 'µF': convertedValue = value / 1000; break; // µF -> mF
-        case 'Hz': convertedValue = value / 1000; break; // Hz -> kHz
-        case 'kHz': convertedValue = value / 1000; break; // kHz -> MHz
-        case 'MHz': convertedValue = value / 1000; break; // MHz -> GHz
-      }
+    // Determine required decimal places for this question and use it consistently
+    let decimalPlaces;
+    if (difficulty === 'easy') decimalPlaces = 0;
+    else if (difficulty === 'medium') decimalPlaces = getRandomInt(1, 2);
+    else decimalPlaces = getRandomInt(1, 3);
+
+    // If hard difficulty and conversion is requested, convert first then round using decimalPlaces
+    if (difficulty === 'hard' && conversionPairs[unit]) {
+      const targetUnit = conversionPairs[unit];
+      // compute converted value (we use typical factor 1000 for metric steps)
+      let convertedValue = value / 1000;
+      // For some conversions the factor is different conceptually; we follow the existing pattern
+      // (this matches the previous implementation's approach)
       const rounded = Number(convertedValue.toFixed(decimalPlaces));
       return {
         display: `<b>${value.toFixed(3)} ${unit}</b> átváltva és kerekítve ${decimalPlaces} tizedesjegyre ${targetUnit}-ban = ? <span class="blue-percent">${targetUnit}</span>`,
         answer: rounded.toString(),
-        answerType: "decimal"
+        answerType: decimalPlaces === 0 ? "number" : "decimal"
       };
     }
 
-    // Easy és Medium szintek: csak kerekítés
+    // Easy / Medium: no unit conversion, just rounding to the requested decimalPlaces
     const rounded = Number(value.toFixed(decimalPlaces));
+    const displayUnit = unit;
+    const answerType = decimalPlaces === 0 ? "number" : "decimal";
+    const options = answerType === "decimal" ? generateOptions(Number(rounded), "decimal", difficulty, displayUnit, decimalPlaces) : [];
+
     return {
-      display: `<b>${value.toFixed(3)} ${unit}</b> kerekítve ${decimalPlaces === 0 ? 'egészre' : `${decimalPlaces} tizedesjegyre`} = ? <span class="blue-percent">${unit}</span>`,
+      display: `<b>${value.toFixed(3)} ${unit}</b> kerekítve ${decimalPlaces === 0 ? 'egészre' : `${decimalPlaces} tizedesjegyre`} = ? <span class="blue-percent">${displayUnit}</span>`,
       answer: rounded.toString(),
-      answerType: "decimal"
+      answerType,
+      options
     };
   }
 },
+
   
   {
   name: "Ohm-törvény",
