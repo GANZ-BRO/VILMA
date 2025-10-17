@@ -2462,7 +2462,7 @@ function formatScientific(value) {
   return `${mantissa} × 10^${exponent}`;
 }
 
-// Replace the existing renderNumpad function with this version
+
 function renderNumpad(answerState, onChange) {
   const currentTask = questions[currentQuestion] || {};
 
@@ -2492,104 +2492,104 @@ function renderNumpad(answerState, onChange) {
     row.forEach((key) => {
       if (key === 'submit') {
         const submitBtn = document.createElement("button");
-submitBtn.type = "button";
-submitBtn.className = "numpad-btn numpad-submit-btn";
-submitBtn.setAttribute("aria-label", "OK");
-submitBtn.textContent = "OK";
-submitBtn.onclick = () => {
-  if (!gameActive) return;
-  let val = answerState.value.trim();
-  if (val === "") {
-    alert("Írj be egy választ!");
-    return;
-  }
+        submitBtn.type = "button";
+        submitBtn.className = "numpad-btn numpad-submit-btn";
+        submitBtn.setAttribute("aria-label", "OK");
+        submitBtn.textContent = "OK";
+        submitBtn.onclick = () => {
+          if (!gameActive) return;
+          let val = answerState.value.trim();
+          if (val === "") {
+            alert("Írj be egy választ!");
+            return;
+          }
 
-  let correct = false;
-  const currentTask = questions[currentQuestion];
+          let correct = false;
+          const currentTask = questions[currentQuestion];
 
-  if (!currentTask.answer) {
-    alert("Hiba: nincs válasz definiálva!");
-    return;
-  }
+          if (!currentTask.answer) {
+            alert("Hiba: nincs válasz definiálva!");
+            return;
+          }
 
-  let pauseStart = Date.now();
-  if (timerInterval) {
-    clearInterval(timerInterval);
-  }
+          let pauseStart = Date.now();
+          if (timerInterval) {
+            clearInterval(timerInterval);
+          }
 
-  console.log("Válaszellenőrzés kezdete:", { val, correctAnswer: currentTask.answer, answerType: currentTask.answerType });
+          console.log("Válaszellenőrzés kezdete:", { val, correctAnswer: currentTask.answer, answerType: currentTask.answerType });
 
-  if (currentTask.answerType === 'fraction') {
-    if (val.includes('/')) {
-      const [ansNum, ansDen] = currentTask.answer.split('/').map(Number);
-      const [userNum, userDen] = val.split('/').map(Number);
-      if (isNaN(userNum) || isNaN(userDen) || userDen === 0) {
-        alert("Érvénytelen tört formátum! Ellenőrizd, hogy helyes törtet írtál-e, pl. '3/4'.");
-        return;
-      }
-      const [simpUserNum, simpUserDen] = simplifyFraction(userNum, userDen);
-      correct = simpUserNum === ansNum && simpUserDen === ansDen;
-    } else {
-      const [ansNum, ansDen] = currentTask.answer.split('/').map(Number);
-      const correctValue = ansNum / ansDen;
-      const userValue = parseFloat(val.replace(',', '.'));
-      correct = !isNaN(userValue) && Math.abs(userValue - correctValue) < 0.01;
-    }
-    if (!correct) {
-      const [ansNum, ansDen] = currentTask.answer.split('/').map(Number);
-      alert(`Nem jó a válasz! A helyes válaszhoz hasonló érték: ${ansNum}/${ansDen} vagy ${(ansNum / ansDen).toFixed(2).replace('.', ',')}.`);
-    }
-  } else if (currentTask.answerType === 'power') {
-    const powerMatch = val.match(/^([\d\.]+)×10\^([\d\-]+)$/);
-    if (!powerMatch) {
-      alert("Érvénytelen normál alak! Használj 'a×10^b' formát, pl. '3,5×10^3'.");
-      return;
-    }
-    const [_, userCoef, userExp] = powerMatch;
-    const [__, ansCoef, ansExp] = currentTask.answer.match(/^([\d\.]+)×10\^([\d\-]+)$/) || [];
-    correct = Math.abs(parseFloat(userCoef.replace(',', '.')) - parseFloat(ansCoef)) < 0.01 && parseInt(userExp) === parseInt(ansExp);
-    if (!correct) {
-      alert(`Nem jó a normál alak! A helyes válaszhoz hasonló érték: ${ansCoef}×10^${ansExp}. Ellenőrizd a kitevő és az együttható értékét!`);
-    }
-  } else {
-    correct = evaluateExpression(val, currentTask.answer, currentTask.answerType, currentTask);
-    if (!correct) {
-      let hint = '';
-      const userAnswer = parseFloat(val.replace(',', '.'));
-      const correctAnswer = parseFloat(currentTask.answer.replace(',', '.'));
-      if (!isNaN(userAnswer)) {
-        hint = userAnswer < correctAnswer
-          ? `Túl kicsi a válasz! Próbálj nagyobb értéket, közel ${currentTask.answer} ${currentTask.unit || ''}-hoz.`
-          : `Túl nagy a válasz! Próbálj kisebb értéket, közel ${currentTask.answer} ${currentTask.unit || ''}-hoz.`;
-      } else {
-        hint = `Érvénytelen válasz! Ellenőrizd a formátumot, pl. '123', '0,93', vagy '${currentTask.answerType === 'fraction' ? '3/4' : '320/460'}'.`;
-      }
-      alert(hint);
-    }
-  }
+          if (currentTask.answerType === 'fraction') {
+            if (val.includes('/')) {
+              const [ansNum, ansDen] = currentTask.answer.split('/').map(Number);
+              const [userNum, userDen] = val.split('/').map(Number);
+              if (isNaN(userNum) || isNaN(userDen) || userDen === 0) {
+                alert("Érvénytelen tört formátum! Ellenőrizd, hogy helyes törtet írtál-e, pl. '3/4'.");
+                return;
+              }
+              const [simpUserNum, simpUserDen] = simplifyFraction(userNum, userDen);
+              correct = simpUserNum === ansNum && simpUserDen === ansDen;
+            } else {
+              const [ansNum, ansDen] = currentTask.answer.split('/').map(Number);
+              const correctValue = ansNum / ansDen;
+              const userValue = parseFloat(val.replace(',', '.'));
+              correct = !isNaN(userValue) && Math.abs(userValue - correctValue) < 0.01;
+            }
+            if (!correct) {
+              const [ansNum, ansDen] = currentTask.answer.split('/').map(Number);
+              alert(`Nem jó a válasz! A helyes válaszhoz hasonló érték: ${ansNum}/${ansDen} vagy ${(ansNum / ansDen).toFixed(2).replace('.', ',')}.`);
+            }
+          } else if (currentTask.answerType === 'power') {
+            const powerMatch = val.match(/^([\d\.]+)×10\^([\d\-]+)$/);
+            if (!powerMatch) {
+              alert("Érvénytelen normál alak! Használj 'a×10^b' formát, pl. '3,5×10^3'.");
+              return;
+            }
+            const [_, userCoef, userExp] = powerMatch;
+            const [__, ansCoef, ansExp] = currentTask.answer.match(/^([\d\.]+)×10\^([\d\-]+)$/) || [];
+            correct = Math.abs(parseFloat(userCoef.replace(',', '.')) - parseFloat(ansCoef)) < 0.01 && parseInt(userExp) === parseInt(ansExp);
+            if (!correct) {
+              alert(`Nem jó a normál alak! A helyes válaszhoz hasonló érték: ${ansCoef}×10^${ansExp}. Ellenőrizd a kitevő és az együttható értékét!`);
+            }
+          } else {
+            correct = evaluateExpression(val, currentTask.answer, currentTask.answerType, currentTask);
+            if (!correct) {
+              let hint = '';
+              const userAnswer = parseFloat(val.replace(',', '.'));
+              const correctAnswer = parseFloat(currentTask.answer.replace(',', '.'));
+              if (!isNaN(userAnswer)) {
+                hint = userAnswer < correctAnswer
+                  ? `Túl kicsi a válasz! Próbálj nagyobb értéket, közel ${currentTask.answer} ${currentTask.unit || ''}-hoz.`
+                  : `Túl nagy a válasz! Próbálj kisebb értéket, közel ${currentTask.answer} ${currentTask.unit || ''}-hoz.`;
+              } else {
+                hint = `Érvénytelen válasz! Ellenőrizd a formátumot, pl. '123', '0,93', vagy '${currentTask.answerType === 'fraction' ? '3/4' : '320/460'}'.`;
+              }
+              alert(hint);
+            }
+          }
 
-  console.log("Válaszellenőrzés eredménye:", { val, correct, correctAnswer: currentTask.answer });
+          console.log("Válaszellenőrzés eredménye:", { val, correct, correctAnswer: currentTask.answer });
 
-  const pauseEnd = Date.now();
-  const pauseDuration = pauseEnd - pauseStart;
+          const pauseEnd = Date.now();
+          const pauseDuration = pauseEnd - pauseStart;
 
-  if (correct) {
-    score++;
-    currentQuestion++;
-    showQuestion(currentQuestion);
-    if (currentQuestion >= QUESTIONS) {
-      finishGame();
-    } else {
-      startTime += pauseDuration;
-      timerInterval = setInterval(updateTimer, 1000);
-    }
-  } else {
-    wrongAnswers++;
-    startTime += pauseDuration;
-    timerInterval = setInterval(updateTimer, 1000);
-  }
-};
-rowDiv.appendChild(submitBtn);
+          if (correct) {
+            score++;
+            currentQuestion++;
+            showQuestion(currentQuestion);
+            if (currentQuestion >= QUESTIONS) {
+              finishGame();
+            } else {
+              startTime += pauseDuration;
+              timerInterval = setInterval(updateTimer, 1000);
+            }
+          } else {
+            wrongAnswers++;
+            startTime += pauseDuration;
+            timerInterval = setInterval(updateTimer, 1000);
+          }
+        };
+        rowDiv.appendChild(submitBtn);
       } else {
         const btn = document.createElement('button');
         btn.type = "button";
@@ -2692,8 +2692,11 @@ rowDiv.appendChild(submitBtn);
             btn.textContent = newState;
             window.numpadState.lightningCurrentSymbol = newState;
             console.log('Speciális gomb frissítve:', { newState, buttonText: btn.textContent, newValue: answerState.value });
-          } else if (key === '.') {
-            if (answerState.value !== "" && !answerState.value.includes('.')) {
+          } else if (key === '.' || key === ',') {
+            // Kezeli mind '.' mind ',' esetét, de mindig ','-t ír be.
+            // Engedélyezzük, hogy nullát megelőzően is lehessen tizedesjegyet írni? Jelenleg csak ha van már valami.
+            // Ha szeretnéd, hogy üres mezőbe is lehessen vesszőt tenni, távolítsd el az answerState.value !== "" feltételt.
+            if (answerState.value !== "" && !answerState.value.includes(',') && !answerState.value.includes('.')) {
               answerState.value += ',';
             }
           } else if (['0','1','2','3','4','5','6','7','8','9','/'].includes(key)) {
