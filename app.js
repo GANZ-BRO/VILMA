@@ -1433,17 +1433,22 @@ const taskTypes = [
     }
 
     // Easy / Medium: no unit conversion, just rounding to the requested decimalPlaces
-    const rounded = Number(value.toFixed(decimalPlaces));
-    const displayUnit = unit;
-    const answerType = decimalPlaces === 0 ? "number" : "decimal";
-    const options = answerType === "decimal" ? generateOptions(Number(rounded), "decimal", difficulty, displayUnit, decimalPlaces) : [];
+    const roundedNum = Number(value.toFixed(decimalPlaces));
+// garantáljuk a trailing zero-kat stringben:
+// ha decimalPlaces === 0, akkor egész szám formátum
+const roundedStr = decimalPlaces === 0 ? String(Math.round(roundedNum)) : roundedNum.toFixed(decimalPlaces);
 
-    return {
-      display: `<b>${value.toFixed(3)} ${unit}</b> kerekítve ${decimalPlaces === 0 ? 'egészre' : `${decimalPlaces} tizedesjegyre`} = ? <span class="blue-percent">${displayUnit}</span>`,
-      answer: rounded.toString(),
-      answerType,
-      options
-    };
+const displayUnit = unit;
+const answerType = decimalPlaces === 0 ? "number" : "decimal";
+const options = answerType === "decimal" ? generateOptions(Number(roundedNum), "decimal", difficulty, displayUnit, decimalPlaces) : [];
+
+return {
+  display: `<b>${value.toFixed(3)} ${unit}</b> kerekítve ${decimalPlaces === 0 ? 'egészre' : `${decimalPlaces} tizedesjegyre`} = ? <span class="blue-percent">${displayUnit}</span>`,
+  answer: roundedStr,
+  answerType,
+  decimalPlaces, // <-- ide tesszük, hogy a validátor tudja
+  options
+};
   }
 },
 
@@ -2393,18 +2398,33 @@ function evaluateExpression(input, correctAnswer, answerType, taskData) {
     }
 
     if (answerType === 'decimal') {
-      const precision = 2;
-      const tolerance = 0.5 * Math.pow(10, -precision); // 0.005 for 2 decimal places
-      const userAnswer = parseFloat(normalizedInput);
-      const parsedCorrectAnswer = parseFloat(correctAnswer.replace(',', '.'));
-      if (isNaN(userAnswer) || isNaN(parsedCorrectAnswer)) {
-        console.warn("Érvénytelen számformátum", { userAnswer, parsedCorrectAnswer, normalizedInput, correctAnswer });
-        return false;
-      }
-      const difference = Math.abs(userAnswer - parsedCorrectAnswer);
-      console.log("Tizedes tört ellenőrzés:", { userAnswer, parsedCorrectAnswer, difference, tolerance, precision, normalizedInput, correctAnswer });
-      return difference <= tolerance;
-    }
+  const precision = (taskData && Number.isInteger(taskData.decimalPlaces)) ? taskData.decimalPlaces : 2;
+  // formátum-ellenőrzés: pontosan precision tizedesjegy kell (precision === 0 -> egész)
+  // normalizedInput már tartalmaz pontot, mert fent replace(',', '.') történt
+  const formatRegex = precision === 0
+    ? /^-?\d+$/
+    : new RegExp(`^-?\\d+\\.\\d{${precision}}$`);
+  if (!formatRegex.test(normalizedInput)) {
+    console.warn("A bevitt érték formátuma nem egyezik a feladat által elvárt tizedesjegyszámmal", { normalizedInput, precision });
+    return false; // formátum hibás -> elutasítjuk
+  }
+
+  const userAnswer = Number(normalizedInput);
+  const parsedCorrectAnswer = Number(correctAnswer.replace(',', '.'));
+
+  if (isNaN(userAnswer) || isNaN(parsedCorrectAnswer)) {
+    console.warn("Érvénytelen számformátum", { userAnswer, parsedCorrectAnswer });
+    return false;
+  }
+
+  // pontos numerikus egyezés a kért tizedesjegy szempontjából
+  const userFixed = Number(userAnswer.toFixed(precision));
+  const correctFixed = Number(parsedCorrectAnswer.toFixed(precision));
+
+  const equal = Math.abs(userFixed - correctFixed) <= 1e-9;
+  console.log("Tizedes tört ellenőrzés (pontosság és formátum):", { normalizedInput, precision, userFixed, correctFixed, equal });
+  return equal;
+}
 
     if (answerType === 'number') {
       const userAnswer = parseFloat(normalizedInput);
