@@ -480,7 +480,6 @@ const taskTypes = [
   }
 },
 
-
 {
   name: "Normál alakos számok",
   value: "normal_alak",
@@ -489,6 +488,11 @@ const taskTypes = [
     function getRandomMantissa(decimals = 2) {
       let m = Math.random() * 9 + 1; // 1 - 9.999...
       return Number(m.toFixed(decimals));
+    }
+
+    // segédfüggvény: lebegőpontos pontatlanság miatti "gyakorlatilag egész" ellenőrzés
+    function isEffectivelyInteger(v) {
+      return Math.abs(v - Math.round(v)) < 1e-12;
     }
 
     // Váltakozó direction: ha az utolsó 0 volt, most 1, ha 1 volt, most 0
@@ -543,22 +547,29 @@ const taskTypes = [
             break;
           }
         } while (exp === lastExponent);
-        mant = getRandomMantissa(2);
+
+        // Mantissza 2 tizedessel az easy szinten (megjegyzés: innen a mantissaDecimals értéke származik)
+        const mantissaDecimals = 2;
+        mant = getRandomMantissa(mantissaDecimals);
         valueRaw = mant * Math.pow(10, exp);
         lastExponent = exp;
         let mantStr = ("" + mant).replace(".", ",");
-        // Ha az érték egész, adjunk vissza number típust, különben decimal + decimalPlaces
-        if (Number.isInteger(valueRaw)) {
-          console.log(`Könnyű szint - egész eredmény: ${valueRaw}`);
+
+        // Ha az érték egész (vagy gyakorlatilag egész), válasz: number, különben decimal a szükséges helyi tizedesjegyszámmal
+        if (isEffectivelyInteger(valueRaw)) {
+          const intVal = String(Math.round(valueRaw));
+          console.log(`Könnyű szint - egész eredmény: ${intVal}`);
           return {
             display: `Mennyi a következő normál alakú szám értéke:<br><span class="blue-percent">${mantStr}×10<sup>${exp}</sup></span> ?`,
-            answer: valueRaw.toString(),
+            answer: intVal,
             answerType: "number"
           };
         } else {
-          const decimalPlaces = 2;
+          // Számoljuk ki a szükséges tizedesjegyek számát a mantissza és a kitevő alapján:
+          // decimalPlaces = max(0, mantissaDecimals - exp) (ha exp negatív, ez növeli a tizedesjegyek számát)
+          const decimalPlaces = Math.max(0, mantissaDecimals - exp);
           const answerStr = valueRaw.toFixed(decimalPlaces).replace(".", ",");
-          console.log(`Könnyű szint - tizedes eredmény: ${answerStr}`);
+          console.log(`Könnyű szint - tizedes eredmény: ${answerStr} (decimalPlaces=${decimalPlaces})`);
           return {
             display: `Mennyi a következő normál alakú szám értéke:<br><span class="blue-percent">${mantStr}×10<sup>${exp}</sup></span> ?`,
             answer: answerStr,
@@ -621,22 +632,27 @@ const taskTypes = [
             break;
           }
         } while (exp === lastExponent);
-        mant = getRandomMantissa(2);
+
+        // Mantissza 2 tizedessel a medium szinten
+        const mantissaDecimals = 2;
+        mant = getRandomMantissa(mantissaDecimals);
         valueRaw = mant * Math.pow(10, exp);
         lastExponent = exp;
         let mantStr = ("" + mant).replace(".", ",");
-        // decimalPlaces meghatározása (korábbi viselkedést követve)
-        const decimalPlaces = exp >= 0 ? 2 : 4;
-        if (Number.isInteger(valueRaw)) {
-          console.log(`Közepes szint - egész eredmény: ${valueRaw}`);
+
+        // Ha egész, adjuk vissza number-t; különben számoljuk ki a pontos decimalPlaces-értéket
+        if (isEffectivelyInteger(valueRaw)) {
+          const intVal = String(Math.round(valueRaw));
+          console.log(`Közepes szint - egész eredmény: ${intVal}`);
           return {
             display: `Mennyi a következő normál alakú szám értéke:<br><span class="blue-percent">${mantStr}×10<sup>${exp}</sup></span> ?`,
-            answer: valueRaw.toString(),
+            answer: intVal,
             answerType: "number"
           };
         } else {
+          const decimalPlaces = Math.max(0, mantissaDecimals - exp);
           const answerStr = valueRaw.toFixed(decimalPlaces).replace(".", ",");
-          console.log(`Közepes szint - tizedes eredmény: ${answerStr}`);
+          console.log(`Közepes szint - tizedes eredmény: ${answerStr} (decimalPlaces=${decimalPlaces})`);
           return {
             display: `Mennyi a következő normál alakú szám értéke:<br><span class="blue-percent">${mantStr}×10<sup>${exp}</sup></span> ?`,
             answer: answerStr,
@@ -707,22 +723,26 @@ const taskTypes = [
             break;
           }
         } while (exp === lastExponent);
-        mant = getRandomMantissa(3);
+
+        // Mantissza 3 tizedessel a hard szinten
+        const mantissaDecimals = 3;
+        mant = getRandomMantissa(mantissaDecimals);
         valueRaw = mant * Math.pow(10, exp);
         lastExponent = exp;
         let mantStr = ("" + mant).replace(".", ",");
-        // Hard szinten a korábbi logikával összhangban:
-        const decimalPlaces = exp >= 0 ? 3 : 8;
-        if (Number.isInteger(valueRaw)) {
-          console.log(`Nehéz szint - egész eredmény: ${valueRaw}`);
+
+        if (isEffectivelyInteger(valueRaw)) {
+          const intVal = String(Math.round(valueRaw));
+          console.log(`Nehéz szint - egész eredmény: ${intVal}`);
           return {
             display: `Mennyi a következő normál alakú szám értéke:<br><span class="blue-percent">${mantStr}×10<sup>${exp}</sup></span> ?`,
-            answer: valueRaw.toString(),
+            answer: intVal,
             answerType: "number"
           };
         } else {
+          const decimalPlaces = Math.max(0, mantissaDecimals - exp);
           const answerStr = valueRaw.toFixed(decimalPlaces).replace(".", ",");
-          console.log(`Nehéz szint - tizedes eredmény: ${answerStr}`);
+          console.log(`Nehéz szint - tizedes eredmény: ${answerStr} (decimalPlaces=${decimalPlaces})`);
           return {
             display: `Mennyi a következő normál alakú szám értéke:<br><span class="blue-percent">${mantStr}×10<sup>${exp}</sup></span> ?`,
             answer: answerStr,
@@ -738,6 +758,7 @@ const taskTypes = [
     }
   }
 },
+  
 {
   name: "Villamos mértékegységek",
   value: "villamos_mertekegysegek",
