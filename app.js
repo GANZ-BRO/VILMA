@@ -299,7 +299,7 @@ const taskTypes = [
       return generateBracketedExpression(opCount, min, max);
     }
   },
-  /*
+  
   {
   name: "Hatványozás",
   value: "hatvanyozas",
@@ -339,7 +339,7 @@ const taskTypes = [
     };
   }
 },
-*/
+
   {
     name: "Törtek",
     value: "tortek",
@@ -529,7 +529,7 @@ const taskTypes = [
         };
       } else {
         // Normál alak → érték
-        let exp, mant, value;
+        let exp, mant, valueRaw;
         let attempts = 0;
         const maxAttempts = 10;
         do {
@@ -544,16 +544,28 @@ const taskTypes = [
           }
         } while (exp === lastExponent);
         mant = getRandomMantissa(2);
-        value = mant * Math.pow(10, exp);
-        let formattedValue = Number(value.toFixed(2));
+        valueRaw = mant * Math.pow(10, exp);
         lastExponent = exp;
         let mantStr = ("" + mant).replace(".", ",");
-        console.log(`Könnyű szint, direction=1: Kérdés: ${mantStr}×10^${exp}, Nyers érték: ${value}, Formázott válasz: ${formattedValue.toFixed(2).replace(".", ",")}, Direction: ${direction}, Előző kitevő: ${lastExponent}`);
-        return {
-          display: `Mennyi a következő normál alakú szám értéke:<br><span class="blue-percent">${mantStr}×10<sup>${exp}</sup></span> ?`,
-          answer: formattedValue.toFixed(2).replace(".", ","),
-          answerType: "decimal"
-        };
+        // Ha az érték egész, adjunk vissza number típust, különben decimal + decimalPlaces
+        if (Number.isInteger(valueRaw)) {
+          console.log(`Könnyű szint - egész eredmény: ${valueRaw}`);
+          return {
+            display: `Mennyi a következő normál alakú szám értéke:<br><span class="blue-percent">${mantStr}×10<sup>${exp}</sup></span> ?`,
+            answer: valueRaw.toString(),
+            answerType: "number"
+          };
+        } else {
+          const decimalPlaces = 2;
+          const answerStr = valueRaw.toFixed(decimalPlaces).replace(".", ",");
+          console.log(`Könnyű szint - tizedes eredmény: ${answerStr}`);
+          return {
+            display: `Mennyi a következő normál alakú szám értéke:<br><span class="blue-percent">${mantStr}×10<sup>${exp}</sup></span> ?`,
+            answer: answerStr,
+            answerType: "decimal",
+            decimalPlaces
+          };
+        }
       }
     }
 
@@ -594,7 +606,7 @@ const taskTypes = [
         };
       } else {
         // Normál alak → érték
-        let exp, mant, value;
+        let exp, mant, valueRaw;
         let attempts = 0;
         const maxAttempts = 10;
         do {
@@ -610,16 +622,28 @@ const taskTypes = [
           }
         } while (exp === lastExponent);
         mant = getRandomMantissa(2);
-        value = mant * Math.pow(10, exp);
-        value = exp >= 0 ? Number(value.toFixed(2)) : Number(value.toFixed(4));
+        valueRaw = mant * Math.pow(10, exp);
         lastExponent = exp;
         let mantStr = ("" + mant).replace(".", ",");
-        console.log(`Közepes szint, direction=1: Kérdés: ${mantStr}×10^${exp}, Nyers érték: ${value}, Formázott válasz: ${value.toString().replace(".", ",")}, Direction: ${direction}, Előző kitevő: ${lastExponent}`);
-        return {
-          display: `Mennyi a következő normál alakú szám értéke:<br><span class="blue-percent">${mantStr}×10<sup>${exp}</sup></span> ?`,
-          answer: value.toString().replace(".", ","),
-          answerType: "decimal"
-        };
+        // decimalPlaces meghatározása (korábbi viselkedést követve)
+        const decimalPlaces = exp >= 0 ? 2 : 4;
+        if (Number.isInteger(valueRaw)) {
+          console.log(`Közepes szint - egész eredmény: ${valueRaw}`);
+          return {
+            display: `Mennyi a következő normál alakú szám értéke:<br><span class="blue-percent">${mantStr}×10<sup>${exp}</sup></span> ?`,
+            answer: valueRaw.toString(),
+            answerType: "number"
+          };
+        } else {
+          const answerStr = valueRaw.toFixed(decimalPlaces).replace(".", ",");
+          console.log(`Közepes szint - tizedes eredmény: ${answerStr}`);
+          return {
+            display: `Mennyi a következő normál alakú szám értéke:<br><span class="blue-percent">${mantStr}×10<sup>${exp}</sup></span> ?`,
+            answer: answerStr,
+            answerType: "decimal",
+            decimalPlaces
+          };
+        }
       }
     }
 
@@ -666,7 +690,7 @@ const taskTypes = [
         };
       } else {
         // Normál alak → érték
-        let exp, mant, value;
+        let exp, mant, valueRaw;
         let attempts = 0;
         const maxAttempts = 10;
         do {
@@ -684,16 +708,28 @@ const taskTypes = [
           }
         } while (exp === lastExponent);
         mant = getRandomMantissa(3);
-        value = mant * Math.pow(10, exp);
-        value = exp >= 0 ? Number(value.toFixed(3)) : Number(value.toFixed(8));
+        valueRaw = mant * Math.pow(10, exp);
         lastExponent = exp;
         let mantStr = ("" + mant).replace(".", ",");
-        console.log(`Nehéz szint, direction=1: Kérdés: ${mantStr}×10^${exp}, Nyers érték: ${value}, Formázott válasz: ${value.toString().replace(".", ",")}, Direction: ${direction}, Előző kitevő: ${lastExponent}`);
-        return {
-          display: `Mennyi a következő normál alakú szám értéke:<br><span class="blue-percent">${mantStr}×10<sup>${exp}</sup></span> ?`,
-          answer: value.toString().replace(".", ","),
-          answerType: "decimal"
-        };
+        // Hard szinten a korábbi logikával összhangban:
+        const decimalPlaces = exp >= 0 ? 3 : 8;
+        if (Number.isInteger(valueRaw)) {
+          console.log(`Nehéz szint - egész eredmény: ${valueRaw}`);
+          return {
+            display: `Mennyi a következő normál alakú szám értéke:<br><span class="blue-percent">${mantStr}×10<sup>${exp}</sup></span> ?`,
+            answer: valueRaw.toString(),
+            answerType: "number"
+          };
+        } else {
+          const answerStr = valueRaw.toFixed(decimalPlaces).replace(".", ",");
+          console.log(`Nehéz szint - tizedes eredmény: ${answerStr}`);
+          return {
+            display: `Mennyi a következő normál alakú szám értéke:<br><span class="blue-percent">${mantStr}×10<sup>${exp}</sup></span> ?`,
+            answer: answerStr,
+            answerType: "decimal",
+            decimalPlaces
+          };
+        }
       }
     }
 
@@ -702,7 +738,6 @@ const taskTypes = [
     }
   }
 },
-
 {
   name: "Villamos mértékegységek",
   value: "villamos_mertekegysegek",
