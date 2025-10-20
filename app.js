@@ -2435,7 +2435,7 @@ if (!['number', 'decimal', 'fraction', 'power', 'set'].includes(task.answerType)
   console.warn(`Ismeretlen answerType: ${task.answerType} a ${taskType.name} feladattípusban`);
   task.answerType = 'number';
 }
-      }
+      
       questions.push(task);
     }
   }
