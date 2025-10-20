@@ -1473,21 +1473,30 @@ const taskTypes = [
     else if (difficulty === 'medium') decimalPlaces = getRandomInt(1, 2);
     else decimalPlaces = getRandomInt(1, 3);
 
-    // If hard difficulty and conversion is requested, convert first then round using decimalPlaces
-    if (difficulty === 'hard' && conversionPairs[unit]) {
-      const targetUnit = conversionPairs[unit];
-      // compute converted value (we use typical factor 1000 for metric steps)
-      let convertedValue = value / 1000;
-      // For some conversions the factor is different conceptually; we follow the existing pattern
-      // (this matches the previous implementation's approach)
-      const rounded = Number(convertedValue.toFixed(decimalPlaces));
-      return {
-        display: `<b>${value.toFixed(3)} ${unit}</b> átváltva és kerekítve ${decimalPlaces} tizedesjegyre ${targetUnit}-ban = ? <span class="blue-percent">${targetUnit}</span>`,
-        answer: rounded.toString(),
-        answerType: decimalPlaces === 0 ? "number" : "decimal"
-      };
-    }
+    // --- Javított rész: a 'hard' konverziós ágban a válasz tartalmazza a decimalPlaces-t és stabil, determinisztikus kerekítést ---
+if (difficulty === 'hard' && conversionPairs[unit]) {
+  const targetUnit = conversionPairs[unit];
 
+  // egyértelmű faktor (a jelenlegi implementáció metrikus lépcsőn alapul, 1000)
+  const factor = 1000;
+
+  // konvertálás: kisebb előtag -> nagyobb előtag (pl. µV -> mV: osztás 1000)
+  const convertedValue = value / factor;
+
+  // határozzuk meg a kerekítendő tizedesjegyek számát (már fent definiált decimalPlaces)
+  // (decimalPlaces változó felül van definiálva a függvény elején)
+  const pow = Math.pow(10, decimalPlaces);
+  // stabil kerekítés (Math.round * pow) + we keep trailing zeros via toFixed
+  const roundedNumeric = Math.round(convertedValue * pow) / pow;
+  const roundedStr = decimalPlaces === 0 ? String(Math.round(roundedNumeric)) : roundedNumeric.toFixed(decimalPlaces);
+
+  return {
+    display: `<b>${value.toFixed(3)} ${unit}</b> átváltva és kerekítve ${decimalPlaces} tizedesjegyre ${targetUnit}-ban = ? <span class="blue-percent">${targetUnit}</span>`,
+    answer: roundedStr,
+    answerType: decimalPlaces === 0 ? "number" : "decimal",
+    decimalPlaces // fontos: a validátor innen veszi az elvárt tizedesjegyszámot
+  };
+}
     // Easy / Medium: no unit conversion, just rounding to the requested decimalPlaces
     const roundedNum = Number(value.toFixed(decimalPlaces));
 // garantáljuk a trailing zero-kat stringben:
