@@ -300,46 +300,7 @@ const taskTypes = [
     }
   },
   
-  {
-  name: "Hatványozás",
-  value: "hatvanyozas",
-  generate: (difficulty) => {
-    const { min, max } = DIFFICULTY_SETTINGS[difficulty];
-    let base, exponent, answer;
-    if (difficulty === "easy") {
-      base = getRandomInt(1, 10);
-      exponent = getRandomInt(2, 3);
-      // Szorzásként is kiírjuk az easy szinten
-      let multiplication = Array(exponent).fill(base).join(' × ');
-      answer = Math.pow(base, exponent);
-      return {
-        display: `<b>${base}<sup>${exponent}</sup></b> = <b>${multiplication}</b>`,
-        answer: answer.toString(),
-        answerType: "number"
-      };
-    } else if (difficulty === "medium") {
-      base = getRandomInt(-10, 20);
-      exponent = getRandomInt(2, 4);
-      if (base < 0) exponent = 2;
-    } else {
-      base = getRandomInt(-50, 50);
-      exponent = getRandomInt(3, 6);
-      if (base < 0) exponent = getRandomInt(3, 4);
-    }
-    answer = Math.pow(base, exponent);
-    if (Math.abs(answer) > 1000000) {
-      base = getRandomInt(1, 10);
-      exponent = 2;
-      answer = Math.pow(base, exponent);
-    }
-    return {
-      display: `<b>${base}<sup>${exponent}</sup></b>`,
-      answer: answer.toString(),
-      answerType: "number"
-    };
-  }
-},
-
+  
   {
     name: "Törtek",
     value: "tortek",
@@ -480,7 +441,67 @@ const taskTypes = [
   }
 },
 
+// --- Add this new task type object into the taskTypes array (insert somewhere among other objects) ---
+// Halmazműveletek (két halmaz) — válasz formátuma: elemek vesszővel elválasztva, lehet kapcsos zárójel is
 {
+  name: "Halmazműveletek",
+  value: "halmaz_muveletek",
+  generate: (difficulty) => {
+    // difficulty can influence range / size
+    const sizeByDifficulty = { easy: [3, 4], medium: [4, 6], hard: [5, 8] };
+    const rangeByDifficulty = { easy: [1, 10], medium: [ -5, 20 ], hard: [ -20, 50 ] };
+
+    const [minSize, maxSize] = sizeByDifficulty[difficulty] || [3,5];
+    const [minVal, maxVal] = rangeByDifficulty[difficulty] || [1, 20];
+
+    function getRandomInt(min, max) {
+      return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    function makeUniqueArray(count) {
+      const s = new Set();
+      const tries = count * 6;
+      let i = 0;
+      while (s.size < count && i < tries) {
+        s.add(getRandomInt(minVal, maxVal));
+        i++;
+      }
+      return Array.from(s).sort((a,b) => a - b);
+    }
+
+    const sizeA = getRandomInt(minSize, maxSize);
+    const sizeB = getRandomInt(minSize, maxSize);
+    const A = makeUniqueArray(sizeA);
+    const B = makeUniqueArray(sizeB);
+
+    // choose operation
+    const ops = [
+      { op: '∪', name: 'unió', fn: (a,b) => Array.from(new Set([...a, ...b])).sort((x,y)=>x-y) },
+      { op: '∩', name: 'metszet', fn: (a,b) => a.filter(x => b.includes(x)).sort((x,y)=>x-y) },
+      { op: '\\', name: 'különbség A\\B', fn: (a,b) => a.filter(x => !b.includes(x)).sort((x,y)=>x-y) },
+      { op: '-', name: 'különbség B\\A', fn: (a,b) => b.filter(x => !a.includes(x)).sort((x,y)=>x-y) },
+      { op: 'Δ', name: 'szimmetrikus differencia', fn: (a,b) => {
+          const union = Array.from(new Set([...a, ...b]));
+          return union.filter(x => (a.includes(x) ^ b.includes(x))).sort((x,y)=>x-y);
+        } }
+    ];
+    const chosen = ops[getRandomInt(0, ops.length - 1)];
+
+    const result = chosen.fn(A, B);
+    // answer format: '1,2,3' (no spaces) - validator supports also {1,2,3}
+    const answerStr = result.length === 0 ? "" : result.join(',');
+
+    // For display, show sets in curly braces and instruct to separate elements with commas
+    const display = `Legyenek a halmazok:<br>A = { ${A.join(', ')} }<br>B = { ${B.join(', ')} }<br>Mennyi A ${chosen.op} B ?<br><small>Válasz formátum: elemek vesszővel elválasztva, pl. {1,2,3} vagy 1,2,3</small>`;
+
+    return {
+      display,
+      answer: answerStr,
+      answerType: "set"
+    };
+  }
+},
+  {
   name: "Normál alakos számok",
   value: "normal_alak",
   generate: (difficulty) => {
@@ -758,6 +779,47 @@ const taskTypes = [
     }
   }
 },
+  
+{
+  name: "Hatványozás",
+  value: "hatvanyozas",
+  generate: (difficulty) => {
+    const { min, max } = DIFFICULTY_SETTINGS[difficulty];
+    let base, exponent, answer;
+    if (difficulty === "easy") {
+      base = getRandomInt(1, 10);
+      exponent = getRandomInt(2, 3);
+      // Szorzásként is kiírjuk az easy szinten
+      let multiplication = Array(exponent).fill(base).join(' × ');
+      answer = Math.pow(base, exponent);
+      return {
+        display: `<b>${base}<sup>${exponent}</sup></b> = <b>${multiplication}</b>`,
+        answer: answer.toString(),
+        answerType: "number"
+      };
+    } else if (difficulty === "medium") {
+      base = getRandomInt(-10, 20);
+      exponent = getRandomInt(2, 4);
+      if (base < 0) exponent = 2;
+    } else {
+      base = getRandomInt(-50, 50);
+      exponent = getRandomInt(3, 6);
+      if (base < 0) exponent = getRandomInt(3, 4);
+    }
+    answer = Math.pow(base, exponent);
+    if (Math.abs(answer) > 1000000) {
+      base = getRandomInt(1, 10);
+      exponent = 2;
+      answer = Math.pow(base, exponent);
+    }
+    return {
+      display: `<b>${base}<sup>${exponent}</sup></b>`,
+      answer: answer.toString(),
+      answerType: "number"
+    };
+  }
+},
+
   
 {
   name: "Villamos mértékegységek",
@@ -2547,10 +2609,17 @@ function formatScientific(value) {
   return `${mantissa} × 10^${exponent}`;
 }
 
-
+// --- Replace the existing renderNumpad function with this modified version ---
+// This renderNumpad supports two input modes:
+// - numeric mode: uses '.' as decimal separator (default for most tasks)
+// - set mode: uses ',' as element separator and provides braces keys for set notation
+// The mode is chosen automatically based on the currently selected category:
+// if categorySelect.value === 'halmaz_muveletek' -> 'set' mode, otherwise 'numeric'
 function renderNumpad(answerState, onChange) {
-  const currentTask = questions[currentQuestion] || {};
+  // Ensure we operate on the passed answerState object (showQuestion provides it)
+  answerState = answerState || { value: "" };
 
+  const currentTask = questions[currentQuestion] || {};
   if (!window.numpadState) {
     window.numpadState = {
       lightningActivated: false,
@@ -2559,13 +2628,24 @@ function renderNumpad(answerState, onChange) {
     };
   }
 
-  let lightningCount = window.numpadState.lightningCount;
+  // Determine input mode: 'set' uses comma as separator; 'numeric' uses dot for decimals
+  const mode = (typeof categorySelect !== 'undefined' && categorySelect.value === 'halmaz_muveletek') ? 'set' : 'numeric';
+  const decimalKey = mode === 'numeric' ? '.' : ','; // displayed on the numpad
 
-  const rows = [
+  // Build rows dynamically depending on mode
+  // We'll keep the original function layout but swap '.' <-> ',' and add '{' '}' keys for sets
+  const baseRowsNumeric = [
     ['1', '2', '3', '±', '←'],
-    ['4', '5', '6', '.', 'submit'],
+    ['4', '5', '6', decimalKey, 'submit'],
     ['7', '8', '9', '0', '⚡️']
   ];
+
+  // For set mode add braces and maybe a key for '∪' or '∩' could be added later.
+  // Here we add braces to the top row for quick access (as an extra row) and we keep the main layout.
+  const extraSetRow = ['{', '}', ',', '∪', '∩'];
+
+  const rows = mode === 'set' ? [extraSetRow].concat(baseRowsNumeric) : baseRowsNumeric;
+
   const numpadDiv = document.createElement('div');
   numpadDiv.className = 'numpad active';
 
@@ -2583,20 +2663,19 @@ function renderNumpad(answerState, onChange) {
         submitBtn.textContent = "OK";
         submitBtn.onclick = () => {
           if (!gameActive) return;
-          let val = answerState.value.trim();
+          let val = (answerState.value || "").trim();
           if (val === "") {
             alert("Írj be egy választ!");
             return;
           }
 
-          let correct = false;
           const currentTask = questions[currentQuestion];
-
-          if (!currentTask.answer) {
+          if (!currentTask || !currentTask.answer) {
             alert("Hiba: nincs válasz definiálva!");
             return;
           }
 
+          // Pause timer while evaluating
           let pauseStart = Date.now();
           if (timerInterval) {
             clearInterval(timerInterval);
@@ -2604,12 +2683,17 @@ function renderNumpad(answerState, onChange) {
 
           console.log("Válaszellenőrzés kezdete:", { val, correctAnswer: currentTask.answer, answerType: currentTask.answerType });
 
+          let correct = false;
+
+          // Special-case fraction/power handled elsewhere; for 'set' we rely on evaluateExpression
           if (currentTask.answerType === 'fraction') {
+            // keep original behaviour for fractions (compatibility)
             if (val.includes('/')) {
               const [ansNum, ansDen] = currentTask.answer.split('/').map(Number);
               const [userNum, userDen] = val.split('/').map(Number);
               if (isNaN(userNum) || isNaN(userDen) || userDen === 0) {
                 alert("Érvénytelen tört formátum! Ellenőrizd, hogy helyes törtet írtál-e, pl. '3/4'.");
+                startTimerAfterPause(pauseStart);
                 return;
               }
               const [simpUserNum, simpUserDen] = simplifyFraction(userNum, userDen);
@@ -2624,10 +2708,17 @@ function renderNumpad(answerState, onChange) {
               const [ansNum, ansDen] = currentTask.answer.split('/').map(Number);
               alert(`Nem jó a válasz! A helyes válaszhoz hasonló érték: ${ansNum}/${ansDen} vagy ${(ansNum / ansDen).toFixed(2).replace('.', ',')}.`);
             }
-          } else if (currentTask.answerType === 'power') {
-            const powerMatch = val.match(/^([\d\.]+)×10\^([\d\-]+)$/);
+            if (correct) onCorrectAnswer(pauseStart);
+            else onWrongAnswer(pauseStart);
+            return;
+          }
+
+          if (currentTask.answerType === 'power') {
+            // keep original behaviour for power format
+            const powerMatch = val.match(/^([\d\.,]+)×10\^([\d\-]+)$/);
             if (!powerMatch) {
               alert("Érvénytelen normál alak! Használj 'a×10^b' formát, pl. '3,5×10^3'.");
+              startTimerAfterPause(pauseStart);
               return;
             }
             const [_, userCoef, userExp] = powerMatch;
@@ -2636,45 +2727,39 @@ function renderNumpad(answerState, onChange) {
             if (!correct) {
               alert(`Nem jó a normál alak! A helyes válaszhoz hasonló érték: ${ansCoef}×10^${ansExp}. Ellenőrizd a kitevő és az együttható értékét!`);
             }
-          } else {
-            correct = evaluateExpression(val, currentTask.answer, currentTask.answerType, currentTask);
-            if (!correct) {
-              let hint = '';
+            if (correct) onCorrectAnswer(pauseStart);
+            else onWrongAnswer(pauseStart);
+            return;
+          }
+
+          // For all other types (including 'set') use evaluateExpression
+          correct = evaluateExpression(val, currentTask.answer, currentTask.answerType, currentTask);
+
+          if (!correct) {
+            let hint = '';
+            if (currentTask.answerType === 'set') {
+              hint = `Sajnos nem jó a halmaz. A várt formátum: elemek vesszővel elválasztva (például: {1,2,3} vagy 1,2,3).`;
+            } else {
               const userAnswer = parseFloat(val.replace(',', '.'));
               const correctAnswer = parseFloat(currentTask.answer.replace(',', '.'));
-              if (!isNaN(userAnswer)) {
+              if (!isNaN(userAnswer) && !isNaN(correctAnswer)) {
                 hint = userAnswer < correctAnswer
                   ? `Túl kicsi a válasz! Próbálj nagyobb értéket, közel ${currentTask.answer} ${currentTask.unit || ''}-hoz.`
                   : `Túl nagy a válasz! Próbálj kisebb értéket, közel ${currentTask.answer} ${currentTask.unit || ''}-hoz.`;
               } else {
-                hint = `Érvénytelen válasz! Ellenőrizd a formátumot, pl. '123', '0,93', vagy '${currentTask.answerType === 'fraction' ? '3/4' : '320/460'}'.`;
+                hint = `Érvénytelen válasz! Ellenőrizd a formátumot, pl. '123', '0.93', vagy esetleg '1,2,3' halmazhoz.`;
               }
-              alert(hint);
             }
+            alert(hint);
+            onWrongAnswer(pauseStart);
+            return;
           }
 
-          console.log("Válaszellenőrzés eredménye:", { val, correct, correctAnswer: currentTask.answer });
-
-          const pauseEnd = Date.now();
-          const pauseDuration = pauseEnd - pauseStart;
-
-          if (correct) {
-            score++;
-            currentQuestion++;
-            showQuestion(currentQuestion);
-            if (currentQuestion >= QUESTIONS) {
-              finishGame();
-            } else {
-              startTime += pauseDuration;
-              timerInterval = setInterval(updateTimer, 1000);
-            }
-          } else {
-            wrongAnswers++;
-            startTime += pauseDuration;
-            timerInterval = setInterval(updateTimer, 1000);
-          }
+          // correct
+          onCorrectAnswer(pauseStart);
         };
         rowDiv.appendChild(submitBtn);
+
       } else {
         const btn = document.createElement('button');
         btn.type = "button";
@@ -2683,18 +2768,16 @@ function renderNumpad(answerState, onChange) {
         btn.tabIndex = -1;
 
         if (key === '⚡️') {
-          // Ha az aktuális feladat tört típusú, a villám gombot előre '/'-re állítjuk és "lezárjuk"
+          // Same lightning handling as before but keep it compatible
           const isFractionTask = currentTask.answerType === 'fraction';
           if (isFractionTask) {
             btn.dataset.state = '/';
             btn.textContent = '/';
-            btn.dataset.locked = 'true'; // lezárjuk, hogy ne váltson vissza
-            // Frissítsük a globális állapotot is (vizuális konzisztencia)
+            btn.dataset.locked = 'true';
             window.numpadState.lightningActivated = true;
             window.numpadState.lightningCurrentSymbol = '/';
             btn.dataset.lightningCount = '0';
           } else {
-            // Eredeti viselkedés: ha korábban aktiválva volt, tükrözzük az állapotot
             if (window.numpadState.lightningActivated) {
               btn.dataset.state = window.numpadState.lightningCurrentSymbol;
               btn.textContent = window.numpadState.lightningCurrentSymbol;
@@ -2704,19 +2787,17 @@ function renderNumpad(answerState, onChange) {
             btn.dataset.lightningCount = window.numpadState.lightningCount.toString();
           }
           lightningButton = btn;
-        } else if (key === '/') {
-          btn.dataset.state = '/';
         }
 
         btn.onclick = () => {
           btn.classList.add('flash');
           setTimeout(() => btn.classList.remove('flash'), 200);
 
+          // If user presses a normal key while lightning button displayed as '⚡️', reset lightning counter
           if (key !== '⚡️' && lightningButton && lightningButton.dataset.state === '⚡️') {
-            lightningCount = 0;
             window.numpadState.lightningCount = 0;
             lightningButton.dataset.lightningCount = '0';
-            console.log('Más gomb lenyomva, villám számláló visszaállítva:', { lightningCount, currentValue: answerState.value });
+            console.log('Más gomb lenyomva, villám számláló visszaállítva:', { currentValue: answerState.value });
           }
 
           if (key === '←') {
@@ -2728,7 +2809,7 @@ function renderNumpad(answerState, onChange) {
               answerState.value = answerState.value.substring(1);
             }
           } else if (key === '⚡️') {
-            // Ha lezárt (fraction feladathoz beállított) állapotban van, egyszerűen '/'-t viszünk be
+            // lightning logic preserved from previous implementation
             if (btn.dataset.locked === 'true') {
               const lastChar = answerState.value.slice(-1);
               if (lastChar === '/' || lastChar === '*') {
@@ -2740,8 +2821,7 @@ function renderNumpad(answerState, onChange) {
               return;
             }
 
-            // Eredeti villám logika
-            lightningCount = parseInt(btn.dataset.lightningCount || '0') + 1;
+            let lightningCount = parseInt(btn.dataset.lightningCount || '0') + 1;
             btn.dataset.lightningCount = lightningCount.toString();
             window.numpadState.lightningCount = lightningCount;
             console.log('Villám gomb lenyomva:', { lightningCount, currentValue: answerState.value });
@@ -2764,8 +2844,6 @@ function renderNumpad(answerState, onChange) {
 
             const currentState = btn.dataset.state;
             const lastChar = answerState.value.slice(-1);
-            console.log('Speciális gomb kezelése:', { currentState, lastChar, currentValue: answerState.value });
-
             if (lastChar === '/' || lastChar === '*') {
               answerState.value = answerState.value.slice(0, -1);
             }
@@ -2777,16 +2855,48 @@ function renderNumpad(answerState, onChange) {
             btn.textContent = newState;
             window.numpadState.lightningCurrentSymbol = newState;
             console.log('Speciális gomb frissítve:', { newState, buttonText: btn.textContent, newValue: answerState.value });
-          } else if (key === '.' || key === ',') {
-            // Kezeli mind '.' mind ',' esetét, de mindig ','-t ír be.
-            // Engedélyezzük, hogy nullát megelőzően is lehessen tizedesjegyet írni? Jelenleg csak ha van már valami.
-            // Ha szeretnéd, hogy üres mezőbe is lehessen vesszőt tenni, távolítsd el az answerState.value !== "" feltételt.
-            if (answerState.value !== "" && !answerState.value.includes(',') && !answerState.value.includes('.')) {
-              answerState.value += ',';
+
+          } else if (key === decimalKey) {
+            // decimalKey is '.' in numeric mode and ',' in set mode
+            if (mode === 'numeric') {
+              // numeric mode: only one '.' allowed, and '.' can be added even if empty (e.g. ".5")
+              if (!answerState.value.includes('.')) {
+                // If user uses comma input earlier, normalize and replace
+                answerState.value = answerState.value + '.';
+              }
+            } else {
+              // set mode: comma is element separator. Allow adding comma also when empty? no — only between elements.
+              // We'll allow comma if the last character is a digit or '}' (closing) to be flexible.
+              const last = answerState.value.slice(-1);
+              if (last && /[0-9\}]/.test(last)) {
+                // avoid duplicate commas
+                if (last !== ',') {
+                  answerState.value += ',';
+                }
+              } else if (answerState.value === '') {
+                // allow starting with '{' or a digit; if they press comma first, ignore
+                // do nothing
+              }
             }
-          } else if (['0','1','2','3','4','5','6','7','8','9','/'].includes(key)) {
+          } else if (key === ',' && mode === 'numeric') {
+            // If in numeric mode somebody presses ',', translate to '.' for convenience
+            if (!answerState.value.includes('.')) {
+              answerState.value += '.';
+            }
+          } else if (key === '{' || key === '}') {
+            // Braces are meaningful only in set mode; in numeric mode we insert them too but it's harmless
+            answerState.value += key;
+          } else if (key === '∪' || key === '∩') {
+            // set operation symbols - only useful in set mode; insert their unicode symbol
+            answerState.value += key;
+          } else if (/^[0-9]$/.test(key) || key === '/') {
+            // digits and slash (for fractions) are appended as is
+            answerState.value += key;
+          } else {
+            // fallback: append the key text
             answerState.value += key;
           }
+
           console.log('Új beviteli mező tartalom:', answerState.value);
           onChange(answerState.value);
         };
@@ -2795,6 +2905,40 @@ function renderNumpad(answerState, onChange) {
     });
     numpadDiv.appendChild(rowDiv);
   });
+
+  // small helper functions used inside submit handling to avoid duplication
+  function onCorrectAnswer(pauseStart) {
+    score++;
+    currentQuestion++;
+    showQuestion(currentQuestion);
+    const pauseEnd = Date.now();
+    const pauseDuration = pauseEnd - pauseStart;
+    if (timerInterval) clearInterval(timerInterval);
+    startTime += pauseDuration;
+    if (currentQuestion < QUESTIONS) {
+      timerInterval = setInterval(updateTimer, 1000);
+    }
+    if (currentQuestion >= QUESTIONS) {
+      finishGame();
+    }
+  }
+
+  function onWrongAnswer(pauseStart) {
+    wrongAnswers++;
+    const pauseEnd = Date.now();
+    const pauseDuration = pauseEnd - pauseStart;
+    if (timerInterval) clearInterval(timerInterval);
+    startTime += pauseDuration;
+    timerInterval = setInterval(updateTimer, 1000);
+  }
+
+  function startTimerAfterPause(pauseStart) {
+    const pauseEnd = Date.now();
+    const pauseDuration = pauseEnd - pauseStart;
+    startTime += pauseDuration;
+    timerInterval = setInterval(updateTimer, 1000);
+  }
+
   return numpadDiv;
 }
 
