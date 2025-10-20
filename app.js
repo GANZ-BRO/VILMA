@@ -2417,9 +2417,9 @@ function generateQuestions() {
         task.display = "Hiba: érvénytelen feladat generálódott";
         task.answer = null;
       }
-      if (!['number', 'decimal', 'fraction', 'power'].includes(task.answerType)) {
-        console.warn(`Ismeretlen answerType: ${task.answerType} a ${taskType.name} feladattípusban`);
-        task.answerType = 'number'; // Alapértelmezett típus
+      if (!['number', 'decimal', 'fraction', 'power', 'set'].includes(task.answerType)) {
+  console.warn(`Ismeretlen answerType: ${task.answerType} a ${taskType.name} feladattípusban`);
+  task.answerType = 'number'; // Alapértelmezett típus
       }
     });
   } else {
@@ -2430,9 +2430,11 @@ function generateQuestions() {
         task.display = "Hiba: érvénytelen feladat generálódott";
         task.answer = null;
       }
-      if (!['number', 'decimal', 'fraction', 'power'].includes(task.answerType)) {
-        console.warn(`Ismeretlen answerType: ${task.answerType} a ${taskType.name} feladattípusban`);
-        task.answerType = 'number'; // Alapértelmezett típus
+
+if (!['number', 'decimal', 'fraction', 'power', 'set'].includes(task.answerType)) {
+  console.warn(`Ismeretlen answerType: ${task.answerType} a ${taskType.name} feladattípusban`);
+  task.answerType = 'number';
+}
       }
       questions.push(task);
     }
@@ -2566,6 +2568,48 @@ function evaluateExpression(input, correctAnswer, answerType, taskData) {
       return difference <= 1e-9;
     }
 
+
+    
+   if (answerType === 'set') {
+  // Normalize: allow forms like "{1,2,3}" or "1,2,3" and tolerate whitespace
+  function parseSetString(str) {
+    if (!str) return [];
+    // remove surrounding braces if present
+    str = str.trim();
+    if (str.startsWith('{') && str.endsWith('}')) {
+      str = str.slice(1, -1);
+    }
+    // split by comma and/or semicolon, ignore empty parts
+    const parts = str.split(',').map(p => p.trim()).filter(p => p !== '');
+    const nums = [];
+    for (let p of parts) {
+      // allow numeric elements (integers or decimals), also allow negative numbers
+      const n = Number(p.replace(',', '.'));
+      if (!isNaN(n)) {
+        nums.push(n);
+      } else {
+        // if an element is non-numeric, treat comparison as invalid
+        return null;
+      }
+    }
+    // unique + sort numerically
+    const uniq = Array.from(new Set(nums)).sort((a,b) => a - b);
+    return uniq;
+  }
+
+  const userSet = parseSetString(normalizedInput);
+  const correctSet = parseSetString(correctAnswer);
+  if (userSet === null || correctSet === null) {
+    console.warn("Halmaz formátum hibás vagy nem numerikus elemeket tartalmaz", { normalizedInput, correctAnswer });
+    return false;
+  }
+  // Compare sets (same elements irrespective of order)
+  if (userSet.length !== correctSet.length) return false;
+  for (let i = 0; i < userSet.length; i++) {
+    if (Math.abs(userSet[i] - correctSet[i]) > 1e-9) return false;
+  }
+  return true;
+}
     if (answerType === 'fraction') {
       if (normalizedInput.includes('/')) {
         const [userNum, userDen] = normalizedInput.split('/').map(Number);
