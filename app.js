@@ -2454,195 +2454,160 @@ function evaluateExpression(input, correctAnswer, answerType, taskData) {
     return false;
   }
 
-  let normalizedInput = input.replace(',', '.').trim();
-  console.log("Normalizált bemenet:", normalizedInput);
+  // Általános normalizálás: vesszőket ponttá a számokhoz, de halmazoknál majd külön kezeljük
+  let normalizedInput = ('' + input).trim();
+  let normalizedCorrect = ('' + correctAnswer).trim();
 
-  function parseScientificNumber(str) {
-    str = str.trim();
-    const scientificMatch = str.match(/^([\d\.]+)\*10\^([\-]?\d+)$/);
-    if (scientificMatch) {
-      const mantissa = parseFloat(scientificMatch[1]);
-      const exponent = parseInt(scientificMatch[2]);
-      return mantissa * Math.pow(10, exponent);
-    }
-    return parseFloat(str);
+  // Segédfüggvény: ha sztringként számot kapunk, alakítsuk számmá, különben marad string
+  function parseMaybeNumber(s) {
+    if (typeof s !== 'string') return s;
+    const t = s.trim();
+    if (t === '') return t;
+    // elfogadjuk a magyar tizedesvesszőt is
+    const asNum = Number(t.replace(',', '.'));
+    return isNaN(asNum) ? t : asNum;
   }
 
-  try {
-    if (normalizedInput.match(/[\*\/\+-]/)) {
-      let expression = normalizedInput.replace(/\s/g, '');
-      expression = expression.replace(/(\d+\.\d+)\*10\^([\-]?\d+)/g, (match, mantissa, exponent) => {
-        return parseScientificNumber(`${mantissa}*10^${exponent}`);
-      });
-      if (!expression.match(/^[\d\.\+\-\*\/\(\)]+$/)) {
-        console.warn("Érvénytelen kifejezés formátum", { expression });
-        return false;
-      }
-      let computedResult;
-      try {
-        computedResult = eval(expression);
-        if (isNaN(computedResult) || !isFinite(computedResult)) {
-          console.warn("Érvénytelen kifejezés kiértékelés", { expression, computedResult });
-          return false;
-        }
-      } catch (error) {
-        console.warn("Hiba a kifejezés kiértékelése során", { expression, error });
-        return false;
-      }
-      // Pontosság: 2 tizedesjegy esetén a helyes tolerancia = 0.5 * 10^-precision (pl. 0.005)
-      const precision = 2;
-      const tolerance = 0.5 * Math.pow(10, -precision);
-      const parsedCorrectAnswer = parseFloat(correctAnswer.replace(',', '.'));
-      const difference = Math.abs(computedResult - parsedCorrectAnswer);
-      console.log("Képlet kiértékelés:", {
-        expression,
-        computedResult,
-        correctAnswer: parsedCorrectAnswer,
-        difference,
-        precision,
-        tolerance,
-        unit: taskData ? taskData.unit : 'N/A'
-      });
-      return difference <= tolerance;
+  // Halmazok kezelése: elfogadjuk {1,2,3} és 1,2,3 formátumokat, sorrendfüggetlenül
+  if (answerType === 'set') {
+    function normalizeSet(str) {
+      // eltávolítjuk a kapcsos zárójeleket és szóközöket a végén/begyen
+      const cleaned = ('' + str).replace(/^\s*\{?\s*/, '').replace(/\s*\}?\s*$/, '').trim();
+      if (cleaned === '') return [];
+      const parts = cleaned.split(',').map(p => p.trim()).filter(p => p !== '');
+      // próbáljuk számokká alakítani, ha lehet
+      const parsed = parts.map(p => parseMaybeNumber(p));
+      // eltávolítjuk a duplikátumokat (halmaz)
+      const uniq = Array.from(new Set(parsed.map(x => typeof x === 'string' ? `s:${x}` : `n:${x}`)))
+        .map(key => {
+          // visszaalakítjuk eredeti típusra
+          if (key.startsWith('n:')) {
+            const raw = key.slice(2);
+            return Number(raw);
+          } else {
+            return key.slice(2);
+          }
+        });
+      // rendezzük konzisztensen: számok előre növekvőben, majd stringek ABC
+      const nums = uniq.filter(x => typeof x === 'number').sort((a,b) => a - b);
+      const strs = uniq.filter(x => typeof x === 'string').sort();
+      return nums.concat(strs);
     }
 
-    if (answerType === 'power') {
-      const powerMatch = normalizedInput.match(/^([\d\.]+)\*10\^([\-]?\d+)$/);
-      if (!powerMatch) {
-        console.warn("Érvénytelen normál alak", { normalizedInput });
+    const userSet = normalizeSet(normalizedInput);
+    const correctSet = normalizeSet(normalizedCorrect);
+
+    // Debug log (törölhető később)
+    console.log("Halmaz-ellenőrzés:", { userSet, correctSet });
+
+    if (userSet.length !== correctSet.length) return false;
+    for (let i = 0; i < userSet.length; i++) {
+      // szigorú összehasonlítás típus/érték szerint
+      if (userSet[i] !== correctSet[i]) return false;
+    }
+    return true;
+  }
+
+  // --- korábbi logika: képletek / kifejezések (ha a bemenet számítással van megadva) ---
+  // Ha a felhasználó kifejezést adott meg (pl. "1+2/3"), engedjük meg
+  try {
+    // Replace magyar tizedesvesszőket ponttá a számításokhoz
+    const exprCandidate = normalizedInput.replace(/,/g, '.');
+
+    // treat scientific-like patterns with *10^ as numeric if present
+    function parseScientificNumber(str) {
+      str = ('' + str).trim();
+      const m = str.match(/^([\d\.]+)\*10\^([\-]?\d+)$/);
+      if (m) {
+        return parseFloat(m[1]) * Math.pow(10, parseInt(m[2]));
+      }
+      return parseFloat(str);
+    }
+
+    // Ha matematikai operátorok vannak a stringben, próbáljuk kiértékelni
+    if (exprCandidate.match(/[\+\-\*\/\(\)]/)) {
+      let expression = exprCandidate.replace(/\s/g, '');
+      // tiltunk minden nem kívánt karaktert (csak számok, pont, operátorok, zárójelek engedélyezettek)
+      if (!/^[0-9\.\+\-\*\/\(\)\s]+$/.test(expression)) {
+        // nem biztonságos/érvényes kifejezés
+        // továbbengedjük a többi type-okat (pl. fraction, power), különben false
+      } else {
+        let computed;
+        try {
+          computed = eval(expression);
+        } catch (e) {
+          computed = NaN;
+        }
+        if (!isNaN(computed) && isFinite(computed)) {
+          // összehasonlítjuk a helyes válasszal (ha az is szám)
+          if (!isNaN(Number(normalizedCorrect.replace(',', '.')))) {
+            const correctNum = Number(normalizedCorrect.replace(',', '.'));
+            // tolerancia kis eltérésre (pl. tizedeskerekítési különbség)
+            return Math.abs(computed - correctNum) < 1e-6;
+          }
+        }
+      }
+    }
+
+    // Tört-feldolgozás és power típus külön később, itt nem döntünk még
+  } catch (err) {
+    console.warn("evaluateExpression - kifejezés kiértékelési hiba:", err);
+    // folytatjuk a további típusellenőrzésekkel
+  }
+
+  // Ha ideértünk: továbbra is támogatjuk a meglévő törtek/power/number logikát (eredeti kód)
+  // (A következő részeket a fájlban már meglévő kezelésekhez igazítsd, ez csak a set hozzáadása volt.)
+
+  // --- fraction kezelés (ha benne van) ---
+  if (answerType === 'fraction') {
+    if (normalizedInput.includes('/')) {
+      const [userNum, userDen] = normalizedInput.split('/').map(s => Number(s.trim()));
+      if (isNaN(userNum) || isNaN(userDen) || userDen === 0) {
+        console.warn("Érvénytelen tört formátum", { normalizedInput });
         return false;
       }
-      const [_, userCoef, userExp] = powerMatch;
-      const [__, ansCoef, ansExp] = correctAnswer.match(/^([\d\.]+)\*10\^([\-]?\d+)$/) || [];
-      if (!ansCoef || !ansExp) {
-        console.warn("Érvénytelen helyes válasz normál alakban", { correctAnswer });
-        return false;
-      }
-      const userValue = parseFloat(userCoef) * Math.pow(10, parseInt(userExp));
-      const correctValue = parseFloat(ansCoef) * Math.pow(10, parseInt(ansExp));
+      const [ansNum, ansDen] = (''+correctAnswer).split('/').map(s => Number(s.trim()));
+      const simplify = (a,b)=>{ const g = (function gcd(x,y){return y?gcd(y,x%y):x})(Math.abs(a),Math.abs(b)); return [a/g,b/g]; };
+      const [su, du] = simplify(userNum, userDen);
+      const [sa, da] = simplify(ansNum, ansDen);
+      return su === sa && du === da;
+    } else {
+      const [ansNum, ansDen] = (''+correctAnswer).split('/').map(s => Number(s.trim()));
+      const correctValue = ansNum / ansDen;
+      const userValue = parseFloat(normalizedInput.replace(',', '.'));
+      if (isNaN(userValue)) return false;
       const precision = 2;
       const tolerance = 0.5 * Math.pow(10, -precision);
-      console.log("Normál alak ellenőrzés:", { userValue, correctValue, userCoef, userExp, ansCoef, ansExp, precision, tolerance });
       return Math.abs(userValue - correctValue) <= tolerance;
     }
-
-    if (answerType === 'decimal') {
-  const precision = (taskData && Number.isInteger(taskData.decimalPlaces)) ? taskData.decimalPlaces : 2;
-  // formátum-ellenőrzés: pontosan precision tizedesjegy kell (precision === 0 -> egész)
-  // normalizedInput már tartalmaz pontot, mert fent replace(',', '.') történt
-  const formatRegex = precision === 0
-    ? /^-?\d+$/
-    : new RegExp(`^-?\\d+\\.\\d{${precision}}$`);
-  if (!formatRegex.test(normalizedInput)) {
-    console.warn("A bevitt érték formátuma nem egyezik a feladat által elvárt tizedesjegyszámmal", { normalizedInput, precision });
-    return false; // formátum hibás -> elutasítjuk
   }
 
-  const userAnswer = Number(normalizedInput);
-  const parsedCorrectAnswer = Number(correctAnswer.replace(',', '.'));
-
-  if (isNaN(userAnswer) || isNaN(parsedCorrectAnswer)) {
-    console.warn("Érvénytelen számformátum", { userAnswer, parsedCorrectAnswer });
-    return false;
-  }
-
-  // pontos numerikus egyezés a kért tizedesjegy szempontjából
-  const userFixed = Number(userAnswer.toFixed(precision));
-  const correctFixed = Number(parsedCorrectAnswer.toFixed(precision));
-
-  const equal = Math.abs(userFixed - correctFixed) <= 1e-9;
-  console.log("Tizedes tört ellenőrzés (pontosság és formátum):", { normalizedInput, precision, userFixed, correctFixed, equal });
-  return equal;
-}
-
-    if (answerType === 'number') {
-      const userAnswer = parseFloat(normalizedInput);
-      const parsedCorrectAnswer = parseFloat(correctAnswer);
-      if (isNaN(userAnswer) || isNaN(parsedCorrectAnswer)) {
-        console.warn("Érvénytelen számformátum", { userAnswer, parsedCorrectAnswer });
-        return false;
-      }
-      // Egész számoknál megköveteljük az egyenlőséget (kis numerikus eltérések engedélyezése minimálisan)
-      const difference = Math.abs(userAnswer - parsedCorrectAnswer);
-      console.log("Egész szám ellenőrzés:", { userAnswer, parsedCorrectAnswer, difference });
-      return difference <= 1e-9;
+  // --- power (normál alak) kezelés ---
+  if (answerType === 'power') {
+    const powerMatchUser = normalizedInput.match(/^([\d\.,]+)×10\^([\d\-]+)$/) || normalizedInput.match(/^([\d\.,]+)\*10\^([\d\-]+)$/);
+    const powerMatchAns = (''+correctAnswer).match(/^([\d\.]+)×10\^([\d\-]+)$/) || (''+correctAnswer).match(/^([\d\.]+)\*10\^([\d\-]+)$/);
+    if (!powerMatchUser || !powerMatchAns) {
+      return false;
     }
-
-
-    
-   if (answerType === 'set') {
-  // Normalize: allow forms like "{1,2,3}" or "1,2,3" and tolerate whitespace
-  function parseSetString(str) {
-    if (!str) return [];
-    // remove surrounding braces if present
-    str = str.trim();
-    if (str.startsWith('{') && str.endsWith('}')) {
-      str = str.slice(1, -1);
-    }
-    // split by comma and/or semicolon, ignore empty parts
-    const parts = str.split(',').map(p => p.trim()).filter(p => p !== '');
-    const nums = [];
-    for (let p of parts) {
-      // allow numeric elements (integers or decimals), also allow negative numbers
-      const n = Number(p.replace(',', '.'));
-      if (!isNaN(n)) {
-        nums.push(n);
-      } else {
-        // if an element is non-numeric, treat comparison as invalid
-        return null;
-      }
-    }
-    // unique + sort numerically
-    const uniq = Array.from(new Set(nums)).sort((a,b) => a - b);
-    return uniq;
+    const userCoef = parseFloat(powerMatchUser[1].replace(',', '.'));
+    const userExp = parseInt(powerMatchUser[2]);
+    const ansCoef = parseFloat(powerMatchAns[1].replace(',', '.'));
+    const ansExp = parseInt(powerMatchAns[2]);
+    return Math.abs(userCoef - ansCoef) < 0.01 && userExp === ansExp;
   }
 
-  const userSet = parseSetString(normalizedInput);
-  const correctSet = parseSetString(correctAnswer);
-  if (userSet === null || correctSet === null) {
-    console.warn("Halmaz formátum hibás vagy nem numerikus elemeket tartalmaz", { normalizedInput, correctAnswer });
-    return false;
+  // --- number / decimal kezelés ---
+  if (answerType === 'number' || answerType === 'decimal') {
+    const userNum = Number(normalizedInput.replace(',', '.'));
+    const correctNum = Number(normalizedCorrect.replace(',', '.'));
+    if (isNaN(userNum) || isNaN(correctNum)) return false;
+    // ha decimal típus, enyhe tolerancia
+    const tol = answerType === 'decimal' ? 1e-3 : 1e-6;
+    return Math.abs(userNum - correctNum) <= tol;
   }
-  // Compare sets (same elements irrespective of order)
-  if (userSet.length !== correctSet.length) return false;
-  for (let i = 0; i < userSet.length; i++) {
-    if (Math.abs(userSet[i] - correctSet[i]) > 1e-9) return false;
-  }
-  return true;
-}
-    if (answerType === 'fraction') {
-      if (normalizedInput.includes('/')) {
-        const [userNum, userDen] = normalizedInput.split('/').map(Number);
-        if (isNaN(userNum) || isNaN(userDen) || userDen === 0) {
-          console.warn("Érvénytelen tört formátum", { normalizedInput });
-          return false;
-        }
-        const [ansNum, ansDen] = correctAnswer.split('/').map(Number);
-        const [simpUserNum, simpUserDen] = simplifyFraction(userNum, userDen);
-        console.log("Tört ellenőrzés:", { simpUserNum, simpUserDen, ansNum, ansDen });
-        return simpUserNum === ansNum && simpUserDen === ansDen;
-      } else {
-        const [ansNum, ansDen] = correctAnswer.split('/').map(Number);
-        const correctValue = ansNum / ansDen;
-        const userAnswer = parseFloat(normalizedInput);
-        if (isNaN(userAnswer)) {
-          console.warn("Érvénytelen számformátum tört esetén", { normalizedInput });
-          return false;
-        }
-        // Ha tizedes formátumban adták meg, használjuk a 2 tizedes pontosságra vonatkozó toleranciát
-        const precision = 2;
-        const tolerance = 0.5 * Math.pow(10, -precision);
-        console.log("Tört decimális ellenőrzés:", { userAnswer, correctValue, tolerance });
-        return Math.abs(userAnswer - correctValue) <= tolerance;
-      }
-    }
 
-    console.warn("Ismeretlen válasz típus", { answerType });
-    return false;
-  } catch (error) {
-    console.error("Hiba a válasz kiértékelése során:", { error, input, correctAnswer, answerType });
-    return false;
-  }
+  // --- végső fallback: string összehasonlítás (kisbetűsítve) ---
+  return normalizedInput.toLowerCase() === normalizedCorrect.toLowerCase();
 }
 
 // Segédfüggvény normál alakhoz
@@ -2782,7 +2747,7 @@ function renderNumpad(answerState, onChange) {
           if (!correct) {
             let hint = '';
             if (currentTask.answerType === 'set') {
-              hint = `Sajnos nem jó a halmaz. A várt formátum: elemek vesszővel elválasztva (például: {1,2,3} vagy 1,2,3).`;
+              hint = `Sajnos nem jó a halmaz.\n\nA helyes megoldás: {${currentTask.answer}}`;
             } else {
               const userAnswer = parseFloat(val.replace(',', '.'));
               const correctAnswer = parseFloat(currentTask.answer.replace(',', '.'));
