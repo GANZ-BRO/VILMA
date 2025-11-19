@@ -2326,9 +2326,10 @@ function getAveragesHTML() {
   const fmt = (v) => (v === null ? '<span style="opacity:0.7">Nincs elég adat</span>' : `<b>${v} mp</b>`);
   // kis betűméret és margin a vizuális megkülönböztetéshez
   return `<div style="margin-top:6px; font-size:0.95em; line-height:1.2;">
-    <div><b>U3-Átlag:</b> ${fmt(u3)} — <b>U6-Átlag:</b> ${fmt(u6)} — <b>U9-Átlag:</b> ${fmt(u9)}</div>
-    <div style="color:#666; font-size:0.85em; margin-top:4px;">(Átlagidők az utolsó 3/6/9 futás alapján — kategória és nehézség szerint)</div>
-  </div>`;
+    <div style="margin-bottom: 2px;"><b>U3-Átlag:</b> ${fmt(u3)}</div>
+    <div style="margin-bottom: 2px;"><b>U6-Átlag:</b> ${fmt(u6)}</div>
+    <div><b>U9-Átlag:</b> ${fmt(u9)}</div>
+</div>`;
 }
 // ---- VÉGE: history segédfüggvények ----
 
