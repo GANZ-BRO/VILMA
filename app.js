@@ -2252,12 +2252,85 @@ function showBest() {
     if (best.wrongAnswers > 0) {
       resultText += `, ${best.wrongAnswers} hiba`;
     }
+    // Alapelrendezés a legjobb eredményhez
     bestStats.innerHTML = resultText;
   } else {
     bestStats.innerHTML = `🏆 <b>Még nincs megjeleníthető legjobb eredmény.</b>`;
   }
+
+  // Kiegészítő: U3/U6/U9 átlagok megjelenítése az aktuális kategória+nehézség szerint
+  try {
+    const averagesHTML = getAveragesHTML();
+    bestStats.innerHTML += averagesHTML;
+  } catch (e) {
+    console.warn("Hiba átlagok kiszámításakor:", e);
+  }
+
   bestStats.style.display = "";
 }
+
+// ---- Ezt a blokkot illeszd be showBest() után (vagy a best-save logika mellé) ----
+function getHistoryKey(cat, diff) {
+  return `vilma-history-${cat}-${diff}`;
+}
+
+function saveToHistory(scoreValue, timeSeconds, wrong) {
+  try {
+    const cat = categorySelect.value;
+    const diff = difficultySelect.value;
+    const key = getHistoryKey(cat, diff);
+    const raw = localStorage.getItem(key);
+    let hist = raw ? JSON.parse(raw) : [];
+    // új elem elejére tesszük (legfrissebb elöl)
+    hist.unshift({
+      score: Number(scoreValue),
+      time: Number(timeSeconds),
+      wrong: Number(wrong || 0),
+      ts: Date.now()
+    });
+    // limit: legfeljebb 50 bejegyzés megtartása
+    if (hist.length > 50) hist = hist.slice(0, 50);
+    localStorage.setItem(key, JSON.stringify(hist));
+  } catch (err) {
+    console.warn("saveToHistory hiba:", err);
+  }
+}
+
+function loadHistory(cat, diff, maxItems = 50) {
+  try {
+    const key = getHistoryKey(cat, diff);
+    const raw = localStorage.getItem(key);
+    const hist = raw ? JSON.parse(raw) : [];
+    return hist.slice(0, maxItems);
+  } catch (err) {
+    console.warn("loadHistory hiba:", err);
+    return [];
+  }
+}
+
+function computeAvgTime(hist, n) {
+  if (!Array.isArray(hist) || hist.length < n) return null;
+  const slice = hist.slice(0, n);
+  const sum = slice.reduce((acc, item) => acc + (Number(item.time) || 0), 0);
+  // kerekítve másodpercre (egész)
+  return Math.round(sum / slice.length);
+}
+
+function getAveragesHTML() {
+  const cat = categorySelect.value;
+  const diff = difficultySelect.value;
+  const hist = loadHistory(cat, diff, 50);
+  const u3 = computeAvgTime(hist, 3);
+  const u6 = computeAvgTime(hist, 6);
+  const u9 = computeAvgTime(hist, 9);
+  const fmt = (v) => (v === null ? '<span style="opacity:0.7">Nincs elég adat</span>' : `<b>${v} mp</b>`);
+  // kis betűméret és margin a vizuális megkülönböztetéshez
+  return `<div style="margin-top:6px; font-size:0.95em; line-height:1.2;">
+    <div><b>U3-Átlag:</b> ${fmt(u3)} — <b>U6-Átlag:</b> ${fmt(u6)} — <b>U9-Átlag:</b> ${fmt(u9)}</div>
+    <div style="color:#666; font-size:0.85em; margin-top:4px;">(Átlagidők az utolsó 3/6/9 futás alapján — kategória és nehézség szerint)</div>
+  </div>`;
+}
+// ---- VÉGE: history segédfüggvények ----
 
 function difficultyLabel() {
   switch (difficultySelect.value) {
@@ -3028,10 +3101,32 @@ function finishGame() {
   clearInterval(timerInterval);
   const elapsed = Math.floor((Date.now() - startTime) / 1000);
   timerDisplay.textContent = `${elapsed} (Vége)`;
+
+  // Mentjük az eredményt a history-ba (aktuális kategória + nehézség szerint)
+  try {
+    saveToHistory(score, elapsed, wrongAnswers);
+  } catch (e) {
+    console.warn("finishGame: saveToHistory sikertelen:", e);
+  }
+
+  // Megpróbáljuk frissíteni a legjobb eredményt (saveBest ellenőrzi a szabályokat)
+  try {
+    saveBest(score, elapsed);
+  } catch (e) {
+    console.warn("finishGame: saveBest sikertelen:", e);
+  }
+
+  // Frissítjük a képernyőt a lezáró üzenettel
   quizContainer.innerHTML = `<p style="font-size:1.2em;"><b>Gratulálok!</b> ${elapsed} másodperc alatt végeztél.<br>Helytelen válaszok száma: ${wrongAnswers}</p>`;
   numpadContainer.innerHTML = "";
   numpadContainer.classList.remove("active");
-  saveBest(score, elapsed);
+
+  // Frissítjük a megjelenített "best" és az átlagokat is
+  try {
+    loadBest(); // loadBest() hívja showBest(), ami már kiegészíti az átlagokkal
+  } catch (e) {
+    console.warn("finishGame: loadBest sikertelen:", e);
+  }
 
   restartBtn.style.display = "";
   startBtn.style.display = "";
@@ -3039,7 +3134,6 @@ function finishGame() {
   categorySelect.disabled = false;
   difficultySelect.disabled = false;
 }
-
 restartBtn.onclick = startGame;
 startBtn.onclick = startGame;
 
