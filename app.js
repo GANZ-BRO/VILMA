@@ -1,5 +1,5 @@
 // --- ALAPBEÁLLÍTÁSOK ---
-const QUESTIONS = 5; // Feladatok száma egy játékban
+const QUESTIONS = 9; // Feladatok száma egy játékban
 const DIFFICULTY_SETTINGS = {
   easy: { min: 0, max: 10 }, // Könnyű: kis számok a gyengébb diákok számára
   medium: { min: -20, max: 20 }, // Közepes: negatív számok, nagyobb tartomány
@@ -831,7 +831,7 @@ const taskTypes = [
         { name: "Áramerősség", symbol: "I", unitName: "amper", unitSymbol: "A" },
         { name: "Feszültség", symbol: "U", unitName: "volt", unitSymbol: "V" },
         { name: "Ellenállás", symbol: "R", unitName: "ohm", unitSymbol: "Ω" },
-        { name: "Elektromos töltés", symbol: "Q", unitName: "coulomb", unitSymbol: "C" }
+        { name: "Teljesítmény", symbol: "P", unitName: "watt", unitSymbol: "W" }
       ],
       medium: [
         { name: "Áramerősség", symbol: "I", unitName: "amper", unitSymbol: "A" },
@@ -1079,46 +1079,46 @@ const taskTypes = [
       easy: { 
         mAMin: 100, mAMax: 1000, 
         ohmMin: 100, ohmMax: 1000, 
-        kOhmMin: 1, kOhmMax: 10, 
-        ampMin: 1, ampMax: 10, 
+        kOhmMin: 0.001, kOhmMax: 10, 
+        ampMin: 0.001, ampMax: 10, 
         mVMin: 100, mVMax: 1000, 
-        vMin: 1, vMax: 100, 
+        vMin: 0.001, vMax: 100, 
         wMin: 100, wMax: 1000, 
-        kWMin: 1, kWMax: 10 
+        kWMin: 0.001, kWMax: 10 
       },
       medium: { 
         mAMin: 100, mAMax: 3000, 
         ohmMin: 100, ohmMax: 3000, 
-        kOhmMin: 1, kOhmMax: 15, 
-        mOhmMin: 1, mOhmMax: 15, 
-        ampMin: 1, ampMax: 15, 
+        kOhmMin: 0.001, kOhmMax: 15, 
+        mOhmMin: 0.001, mOhmMax: 15, 
+        ampMin: 0.001, ampMax: 15, 
         microAMin: 100, microAMax: 3000, 
         mVMin: 100, mVMax: 3000, 
         vMin: 100, vMax: 3000, 
-        kVMin: 1, kVMax: 15, 
+        kVMin: 0.001, kVMax: 15, 
         mWMin: 100, mWMax: 3000, 
         wMin: 100, wMax: 3000, 
         hzMin: 100, hzMax: 3000, 
-        kHzMin: 1, kHzMax: 15 
+        kHzMin: 0.001, kHzMax: 15 
       },
       hard: { 
         mAMin: 100, mAMax: 10000, 
         ohmMin: 100, ohmMax: 10000, 
-        kOhmMin: 1, kOhmMax: 50, 
-        mOhmMin: 1, mOhmMax: 50, 
-        ampMin: 1, ampMax: 50, 
+        kOhmMin: 0.001, kOhmMax: 50, 
+        mOhmMin: 0.001, mOhmMax: 50, 
+        ampMin: 0.001, ampMax: 50, 
         microAMin: 100, microAMax: 10000, 
         microVMin: 100, microVMax: 10000, 
         mVMin: 100, mVMax: 10000, 
         vMin: 100, vMax: 10000, 
-        kVMin: 1, kVMax: 50, 
+        kVMin: 0.001, kVMax: 50, 
         mWMin: 100, mWMax: 10000, 
         wMin: 100, wMax: 10000, 
         pFMin: 100, pFMax: 1000, 
         nFMin: 100, nFMax: 10000, 
-        microFMin: 1, microFMax: 50, 
-        kHzMin: 1, kHzMax: 1000, 
-        mHzMin: 1, mHzMax: 50 
+        microFMin: 0.001, microFMax: 50, 
+        kHzMin: 0.001, kHzMax: 1000, 
+        mHzMin: 0.001, mHzMax: 50 
       }
     };
 
