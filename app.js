@@ -1077,29 +1077,29 @@ const taskTypes = [
   generate: (difficulty) => {
     const ranges = {
       easy: { 
-        mAMin: .00100, mAMax: 10000, 
-        ohmMin: .00100, ohmMax: 10000, 
-        kOhmMin: 0.01, kOhmMax: 100, 
-        ampMin: 0.01, ampMax: 100, 
-        mVMin: 0.00100, mVMax: 10000, 
-        vMin: 0.01, vMax: 1000, 
-        wMin: 0.0100, wMax: 10000, 
-        kWMin: 0.01, kWMax: 1000 
+        mAMin: 1.00, mAMax: 10000, 
+        ohmMin: 1.00, ohmMax: 10000, 
+        kOhmMin: 1.00, kOhmMax: 1000, 
+        ampMin: 1.00, ampMax: 10.00, 
+        mVMin: 1.00, mVMax: 10000, 
+        vMin: 1.00, vMax: 1000, 
+        wMin: 1.00, wMax: 10000, 
+        kWMin: 1.00, kWMax: 3.00 
       },
       medium: { 
         mAMin: 100, mAMax: 3000, 
         ohmMin: 100, ohmMax: 3000, 
-        kOhmMin: 0.001, kOhmMax: 15, 
-        mOhmMin: 0.001, mOhmMax: 15, 
-        ampMin: 0.001, ampMax: 15, 
+        kOhmMin: 1, kOhmMax: 15, 
+        mOhmMin: 1, mOhmMax: 15, 
+        ampMin: 1, ampMax: 15, 
         microAMin: 100, microAMax: 3000, 
         mVMin: 100, mVMax: 3000, 
         vMin: 100, vMax: 3000, 
-        kVMin: 0.001, kVMax: 15, 
+        kVMin: 1, kVMax: 15, 
         mWMin: 100, mWMax: 3000, 
         wMin: 100, wMax: 3000, 
         hzMin: 100, hzMax: 3000, 
-        kHzMin: 0.001, kHzMax: 15 
+        kHzMin: 1, kHzMax: 15 
       },
       hard: { 
         mAMin: 100, mAMax: 10000, 
