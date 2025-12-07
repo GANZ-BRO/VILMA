@@ -2263,6 +2263,7 @@ function saveBest(newScore, time) {
   showBest();
 }
 
+
 function showBest() {
   // 1. Legjobb eredmény HTML összeállítása
   let bestHtml = "";
@@ -2287,19 +2288,22 @@ function showBest() {
     averagesHTML = "";
   }
 
-  // 3. Kontroll gombok hozzáadása: Rekord törlése és History (U3/U6/U9) törlése
+  // 3. Ikon gombok a jobb oldalon (egyszerű, nincs magyarázó szöveg)
   const controlsHtml = `
-    <div style="margin-top:8px; display:flex; gap:8px; align-items:center;">
-      <button id="clear-best-btn" style="padding:6px 8px; font-size:0.9em; cursor:pointer;">Rekord törlése</button>
-      <button id="clear-history-btn" style="padding:6px 8px; font-size:0.9em; cursor:pointer;">U3/U6/U9 törlése (history)</button>
-      <span style="margin-left:8px; font-size:0.86em; color:#666;">(törlés csak a kiválasztott kategória+nehézség adatait érinti)</span>
+    <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:6px; align-items:center;">
+      <button id="clear-best-btn" aria-label="Rekord törlése" title="Rekord törlése" style="background:none;border:0;padding:4px;cursor:pointer;font-size:1.2em;line-height:1;">
+        <span style="display:inline-block; transform:translateY(-1px); text-decoration:line-through;">🏆</span>
+      </button>
+      <button id="clear-history-btn" aria-label="U3/U6/U9 törlése" title="U3/U6/U9 törlése" style="background:none;border:0;padding:4px;cursor:pointer;font-weight:600;font-size:0.95em;line-height:1;">
+        <span style="display:inline-block; text-decoration:line-through;">U3</span>
+      </button>
     </div>
   `;
 
   bestStats.innerHTML = bestHtml + averagesHTML + controlsHtml;
   bestStats.style.display = "";
 
-  // 4. Eseménykezelők csatolása (biztosítjuk, hogy az elemek léteznek)
+  // 4. Eseménykezelők csatolása
   const clearBestBtn = document.getElementById("clear-best-btn");
   if (clearBestBtn) {
     clearBestBtn.onclick = () => {
@@ -2314,7 +2318,7 @@ function showBest() {
   }
 }
 
-// --- ÚJ: törli a jelenlegi kategória+nehézség rekordját (vilma-best-...) ---
+// --- Törli a jelenlegi kategória+nehézség rekordját (vilma-best-...) ---
 function clearBestForCurrent() {
   const cat = categorySelect.value;
   const diff = difficultySelect.value;
@@ -2325,23 +2329,22 @@ function clearBestForCurrent() {
     return;
   }
 
-  const ok = confirm(`Biztosan törlöd a rekördöt és újrakezded a rögzítést a kategória: "${categoryLabel()}", nehézség: "${difficultyLabel()}" esetén?`);
+  const ok = confirm(`Biztosan törlöd a rekordot a kategória: "${categoryLabel()}", nehézség: "${difficultyLabel()}" esetén?`);
   if (!ok) return;
 
   try {
     localStorage.removeItem(key);
-    // reset helyi változó is, hogy azonnal látszódjon a UI-ban
     best = { score: 0, time: null, wrongAnswers: Infinity };
     showBest();
-    alert("A rekord törölve. Innentől újrakezdődik a rögzítés.");
+    // rövid visszajelzés (nem szükséges, de hasznos)
+    // alert("A rekord törölve.");
   } catch (e) {
     console.error("clearBestForCurrent hiba:", e);
     alert("Hiba történt a rekord törlése közben. Nézd meg a konzolt.");
   }
 }
 
-// --- ÚJ: törli a jelenlegi kategória+nehézség history-ját (vilma-history-...), ezzel U3/U6/U9 visszaáll ---
-// Ha inkább csak az utolsó 3 bejegyzést szeretnéd törölni, jelezd és módosítom úgy.
+// --- Törli a jelenlegi kategória+nehézség history-ját (vilma-history-...), ezzel U3/U6/U9 visszaáll ---
 function clearHistoryForCurrent() {
   const cat = categorySelect.value;
   const diff = difficultySelect.value;
@@ -2352,14 +2355,13 @@ function clearHistoryForCurrent() {
     return;
   }
 
-  const ok = confirm(`Biztosan törlöd az összes history bejegyzést (U3/U6/U9 adatok) a kategóriához: "${categoryLabel()}", nehézséghez: "${difficultyLabel()}"? Ez visszaállítja az átlagokat.`);
+  const ok = confirm(`Biztosan törlöd az összes history bejegyzést (U3/U6/U9 adatok) a kategóriához: "${categoryLabel()}", nehézséghez: "${difficultyLabel()}"?`);
   if (!ok) return;
 
   try {
     localStorage.removeItem(key);
-    // showBest újrahívás, hogy az átlagok azonnal frissüljenek
     showBest();
-    alert("A history (U3/U6/U9) törölve. Az átlagok újragenerálódnak a következő játékok alapján.");
+    // alert("A history törölve.");
   } catch (e) {
     console.error("clearHistoryForCurrent hiba:", e);
     alert("Hiba történt a history törlése közben. Nézd meg a konzolt.");
