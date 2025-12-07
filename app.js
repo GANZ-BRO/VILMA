@@ -2278,18 +2278,93 @@ function showBest() {
     bestHtml = `<div style="margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px solid #ccc;">🏆 Még nincs rekord</div>`;
   }
 
-  // 2. Átlagok hozzáadása
+  // 2. Átlagok hozzáadása (U3,U6,U9)
+  let averagesHTML = "";
   try {
-    const averagesHTML = getAveragesHTML();
-    bestStats.innerHTML = bestHtml + averagesHTML;
+    averagesHTML = getAveragesHTML();
   } catch (e) {
     console.warn("Hiba az átlagok megjelenítésekor:", e);
-    bestStats.innerHTML = bestHtml;
+    averagesHTML = "";
   }
 
+  // 3. Kontroll gombok hozzáadása: Rekord törlése és History (U3/U6/U9) törlése
+  const controlsHtml = `
+    <div style="margin-top:8px; display:flex; gap:8px; align-items:center;">
+      <button id="clear-best-btn" style="padding:6px 8px; font-size:0.9em; cursor:pointer;">Rekord törlése</button>
+      <button id="clear-history-btn" style="padding:6px 8px; font-size:0.9em; cursor:pointer;">U3/U6/U9 törlése (history)</button>
+      <span style="margin-left:8px; font-size:0.86em; color:#666;">(törlés csak a kiválasztott kategória+nehézség adatait érinti)</span>
+    </div>
+  `;
+
+  bestStats.innerHTML = bestHtml + averagesHTML + controlsHtml;
   bestStats.style.display = "";
+
+  // 4. Eseménykezelők csatolása (biztosítjuk, hogy az elemek léteznek)
+  const clearBestBtn = document.getElementById("clear-best-btn");
+  if (clearBestBtn) {
+    clearBestBtn.onclick = () => {
+      clearBestForCurrent();
+    };
+  }
+  const clearHistoryBtn = document.getElementById("clear-history-btn");
+  if (clearHistoryBtn) {
+    clearHistoryBtn.onclick = () => {
+      clearHistoryForCurrent();
+    };
+  }
 }
 
+// --- ÚJ: törli a jelenlegi kategória+nehézség rekordját (vilma-best-...) ---
+function clearBestForCurrent() {
+  const cat = categorySelect.value;
+  const diff = difficultySelect.value;
+  const key = "vilma-best-" + cat + "-" + diff;
+
+  if (!localStorage.getItem(key)) {
+    alert("Nincs mentett rekord ezen a kategórián és nehézségen.");
+    return;
+  }
+
+  const ok = confirm(`Biztosan törlöd a rekördöt és újrakezded a rögzítést a kategória: "${categoryLabel()}", nehézség: "${difficultyLabel()}" esetén?`);
+  if (!ok) return;
+
+  try {
+    localStorage.removeItem(key);
+    // reset helyi változó is, hogy azonnal látszódjon a UI-ban
+    best = { score: 0, time: null, wrongAnswers: Infinity };
+    showBest();
+    alert("A rekord törölve. Innentől újrakezdődik a rögzítés.");
+  } catch (e) {
+    console.error("clearBestForCurrent hiba:", e);
+    alert("Hiba történt a rekord törlése közben. Nézd meg a konzolt.");
+  }
+}
+
+// --- ÚJ: törli a jelenlegi kategória+nehézség history-ját (vilma-history-...), ezzel U3/U6/U9 visszaáll ---
+// Ha inkább csak az utolsó 3 bejegyzést szeretnéd törölni, jelezd és módosítom úgy.
+function clearHistoryForCurrent() {
+  const cat = categorySelect.value;
+  const diff = difficultySelect.value;
+  const key = getHistoryKey(cat, diff);
+
+  if (!localStorage.getItem(key)) {
+    alert("Nincs mentett history ezen a kategórián és nehézségben.");
+    return;
+  }
+
+  const ok = confirm(`Biztosan törlöd az összes history bejegyzést (U3/U6/U9 adatok) a kategóriához: "${categoryLabel()}", nehézséghez: "${difficultyLabel()}"? Ez visszaállítja az átlagokat.`);
+  if (!ok) return;
+
+  try {
+    localStorage.removeItem(key);
+    // showBest újrahívás, hogy az átlagok azonnal frissüljenek
+    showBest();
+    alert("A history (U3/U6/U9) törölve. Az átlagok újragenerálódnak a következő játékok alapján.");
+  } catch (e) {
+    console.error("clearHistoryForCurrent hiba:", e);
+    alert("Hiba történt a history törlése közben. Nézd meg a konzolt.");
+  }
+}
 // --- STATISZTIKA ÉS ÁTLAG SZÁMÍTÁS (JAVÍTOTT) ---
 
 function getHistoryKey(cat, diff) {
