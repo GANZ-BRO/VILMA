@@ -2241,14 +2241,18 @@ function generateBracketedExpression(opCount, min, max) {
 }
 
 // --- FELADATSOR GENERÁLÁSA ---
-// Pontossági útmutató hozzáadása a feladat szövegéhez, ha még nincs
+// --- Pontossági útmutató hozzáadása a feladat szövegéhez, ha még nincs
 function ensurePrecisionHint(task, difficulty) {
   if (!task || !task.display) return task;
-  // Ne duplázzuk, ha már van útmutató (saját hint vagy a kerekítés szövege)
+  
+  // NE duplázzuk, ha már van útmutató (saját hint vagy a kerekítés szövege)
   if (task.display.includes("precision-hint") ||
+      task.display.includes("<small") ||  // ← FONTOS: ellenőrizzük az összes <small> taget
       task.display.includes("tizedesjegy") ||
       task.display.includes("egészre") ||
+      task.display.includes("egész szám") ||  // ← ADD HÁ
       task.display.includes("Válasz formátum")) return task;
+  
   const at = task.answerType || "number";
   let hint = "";
   if (at === "fraction") {
@@ -2281,6 +2285,7 @@ function ensurePrecisionHint(task, difficulty) {
   if (hint) task.display += hint;
   return task;
 }
+
 
 function generateQuestions() {
   const difficulty = difficultySelect.value;
