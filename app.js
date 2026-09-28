@@ -2445,18 +2445,27 @@ function evaluateExpression(input, correctAnswer, answerType, taskData) {
     return Math.abs(userCoef - ansCoef) < 0.01 && userExp === ansExp;
   }
 
-  // Számok
-  if (answerType === 'number' || answerType === 'decimal') {
-    const userNum = Number(normalizedInput.replace(',', '.'));
-    const correctNum = Number(normalizedCorrect.replace(',', '.'));
-    if (isNaN(userNum) || isNaN(correctNum)) return false;
-    const tol = answerType === 'decimal' ? 1e-3 : 1e-6;
-    return Math.abs(userNum - correctNum) <= tol;
+// Számok
+if (answerType === 'number' || answerType === 'decimal') {
+  const userNum = Number(normalizedInput.replace(',', '.'));
+  const correctNum = Number(normalizedCorrect.replace(',', '.'));
+  if (isNaN(userNum) || isNaN(correctNum)) return false;
+  
+  // Tolerancia a decimalPlaces alapján
+  let tol = 1e-6; // alapértelmezett: egész számoknál szigorú
+  if (answerType === 'decimal' && taskData && taskData.decimalPlaces !== undefined) {
+    // Ha 2 tizedesjegy kell: 0.5 * 10^-2 = 0.005 (fele az utolsó helyi értéknek)
+    tol = 0.5 * Math.pow(10, -taskData.decimalPlaces);
+  } else if (answerType === 'decimal') {
+    // Fallback: számold ki a helyi értékekből
+    const parts = ('' + normalizedCorrect).replace(',', '.').split('.');
+    const dp = parts[1] ? parts[1].length : 2;
+    tol = 0.5 * Math.pow(10, -dp);
   }
-
-  return normalizedInput.toLowerCase() === normalizedCorrect.toLowerCase();
+  
+  return Math.abs(userNum - correctNum) <= tol;
 }
-
+  
 // --- NUMPAD MEGJELENÍTÉS ---
 function renderNumpad(answerState, onChange) {
   answerState = answerState || { value: "" };
