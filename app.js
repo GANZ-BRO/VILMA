@@ -2465,7 +2465,7 @@ if (answerType === 'number' || answerType === 'decimal') {
   
   return Math.abs(userNum - correctNum) <= tol;
 }
-  
+}  
 // --- NUMPAD MEGJELENÍTÉS ---
 function renderNumpad(answerState, onChange) {
   answerState = answerState || { value: "" };
