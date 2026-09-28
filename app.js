@@ -2445,22 +2445,30 @@ function evaluateExpression(input, correctAnswer, answerType, taskData) {
     return Math.abs(userCoef - ansCoef) < 0.01 && userExp === ansExp;
   }
 
-// Számok
+// Számok (JAVÍTOTT)
 if (answerType === 'number' || answerType === 'decimal') {
   const userNum = Number(normalizedInput.replace(',', '.'));
   const correctNum = Number(normalizedCorrect.replace(',', '.'));
   if (isNaN(userNum) || isNaN(correctNum)) return false;
   
   // Tolerancia a decimalPlaces alapján
-  let tol = 1e-6; // alapértelmezett: egész számoknál szigorú
-  if (answerType === 'decimal' && taskData && taskData.decimalPlaces !== undefined) {
-    // Ha 2 tizedesjegy kell: 0.5 * 10^-2 = 0.005 (fele az utolsó helyi értéknek)
-    tol = 0.5 * Math.pow(10, -taskData.decimalPlaces);
-  } else if (answerType === 'decimal') {
-    // Fallback: számold ki a helyi értékekből
-    const parts = ('' + normalizedCorrect).replace(',', '.').split('.');
-    const dp = parts[1] ? parts[1].length : 2;
-    tol = 0.5 * Math.pow(10, -dp);
+  let tol = 1e-9; // Nagyon szigorú alapérték
+  
+  if (answerType === 'decimal') {
+    // Határozd meg az elvárt tizedesjegyek számát
+    let expectedDP = 2; // Alapértelmezett
+    
+    if (taskData && taskData.decimalPlaces !== undefined && taskData.decimalPlaces !== null) {
+      expectedDP = Number(taskData.decimalPlaces);
+    } else {
+      // Fallback: számold ki a correctAnswer reprezentációjából
+      const parts = ('' + normalizedCorrect).replace(',', '.').split('.');
+      expectedDP = parts[1] ? parts[1].length : 2;
+    }
+    
+    // A tolerancia az utolsó számjegynél 0.5-szerese legyen
+    // pl. 2 tizedesjegy → 0.5 * 10^-2 = 0.005
+    tol = 0.5 * Math.pow(10, -expectedDP);
   }
   
   return Math.abs(userNum - correctNum) <= tol;
